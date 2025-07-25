@@ -24,14 +24,20 @@ export class AuthService {
   }
 
   private loadStoredConducteur() {
-    const stored = localStorage.getItem('currentConducteur');
-    if (stored) {
+    try {
+      if (typeof Storage !== 'undefined') {
+        const stored = localStorage.getItem('currentConducteur');
+        if (stored) {
+          const conducteur = JSON.parse(stored);
+          this.currentConducteurSubject.next(conducteur);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading stored conducteur:', error);
       try {
-        const conducteur = JSON.parse(stored);
-        this.currentConducteurSubject.next(conducteur);
-      } catch (error) {
-        console.error('Error parsing stored conducteur:', error);
         localStorage.removeItem('currentConducteur');
+      } catch (e) {
+        // Ignore localStorage errors
       }
     }
   }
@@ -42,7 +48,15 @@ export class AuthService {
       
       if (conducteur) {
         this.currentConducteurSubject.next(conducteur);
-        localStorage.setItem('currentConducteur', JSON.stringify(conducteur));
+        
+        try {
+          if (typeof Storage !== 'undefined') {
+            localStorage.setItem('currentConducteur', JSON.stringify(conducteur));
+          }
+        } catch (storageError) {
+          console.warn('Could not save to localStorage:', storageError);
+        }
+        
         return true;
       }
       
@@ -55,7 +69,13 @@ export class AuthService {
 
   logout() {
     this.currentConducteurSubject.next(null);
-    localStorage.removeItem('currentConducteur');
+    try {
+      if (typeof Storage !== 'undefined') {
+        localStorage.removeItem('currentConducteur');
+      }
+    } catch (error) {
+      console.warn('Could not clear localStorage:', error);
+    }
   }
 
   isLoggedIn(): boolean {
