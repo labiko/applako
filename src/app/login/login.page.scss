@@ -50,6 +50,8 @@
   border-radius: 20px;
   padding: 2rem 1.5rem;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 5;
 }
 
 .form-title {
@@ -75,6 +77,8 @@
     --padding-start: 16px;
     --padding-end: 16px;
     margin-bottom: 0;
+    position: relative;
+    z-index: 10;
     
     ion-label {
       --color: #666;
@@ -84,6 +88,8 @@
     ion-input {
       --color: #333;
       font-weight: 500;
+      cursor: text;
+      touch-action: manipulation;
     }
     
     .input-prefix {
