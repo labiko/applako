@@ -1,0 +1,20 @@
+ion-tab-bar {
+  --background: var(--lako-cream);
+  --color: var(--lako-dark);
+  --color-selected: var(--lako-green);
+  border-top: 1px solid var(--lako-gray);
+}
+
+ion-tab-button {
+  --color: var(--lako-gray);
+  --color-selected: var(--lako-dark);
+  --ripple-color: var(--lako-green);
+}
+
+ion-tab-button.tab-selected {
+  --color: var(--lako-dark);
+  
+  ion-icon {
+    color: var(--lako-green);
+  }
+}

@@ -1,0 +1,156 @@
+.content-container {
+  padding: 16px;
+}
+
+.profile-header-card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, var(--lako-green) 0%, var(--lako-cream) 100%);
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border: 3px solid var(--lako-white);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  
+  .modern-avatar {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--ion-color-primary) 0%, #a8e6cf 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    
+    .avatar-icon {
+      font-size: 2.5rem;
+      color: var(--ion-color-dark);
+    }
+  }
+}
+
+.profile-info {
+  flex-grow: 1;
+  
+  h2 {
+    margin: 0 0 8px 0;
+    color: var(--lako-dark);
+    font-weight: 600;
+    font-size: 1.4em;
+  }
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+  
+  ion-icon {
+    font-size: 1.2em;
+  }
+  
+  span {
+    color: var(--lako-dark);
+    font-weight: 500;
+    
+    &.rides-count {
+      color: var(--lako-gray);
+      font-weight: 400;
+      font-size: 0.9em;
+    }
+  }
+}
+
+.info-card, .stats-card, .actions-card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  ion-card-header {
+    background: var(--lako-cream);
+    
+    ion-card-title {
+      color: var(--lako-dark);
+      font-weight: 600;
+      font-size: 1.1em;
+    }
+  }
+  
+  ion-list {
+    padding: 0;
+    
+    ion-item {
+      --inner-padding-end: 0;
+      --inner-padding-start: 0;
+      --padding-start: 16px;
+      --padding-end: 16px;
+      
+      ion-label {
+        h3 {
+          color: var(--lako-dark);
+          font-weight: 500;
+          margin-bottom: 4px;
+        }
+        
+        p {
+          color: var(--lako-gray);
+          margin: 0;
+        }
+      }
+    }
+  }
+}
+
+.stats-card {
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    text-align: center;
+  }
+  
+  .stat-item {
+    .stat-number {
+      font-size: 1.8em;
+      font-weight: 700;
+      color: var(--lako-green);
+      margin-bottom: 4px;
+    }
+    
+    .stat-label {
+      font-size: 0.85em;
+      color: var(--lako-gray);
+      font-weight: 500;
+    }
+  }
+}
+
+.actions-card {
+  ion-item {
+    cursor: pointer;
+    
+    &:hover {
+      --background: var(--ion-color-light);
+    }
+  }
+}
+
+ion-header ion-toolbar {
+  --background: var(--lako-green);
+  --color: var(--lako-dark);
+}
+
+ion-title {
+  color: var(--lako-dark);
+  font-weight: 600;
+}

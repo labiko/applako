@@ -1,0 +1,121 @@
+.content-container {
+  padding: 16px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  gap: 16px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  text-align: center;
+  padding: 20px;
+  
+  .empty-icon {
+    font-size: 5rem;
+    color: var(--ion-color-primary);
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
+  }
+}
+
+.reservation-card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.reservation-header {
+  background: var(--lako-green);
+  color: var(--lako-dark);
+  padding: 16px;
+  
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1em;
+    font-weight: 600;
+    
+    ion-icon {
+      font-size: 1.2em;
+    }
+  }
+}
+
+.reservation-content {
+  padding: 16px;
+  background: var(--lako-white);
+}
+
+.reservation-details {
+  margin-bottom: 16px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
+  
+  ion-icon {
+    margin-top: 2px;
+    font-size: 1.1em;
+    flex-shrink: 0;
+  }
+  
+  ion-text {
+    flex-grow: 1;
+    line-height: 1.4;
+  }
+}
+
+.reservation-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.btn-accept {
+  --background: var(--lako-green);
+  --color: var(--lako-dark);
+  --border-radius: 8px;
+  flex: 1;
+  font-weight: 600;
+  
+  &:hover {
+    --background: #AAD41A;
+  }
+}
+
+.btn-refuse {
+  --background: var(--ion-color-danger);
+  --color: var(--lako-white);
+  --border-radius: 8px;
+  flex: 1;
+  font-weight: 600;
+  
+  &:hover {
+    --background: #d33;
+  }
+}
+
+ion-header ion-toolbar {
+  --background: var(--lako-green);
+  --color: var(--lako-dark);
+}
+
+ion-title {
+  color: var(--lako-dark);
+  font-weight: 600;
+}

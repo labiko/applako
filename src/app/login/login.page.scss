@@ -1,0 +1,210 @@
+.login-content {
+  --background: var(--ion-color-tertiary);
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 1.5rem;
+  min-height: 100vh;
+}
+
+/* Header Section */
+.header-section {
+  text-align: center;
+  margin-top: 2rem;
+  
+  .car-icon {
+    margin-bottom: 1.5rem;
+    animation: bounce 2s infinite;
+    
+    .modern-car {
+      font-size: 4rem;
+      color: var(--ion-color-primary);
+      filter: drop-shadow(0 4px 8px rgba(193, 241, 29, 0.3));
+    }
+  }
+  
+  .app-title {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--ion-color-primary);
+    margin: 0;
+  }
+  
+  .app-subtitle {
+    font-size: 1rem;
+    color: var(--ion-color-secondary);
+    margin: 0.5rem 0 0 0;
+    font-weight: 300;
+  }
+}
+
+/* Form Container */
+.form-container {
+  width: 100%;
+  max-width: 340px;
+  background: white;
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.form-title {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+  margin: 0 0 2rem 0;
+}
+
+.login-form {
+  width: 100%;
+}
+
+.input-group {
+  margin-bottom: 1.5rem;
+  
+  .modern-input {
+    --background: rgba(255, 255, 255, 0.9);
+    --border-radius: 15px;
+    --border-width: 0;
+    --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    --padding-start: 16px;
+    --padding-end: 16px;
+    margin-bottom: 0;
+    
+    ion-label {
+      --color: #666;
+      font-weight: 500;
+    }
+    
+    ion-input {
+      --color: #333;
+      font-weight: 500;
+    }
+    
+    .input-prefix {
+      display: flex;
+      align-items: center;
+      margin-right: 10px;
+      
+      .guinea-flag {
+        width: 24px;
+        height: 18px;
+        border-radius: 3px;
+        border: 1px solid #ddd;
+      }
+    }
+    
+    .input-icon {
+      color: var(--ion-color-primary);
+      font-size: 1.2rem;
+    }
+    
+    .password-toggle {
+      --color: var(--ion-color-medium);
+      margin: 0;
+      
+      ion-icon {
+        font-size: 1.2rem;
+      }
+    }
+  }
+}
+
+.login-button {
+  margin-top: 1.5rem;
+  height: 56px;
+  --border-radius: 15px;
+  --background: var(--ion-color-primary);
+  --color: var(--ion-color-dark);
+  font-weight: 600;
+  font-size: 1.1rem;
+  --box-shadow: 0 8px 25px rgba(193, 241, 29, 0.3);
+  text-transform: none;
+  
+  &:hover {
+    --box-shadow: 0 12px 35px rgba(193, 241, 29, 0.4);
+    transform: translateY(-2px);
+  }
+  
+  ion-icon {
+    margin-right: 8px;
+  }
+}
+
+.error-message {
+  margin-top: 1rem;
+  text-align: center;
+  padding: 1rem;
+  background: rgba(244, 67, 67, 0.1);
+  border-radius: 10px;
+  border: 1px solid rgba(244, 67, 67, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  
+  .error-icon {
+    color: var(--ion-color-danger);
+    font-size: 1.2rem;
+  }
+  
+  ion-text {
+    font-weight: 500;
+  }
+}
+
+/* Footer Section */
+.footer-section {
+  text-align: center;
+  margin-top: 2rem;
+  
+  .footer-text {
+    color: var(--ion-color-medium);
+    font-size: 0.9rem;
+    margin: 0;
+    font-weight: 500;
+  }
+  
+  .version-text {
+    color: var(--ion-color-medium);
+    font-size: 0.8rem;
+    margin: 0.5rem 0 0 0;
+  }
+}
+
+/* Animations */
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Responsive */
+@media (max-height: 700px) {
+  .header-section {
+    margin-top: 1rem;
+    
+    .car-icon .modern-car {
+      font-size: 3rem;
+    }
+    
+    .app-title {
+      font-size: 2.5rem;
+    }
+  }
+  
+  .form-container {
+    padding: 1.5rem;
+  }
+}

@@ -1,0 +1,102 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Historique</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Historique</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="content-container">
+    <div *ngIf="isLoading" class="loading-container">
+      <ion-spinner name="circular"></ion-spinner>
+      <ion-text>
+        <p>Chargement de l'historique...</p>
+      </ion-text>
+    </div>
+
+    <div *ngIf="!isLoading && reservations.length === 0" class="empty-state">
+      <ion-text color="medium">
+        <h3>Aucun historique</h3>
+        <p>Les réservations traitées apparaîtront ici</p>
+      </ion-text>
+    </div>
+
+    <div *ngIf="!isLoading && reservations.length > 0">
+      <ion-card *ngFor="let reservation of reservations" class="reservation-card">
+        <ion-card-header class="reservation-header">
+          <ion-card-title>
+            <div class="header-content">
+              <div class="customer-info">
+                <ion-icon name="person"></ion-icon>
+                Client: {{ reservation.client_phone }}
+              </div>
+              <ion-badge [color]="getStatusColor(reservation.statut)" class="status-badge">
+                <ion-icon [name]="getStatusIcon(reservation.statut)"></ion-icon>
+                {{ getStatusText(reservation.statut) }}
+              </ion-badge>
+            </div>
+          </ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content class="reservation-content">
+          <div class="reservation-details">
+            <div class="detail-item">
+              <ion-icon name="call" color="medium"></ion-icon>
+              <ion-text>{{ reservation.client_phone }}</ion-text>
+            </div>
+
+            <div class="detail-item">
+              <ion-icon name="car" color="medium"></ion-icon>
+              <ion-text>
+                <strong>Type:</strong> {{ reservation.vehicle_type }}
+              </ion-text>
+            </div>
+
+            <div class="detail-item">
+              <ion-icon name="location" color="medium"></ion-icon>
+              <ion-text>
+                <strong>Destination:</strong> {{ reservation.destination_nom }}
+              </ion-text>
+            </div>
+
+            <div class="detail-item">
+              <ion-icon name="resize" color="medium"></ion-icon>
+              <ion-text>
+                <strong>Distance:</strong> {{ reservation.distance_km }} km
+              </ion-text>
+            </div>
+
+            <div class="detail-item">
+              <ion-icon name="card" color="medium"></ion-icon>
+              <ion-text>
+                <strong>Prix:</strong> {{ reservation.prix_total }} FCFA
+              </ion-text>
+            </div>
+
+            <div class="detail-item">
+              <ion-icon name="time" color="medium"></ion-icon>
+              <ion-text>
+                <strong>Créé le:</strong> {{ formatDateTime(reservation.created_at) }}
+              </ion-text>
+            </div>
+
+            <div class="detail-item timestamp">
+              <ion-text color="medium">
+                <small>Traité le {{ formatDateTime(reservation.updated_at) }}</small>
+              </ion-text>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</ion-content>

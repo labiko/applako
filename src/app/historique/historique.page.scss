@@ -1,0 +1,119 @@
+.content-container {
+  padding: 16px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  gap: 16px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  text-align: center;
+  padding: 20px;
+}
+
+.reservation-card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.reservation-header {
+  background: var(--lako-cream);
+  color: var(--lako-dark);
+  padding: 16px;
+  border-bottom: 1px solid var(--lako-gray);
+  
+  ion-card-title {
+    font-size: 1.1em;
+    font-weight: 600;
+  }
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.customer-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-grow: 1;
+  
+  ion-icon {
+    font-size: 1.2em;
+  }
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85em;
+  padding: 4px 8px;
+  border-radius: 20px;
+  
+  ion-icon {
+    font-size: 1em;
+  }
+}
+
+.reservation-content {
+  padding: 16px;
+  background: var(--lako-white);
+}
+
+.reservation-details {
+  .detail-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
+    
+    ion-icon {
+      margin-top: 2px;
+      font-size: 1.1em;
+      flex-shrink: 0;
+    }
+    
+    ion-text {
+      flex-grow: 1;
+      line-height: 1.4;
+    }
+    
+    &.timestamp {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--ion-color-light-shade);
+      justify-content: center;
+      
+      ion-text {
+        text-align: center;
+        font-style: italic;
+      }
+    }
+  }
+}
+
+ion-header ion-toolbar {
+  --background: var(--lako-green);
+  --color: var(--lako-dark);
+}
+
+ion-title {
+  color: var(--lako-dark);
+  font-weight: 600;
+}

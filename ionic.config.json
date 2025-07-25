@@ -1,0 +1,7 @@
+{
+  "name": "app-lako-chauffeur",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

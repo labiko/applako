@@ -1,0 +1,80 @@
+<ion-content [fullscreen]="true" class="login-content">
+  <div class="login-container">
+    <!-- Header with modern car icon -->
+    <div class="header-section">
+      <div class="car-icon">
+        <ion-icon name="car-sport" class="modern-car"></ion-icon>
+      </div>
+      <h1 class="app-title">AppLako</h1>
+      <p class="app-subtitle">Votre partenaire transport</p>
+    </div>
+
+    <!-- Login Form -->
+    <div class="form-container">
+      <h2 class="form-title">Connexion Chauffeur</h2>
+      
+      <form (ngSubmit)="onLogin()" #loginForm="ngForm" class="login-form">
+        <!-- Phone input with Guinea flag -->
+        <div class="input-group">
+          <ion-item class="modern-input">
+            <div class="input-prefix" slot="start">
+              <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAyNCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgiIGhlaWdodD0iMTgiIGZpbGw9IiNDRTExMjYiLz4KPHJlY3QgeD0iOCIgd2lkdGg9IjgiIGhlaWdodD0iMTgiIGZpbGw9IiNGRkNFMDAiLz4KPHJlY3QgeD0iMTYiIHdpZHRoPSI4IiBoZWlnaHQ9IjE4IiBmaWxsPSIjMDA5NjM5Ii8+Cjwvc3ZnPgo=" alt="🇬🇳" class="guinea-flag">
+            </div>
+            <!-- <ion-label position="floating">Numéro de téléphone</ion-label> -->
+            <ion-input 
+              type="tel" 
+              [(ngModel)]="credentials.phone" 
+              name="phone"
+              required
+              placeholder="+224...">
+            </ion-input>
+            <ion-icon name="call" slot="end" class="input-icon"></ion-icon>
+          </ion-item>
+        </div>
+
+        <!-- Password input -->
+        <div class="input-group">
+          <ion-item class="modern-input">
+            <ion-label position="floating">Mot de passe</ion-label>
+            <ion-input 
+              [type]="showPassword ? 'text' : 'password'"
+              [(ngModel)]="credentials.password" 
+              name="password"
+              required>
+            </ion-input>
+            <ion-button 
+              fill="clear" 
+              slot="end" 
+              (click)="togglePassword()"
+              class="password-toggle">
+              <ion-icon [name]="showPassword ? 'eye-off' : 'eye'"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </div>
+
+        <!-- Login Button -->
+        <ion-button 
+          expand="full" 
+          type="submit" 
+          [disabled]="!loginForm.form.valid || isLoading"
+          class="login-button">
+          <ion-spinner name="crescent" *ngIf="isLoading" slot="start"></ion-spinner>
+          <ion-icon name="log-in" *ngIf="!isLoading" slot="start"></ion-icon>
+          {{ isLoading ? 'Connexion en cours...' : 'Se connecter' }}
+        </ion-button>
+      </form>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="error-message">
+        <ion-icon name="alert-circle" class="error-icon"></ion-icon>
+        <ion-text color="danger">{{ errorMessage }}</ion-text>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-section">
+      <p class="footer-text">Conakry, Guinée</p>
+      <p class="version-text">Version 1.0.0</p>
+    </div>
+  </div>
+</ion-content>
