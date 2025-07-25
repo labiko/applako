@@ -87,7 +87,7 @@ export class AuthService {
   }
 
   getCurrentConducteurId(): string | null {
-    const conducteur = this.getCurrentConducteur();
-    return conducteur ? conducteur.id : null;
+    // ID en dur pour test sans authentification
+    return 'c1682dd2-655e-4755-8c79-e0e837b3a457';
   }
 }
