@@ -3,6 +3,8 @@
 ## Vue d'ensemble
 Ce guide vous permet de forcer le déploiement sur Vercel quand l'auto-déploiement ne fonctionne pas.
 
+**⚠️ Prérequis :** Le fichier `.github/workflows/deploy.yml` est déjà configuré dans le projet. Ce workflow GitHub Actions se déclenche automatiquement à chaque push ou peut être lancé manuellement.
+
 ## ÉTAPE 1 : Récupérer VERCEL_TOKEN
 
 1. **Ouvrez** https://vercel.com/account/tokens
@@ -66,12 +68,23 @@ Une fois terminé, votre site Vercel aura la dernière version avec :
 - ✅ Splash screen animé
 - ✅ Corrections des erreurs Supabase
 
+## Configuration technique
+
+### Fichier workflow GitHub Actions
+Le fichier `.github/workflows/deploy.yml` contient la configuration suivante :
+- **Déclencheurs** : Push sur branch `main` + déclenchement manuel
+- **Actions** : Installation Node.js, build du projet, déploiement Vercel
+- **Secrets requis** : `VERCEL_TOKEN`, `ORG_ID`, `PROJECT_ID`
+
+Si vous devez modifier ce workflow, éditez le fichier `.github/workflows/deploy.yml` dans votre projet.
+
 ## Liens utiles
 
 - **Votre repo GitHub** : https://github.com/labiko/applako
 - **GitHub Actions** : https://github.com/labiko/applako/actions
 - **Vercel Dashboard** : https://vercel.com/dashboard
 - **Vercel Tokens** : https://vercel.com/account/tokens
+- **Workflow file** : `.github/workflows/deploy.yml`
 
 ---
 *Guide généré avec Claude Code*
