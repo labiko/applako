@@ -1,13 +1,23 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
-    <ion-title>Historique</ion-title>
+    <ion-title>
+      <div class="header-title">
+        <ion-icon name="time-outline" class="header-icon"></ion-icon>
+        <span>Historique</span>
+      </div>
+    </ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Historique</ion-title>
+      <ion-title size="large">
+        <div class="header-title">
+          <ion-icon name="time-outline" class="header-icon"></ion-icon>
+          <span>Historique</span>
+        </div>
+      </ion-title>
     </ion-toolbar>
   </ion-header>
 
@@ -93,6 +103,72 @@
               <ion-text color="medium">
                 <small>Traité le {{ formatDateTime(reservation.updated_at) }}</small>
               </ion-text>
+            </div>
+
+            <!-- Validation date si validé -->
+            <div class="detail-item validation-date" *ngIf="reservation.date_code_validation">
+              <ion-icon name="checkmark-circle" color="success"></ion-icon>
+              <ion-text color="success">
+                <strong>Validé le:</strong> {{ formatDateTime(reservation.date_code_validation) }}
+              </ion-text>
+            </div>
+          </div>
+
+          <!-- Système OTP pour les réservations acceptées non validées -->
+          <div class="otp-section" *ngIf="reservation.statut === 'accepted' && !reservation.date_code_validation">
+            <div class="otp-header">
+              <ion-icon name="shield-checkmark" color="warning"></ion-icon>
+              <ion-text color="warning">
+                <strong>Validation client requise</strong>
+              </ion-text>
+            </div>
+            
+            <div class="otp-container">
+              <ion-text class="otp-label">Code de validation (4 chiffres)</ion-text>
+              <div class="otp-inputs">
+                <ion-input 
+                  #otp1
+                  class="otp-digit"
+                  type="number"
+                  maxlength="1"
+                  (input)="onOtpInput($event, 0, reservation.id)"
+                  (keydown)="onOtpKeydown($event, 0, reservation.id)">
+                </ion-input>
+                <ion-input 
+                  #otp2
+                  class="otp-digit"
+                  type="number"
+                  maxlength="1"
+                  (input)="onOtpInput($event, 1, reservation.id)"
+                  (keydown)="onOtpKeydown($event, 1, reservation.id)">
+                </ion-input>
+                <ion-input 
+                  #otp3
+                  class="otp-digit"
+                  type="number"
+                  maxlength="1"
+                  (input)="onOtpInput($event, 2, reservation.id)"
+                  (keydown)="onOtpKeydown($event, 2, reservation.id)">
+                </ion-input>
+                <ion-input 
+                  #otp4
+                  class="otp-digit"
+                  type="number"
+                  maxlength="1"
+                  (input)="onOtpInput($event, 3, reservation.id)"
+                  (keydown)="onOtpKeydown($event, 3, reservation.id)">
+                </ion-input>
+              </div>
+              
+              <ion-button 
+                class="validate-btn"
+                [disabled]="!isOtpComplete(reservation.id)"
+                (click)="validateOTP(reservation)"
+                fill="solid"
+                color="success">
+                <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+                Valider la course
+              </ion-button>
             </div>
           </div>
         </ion-card-content>

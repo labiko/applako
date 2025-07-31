@@ -16,10 +16,13 @@ import {
   IonText,
   IonIcon,
   IonBadge,
-  ToastController
+  IonInput,
+  IonButton,
+  ToastController,
+  LoadingController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card } from 'ionicons/icons';
+import { location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline } from 'ionicons/icons';
 import { SupabaseService } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
 import { Reservation } from '../models/reservation.model';
@@ -44,6 +47,8 @@ import { Reservation } from '../models/reservation.model';
     IonText,
     IonIcon,
     IonBadge,
+    IonInput,
+    IonButton,
     CommonModule,
     FormsModule,
   ],
@@ -51,16 +56,21 @@ import { Reservation } from '../models/reservation.model';
 export class HistoriquePage implements OnInit {
   reservations: Reservation[] = [];
   isLoading = true;
+  otpCodes: { [reservationId: string]: string[] } = {};
 
   constructor(
     private supabaseService: SupabaseService,
     private authService: AuthService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private loadingController: LoadingController
   ) {
-    addIcons({ location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card });
+    addIcons({ location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline });
   }
 
   ngOnInit() {
+   
+  }
+  async ionViewWillEnter() {
     this.loadHistory();
   }
 
@@ -162,5 +172,70 @@ export class HistoriquePage implements OnInit {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  // Gestion des inputs OTP
+  onOtpInput(event: any, index: number, reservationId: string) {
+    const value = event.target.value;
+    
+    if (!this.otpCodes[reservationId]) {
+      this.otpCodes[reservationId] = ['', '', '', ''];
+    }
+    
+    // Limiter à 1 chiffre
+    if (value.length > 1) {
+      event.target.value = value.slice(0, 1);
+    }
+    
+    this.otpCodes[reservationId][index] = event.target.value;
+    
+    // Auto-focus sur le champ suivant
+    if (event.target.value && index < 3) {
+      const nextInput = document.querySelectorAll(`ion-input.otp-digit`)[index + 1] as any;
+      if (nextInput) {
+        nextInput.setFocus();
+      }
+    }
+  }
+
+  onOtpKeydown(event: any, index: number, reservationId: string) {
+    // Backspace: focus sur le champ précédent
+    if (event.key === 'Backspace' && !event.target.value && index > 0) {
+      const prevInput = document.querySelectorAll(`ion-input.otp-digit`)[index - 1] as any;
+      if (prevInput) {
+        prevInput.setFocus();
+      }
+    }
+  }
+
+  isOtpComplete(reservationId: string): boolean {
+    const codes = this.otpCodes[reservationId];
+    return codes && codes.every(code => code.length === 1);
+  }
+
+  async validateOTP(reservation: Reservation) {
+    const loading = await this.loadingController.create({
+      message: 'Validation en cours...',
+    });
+    await loading.present();
+
+    try {
+      const otpCode = this.otpCodes[reservation.id].join('');
+      
+      const success = await this.supabaseService.validateOTP(reservation.id, otpCode);
+      
+      if (success) {
+        this.presentToast('Code validé avec succès ! Course terminée.', 'success');
+        // Recharger l'historique pour voir les changements
+        await this.loadHistory();
+      } else {
+        this.presentToast('Code incorrect. Vérifiez avec le client.', 'danger');
+      }
+    } catch (error) {
+      console.error('Error validating OTP:', error);
+      this.presentToast('Erreur lors de la validation', 'danger');
+    } finally {
+      await loading.dismiss();
+    }
   }
 }

@@ -10,6 +10,12 @@ export interface Conducteur {
   email?: string;
   vehicule_type?: string;
   statut?: string;
+  position_actuelle?: string; // Position GPS du conducteur
+  date_update_position?: string; // Date de dernière mise à jour position
+  derniere_activite?: string; // Dernière activité (timezone)
+  hors_ligne?: boolean; // Statut en ligne/hors ligne
+  accuracy?: number; // Précision GPS en mètres
+  date_inscription?: string; // Date d'inscription du conducteur
 }
 
 @Injectable({
@@ -87,7 +93,12 @@ export class AuthService {
   }
 
   getCurrentConducteurId(): string | null {
-    // ID en dur pour test sans authentification
-    return 'c1682dd2-655e-4755-8c79-e0e837b3a457';
+    const conducteur = this.getCurrentConducteur();
+    return conducteur ? conducteur.id : null;
+  }
+
+  getCurrentConducteurPosition(): string | null {
+    const conducteur = this.getCurrentConducteur();
+    return conducteur ? conducteur.position_actuelle || null : null;
   }
 }

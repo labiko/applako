@@ -2,17 +2,19 @@ export interface Reservation {
   id: string;
   client_phone: string;
   vehicle_type: string;
-  position_depart: string;
+  position_depart: string;  // WKB format coordinates
+  position_arrivee: string; // WKB format coordinates
+  destination_nom: string;
+  distance_km: number;
+  prix_total: number;
   statut: 'pending' | 'accepted' | 'refused' | 'completed';
   created_at: string;
+  updated_at?: string;
   conducteur_id?: string | null;
-  destination_nom: string;
   destination_id?: string | null;
-  position_arrivee?: string | null;
-  distance_km: string;
-  prix_total: string;
-  prix_par_km?: string | null;
+  prix_par_km?: number | null;
   tarif_applique?: string | null;
   code_validation?: string | null;
-  updated_at: string;
+  date_code_validation?: string | null;
+  duration?: string; // Durée calculée entre conducteur et réservation
 }

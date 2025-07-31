@@ -1,0 +1,135 @@
+// Styles globaux pour les en-têtes modernes
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  
+  .header-icon {
+    font-size: 1.4rem;
+    color: var(--lako-dark);
+    opacity: 0.9;
+    transition: all 0.3s ease;
+    
+    // Animation subtile
+    &:hover {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+  }
+  
+  span {
+    color: var(--lako-dark);
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+  }
+}
+
+// Animations pour les icônes spécifiques
+.header-title .header-icon {
+  // Réservations - rotation légère
+  &[name="car-sport-outline"] {
+    animation: subtle-bounce 2s ease-in-out infinite;
+  }
+  
+  // Historique - pulsation douce
+  &[name="time-outline"] {
+    animation: gentle-pulse 3s ease-in-out infinite;
+  }
+  
+  // Profile - rotation 3D subtile
+  &[name="person-circle-outline"] {
+    animation: rotate-3d 4s ease-in-out infinite;
+  }
+}
+
+// Animations keyframes
+@keyframes subtle-bounce {
+  0%, 100% { 
+    transform: translateY(0) rotate(0deg); 
+  }
+  50% { 
+    transform: translateY(-2px) rotate(2deg); 
+  }
+}
+
+@keyframes gentle-pulse {
+  0%, 100% { 
+    opacity: 0.9; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.05);
+  }
+}
+
+@keyframes rotate-3d {
+  0%, 100% { 
+    transform: rotateY(0deg); 
+  }
+  50% { 
+    transform: rotateY(180deg); 
+  }
+}
+
+// Styles pour les en-têtes condensés (grandes tailles)
+ion-title[size="large"] {
+  .header-title {
+    .header-icon {
+      font-size: 1.8rem;
+    }
+    
+    span {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+  }
+}
+
+// Style pour les toolbars avec couleur primaire
+ion-toolbar[color="primary"] {
+  --background: var(--lako-green);
+  --color: var(--lako-dark);
+  
+  // Ombre subtile
+  box-shadow: 0 2px 8px rgba(193, 241, 29, 0.2);
+}
+
+// Responsive design
+@media (max-width: 576px) {
+  .header-title {
+    gap: 8px;
+    
+    .header-icon {
+      font-size: 1.2rem;
+    }
+    
+    span {
+      font-size: 1rem;
+    }
+  }
+  
+  ion-title[size="large"] {
+    .header-title {
+      .header-icon {
+        font-size: 1.5rem;
+      }
+      
+      span {
+        font-size: 1.3rem;
+      }
+    }
+  }
+}
+
+// Mode sombre (si activé)
+@media (prefers-color-scheme: dark) {
+  .header-title {
+    .header-icon,
+    span {
+      color: var(--lako-white);
+    }
+  }
+}

@@ -1,19 +1,54 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
-    <ion-title>Réservations en attente</ion-title>
+    <ion-title>
+      <div class="header-title">
+        <ion-icon name="car-sport-outline" class="header-icon"></ion-icon>
+        <span>Réservations en attente</span>
+      </div>
+    </ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Réservations</ion-title>
+      <ion-title size="large">
+        <div class="header-title">
+          <ion-icon name="car-sport-outline" class="header-icon"></ion-icon>
+          <span>Réservations</span>
+        </div>
+      </ion-title>
     </ion-toolbar>
   </ion-header>
 
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
+
+  <!-- Status Switch -->
+  <div class="status-container">
+    <ion-card class="status-card" [class.online]="isOnline" [class.offline]="!isOnline">
+      <ion-card-content>
+        <div class="status-toggle">
+          <div class="status-info">
+            <ion-icon [name]="isOnline ? 'checkmark-circle' : 'close-circle'" 
+                     [color]="isOnline ? 'success' : 'danger'" 
+                     class="status-icon"></ion-icon>
+            <div class="status-text">
+              <h3>{{ isOnline ? 'En ligne' : 'Hors ligne' }}</h3>
+              <p>{{ isOnline ? 'Vous recevez les réservations' : 'Mode inactif' }}</p>
+            </div>
+          </div>
+          <ion-toggle 
+            [checked]="isOnline"
+            (ionChange)="onStatusToggle($event)"
+            [color]="isOnline ? 'success' : 'medium'"
+            class="status-switch">
+          </ion-toggle>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
 
   <div class="content-container">
     <div *ngIf="isLoading" class="loading-container">
@@ -36,7 +71,7 @@
         <ion-card-header class="reservation-header">
           <ion-card-title>
             <ion-icon name="person"></ion-icon>
-            Client: {{ reservation.client_phone }}
+            Client: {{ reservation.client_phone || 'Non spécifié' }}
           </ion-card-title>
         </ion-card-header>
 
@@ -44,34 +79,35 @@
           <div class="reservation-details">
             <div class="detail-item">
               <ion-icon name="call" color="medium"></ion-icon>
-              <ion-text>{{ reservation.client_phone }}</ion-text>
+              <ion-text>{{ reservation.client_phone || 'Non spécifié' }}</ion-text>
             </div>
 
             <div class="detail-item">
               <ion-icon name="car" color="medium"></ion-icon>
               <ion-text>
-                <strong>Type:</strong> {{ reservation.vehicle_type }}
+                <strong>Type:</strong> {{ reservation.vehicle_type || 'Standard' }}
               </ion-text>
             </div>
 
-            <div class="detail-item">
-              <ion-icon name="location" color="medium"></ion-icon>
-              <ion-text>
-                <strong>Destination:</strong> {{ reservation.destination_nom }}
+            <div class="detail-item clickable" (click)="openGoogleMaps(reservation)">
+              <ion-icon name="location" color="primary"></ion-icon>
+              <ion-text color="primary">
+                <strong>Destination:</strong> {{ reservation.destination_nom || 'Non spécifiée' }}
+                <ion-icon name="open-outline" class="external-link-icon"></ion-icon>
               </ion-text>
             </div>
 
             <div class="detail-item">
               <ion-icon name="resize" color="medium"></ion-icon>
               <ion-text>
-                <strong>Distance:</strong> {{ reservation.distance_km }} km
+                <strong>Distance:</strong> {{ reservation.distance_km || 0 }} km
               </ion-text>
             </div>
 
             <div class="detail-item">
               <ion-icon name="card" color="medium"></ion-icon>
               <ion-text>
-                <strong>Prix:</strong> {{ reservation.prix_total }} FCFA
+                <strong>Prix:</strong> {{ reservation.prix_total || 0 }} FCFA
               </ion-text>
             </div>
 
@@ -79,6 +115,13 @@
               <ion-icon name="time" color="medium"></ion-icon>
               <ion-text>
                 <strong>Créé le:</strong> {{ formatDateTime(reservation.created_at) }}
+              </ion-text>
+            </div>
+
+            <div class="detail-item distance-info" *ngIf="reservation.duration">
+              <ion-icon name="car-sport" color="success"></ion-icon>
+              <ion-text color="success">
+                <strong>Vous êtes à {{ reservation.duration }}</strong>
               </ion-text>
             </div>
           </div>

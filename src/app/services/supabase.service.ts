@@ -104,4 +104,164 @@ export class SupabaseService {
 
     return data || [];
   }
+
+  // Mettre à jour la position du conducteur
+  async updateConducteurPosition(conducteurId: string, longitude: number, latitude: number, accuracy?: number): Promise<boolean> {
+    try {
+      // Convertir les coordonnées en format WKB PostGIS
+      // Format: SRID=4326;POINT(longitude latitude)
+      const wkbHex = this.createWKBPoint(longitude, latitude);
+      
+      const updateData: any = {
+        position_actuelle: wkbHex,
+        date_update_position: new Date().toISOString()
+      };
+
+      // Ajouter l'accuracy si fournie
+      if (accuracy !== undefined) {
+        updateData.accuracy = accuracy;
+      }
+      
+      const { error } = await this.supabase
+        .from('conducteurs')
+        .update(updateData)
+        .eq('id', conducteurId);
+
+      if (error) {
+        console.error('Error updating conductor position:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error in updateConducteurPosition:', error);
+      return false;
+    }
+  }
+
+  // Créer un point WKB au format PostGIS
+  private createWKBPoint(longitude: number, latitude: number): string {
+    // WKB format pour POINT avec SRID 4326 (WGS84)
+    // Structure: [byte order][wkb type][SRID][X][Y]
+    // Total: 1 + 4 + 4 + 8 + 8 = 25 bytes
+    const buffer = new ArrayBuffer(25);
+    const view = new DataView(buffer);
+    
+    let offset = 0;
+    
+    // Byte order (1 = little-endian)
+    view.setUint8(offset, 1);
+    offset += 1;
+    
+    // WKB type (0x20000001 = Point with SRID)
+    view.setUint32(offset, 0x20000001, true);
+    offset += 4;
+    
+    // SRID (4326 = WGS84)
+    view.setUint32(offset, 4326, true);
+    offset += 4;
+    
+    // X coordinate (longitude)
+    view.setFloat64(offset, longitude, true);
+    offset += 8;
+    
+    // Y coordinate (latitude)
+    view.setFloat64(offset, latitude, true);
+    
+    // Convertir en hex string
+    let hex = '0101000020E6100000';  // Préfixe standard pour POINT SRID=4326
+    const bytes = new Uint8Array(buffer);
+    
+    // Commencer après le préfixe déjà ajouté (9 bytes)
+    for (let i = 9; i < bytes.length; i++) {
+      hex += bytes[i].toString(16).padStart(2, '0').toUpperCase();
+    }
+    
+    return hex;
+  }
+
+  // Valider le code OTP et mettre à jour date_code_validation
+  async validateOTP(reservationId: string, otpCode: string): Promise<boolean> {
+    try {
+      // Vérifier si le code OTP est correct
+      const { data: reservation, error: fetchError } = await this.supabase
+        .from('reservations')
+        .select('code_validation')
+        .eq('id', reservationId)
+        .single();
+
+      if (fetchError || !reservation) {
+        console.error('Error fetching reservation:', fetchError);
+        return false;
+      }
+
+      // Vérifier si le code correspond
+      if (reservation.code_validation === otpCode) {
+        // Mettre à jour date_code_validation avec la date/heure actuelle
+        const { error: updateError } = await this.supabase
+          .from('reservations')
+          .update({ 
+            date_code_validation: new Date().toISOString(),
+            statut: 'completed' // Marquer comme terminé
+          })
+          .eq('id', reservationId);
+
+        if (updateError) {
+          console.error('Error updating validation date:', updateError);
+          return false;
+        }
+
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Error validating OTP:', error);
+      return false;
+    }
+  }
+
+  // Mettre à jour le statut en ligne/hors ligne du conducteur
+  async updateConducteurStatus(conducteurId: string, hors_ligne: boolean): Promise<boolean> {
+    try {
+      const { error } = await this.supabase
+        .from('conducteurs')
+        .update({ 
+          hors_ligne: hors_ligne,
+          derniere_activite: new Date().toISOString()
+        })
+        .eq('id', conducteurId);
+
+      if (error) {
+        console.error('Error updating conductor status:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error in updateConducteurStatus:', error);
+      return false;
+    }
+  }
+
+  // Compter le nombre total de courses terminées d'un conducteur
+  async getConducteurTotalRides(conducteurId: string): Promise<number> {
+    try {
+      const { data, error, count } = await this.supabase
+        .from('reservations')
+        .select('*', { count: 'exact', head: true })
+        .eq('conducteur_id', conducteurId)
+        .eq('statut', 'completed');
+
+      if (error) {
+        console.error('Error counting conductor rides:', error);
+        return 0;
+      }
+
+      return count || 0;
+    } catch (error) {
+      console.error('Error in getConducteurTotalRides:', error);
+      return 0;
+    }
+  }
 }

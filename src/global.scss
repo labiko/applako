@@ -25,6 +25,9 @@
 @import "~@ionic/angular/css/text-transformation.css";
 @import "~@ionic/angular/css/flex-utils.css";
 
+/* Custom shared styles */
+@import "src/app/shared/styles/header-styles.scss";
+
 /* Custom global styles */
 .reservation-card {
   margin: 8px 16px;

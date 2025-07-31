@@ -20,8 +20,9 @@ import {
   IonListHeader
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { person, call, mail, car, star, settings, logOut } from 'ionicons/icons';
+import { person, call, mail, car, star, settings, logOut, personCircleOutline } from 'ionicons/icons';
 import { AuthService } from '../services/auth.service';
+import { SupabaseService } from '../services/supabase.service';
 
 @Component({
   selector: 'app-profile',
@@ -62,26 +63,37 @@ export class ProfilePage implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private supabaseService: SupabaseService,
     private router: Router
   ) {
-    addIcons({ person, call, mail, car, star, settings, logOut });
+    addIcons({ person, call, mail, car, star, settings, logOut, personCircleOutline });
   }
 
   ngOnInit() {
     this.loadDriverProfile();
   }
 
-  loadDriverProfile() {
+  async loadDriverProfile() {
     const conducteur = this.authService.getCurrentConducteur();
     if (conducteur) {
+      // Récupérer le nombre total de courses
+      const totalRides = await this.supabaseService.getConducteurTotalRides(conducteur.id);
+      
+      // Extraire l'année d'inscription
+      let memberSince = '2023'; // Valeur par défaut
+      if (conducteur.date_inscription) {
+        const inscriptionDate = new Date(conducteur.date_inscription);
+        memberSince = inscriptionDate.getFullYear().toString();
+      }
+
       this.driver = {
         name: `${conducteur.prenom || ''} ${conducteur.nom || ''}`.trim() || 'Conducteur',
         phone: conducteur.telephone || '',
         email: conducteur.email || '',
         vehicle: conducteur.vehicule_type || 'Non spécifié',
-        rating: 4.8,
-        totalRides: 142,
-        memberSince: '2023'
+        rating: 4.8, // TODO: Calculer la vraie note moyenne si disponible
+        totalRides: totalRides,
+        memberSince: memberSince
       };
     }
   }
