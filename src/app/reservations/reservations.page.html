@@ -97,17 +97,17 @@
               </ion-text>
             </div>
 
-            <div class="detail-item">
+            <!-- <div class="detail-item">
               <ion-icon name="resize" color="medium"></ion-icon>
               <ion-text>
                 <strong>Distance:</strong> {{ reservation.calculatedDistance || 'Calcul...' }} km
               </ion-text>
-            </div>
+            </div> -->
 
             <div class="detail-item">
               <ion-icon name="card" color="medium"></ion-icon>
               <ion-text>
-                <strong>Prix:</strong> {{ reservation.prix_total || 0 }} FCFA
+                <strong>Prix:</strong> {{ formatPrice(reservation.prix_total) }} GNF
               </ion-text>
             </div>
 

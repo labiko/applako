@@ -304,6 +304,11 @@ export class ReservationsPage implements OnInit {
     });
   }
 
+  formatPrice(price?: number): string {
+    if (!price) return '0';
+    return price.toLocaleString('fr-FR');
+  }
+
   // Ouvrir Google Maps avec la destination
   openGoogleMaps(reservation: Reservation) {
     // Extraire les coordonnées de position_arrivee si disponible
@@ -398,7 +403,7 @@ export class ReservationsPage implements OnInit {
       
       // Calculer la distance réelle (formule de Haversine)
       const distance = this.calculateDistance(conducteurLat, conducteurLng, departCoords.lat, departCoords.lng);
-      const duration = Math.round(distance * 3); // ~3 min par km en ville
+      const duration = Math.round(distance * 1.8); // ~1.8 min par km (33 km/h moyenne en ville)
       
       return `${duration} min (${distance.toFixed(1)} km)`;
     } catch (error) {
@@ -570,7 +575,7 @@ export class ReservationsPage implements OnInit {
           
           if (validReservations > 0) {
             const avgDistance = totalDistance / validReservations;
-            const avgDuration = Math.round(avgDistance * 3); // ~3 min par km
+            const avgDuration = Math.round(avgDistance * 1.8); // ~1.8 min par km (33 km/h moyenne)
             this.conducteurPosition = `Vous êtes à ${avgDuration} mins en moyenne des réservations`;
             console.log("Position calculée:", this.conducteurPosition);
           } else {
