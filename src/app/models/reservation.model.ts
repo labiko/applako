@@ -17,4 +17,5 @@ export interface Reservation {
   code_validation?: string | null;
   date_code_validation?: string | null;
   duration?: string; // Durée calculée entre conducteur et réservation
+  calculatedDistance?: string; // Distance calculée entre conducteur et position de départ
 }

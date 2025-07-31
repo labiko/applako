@@ -225,6 +225,7 @@ export class ReservationsPage implements OnInit {
       
       for (let reservation of this.reservations) {
         reservation.duration = await this.calculateDuration(reservation.position_depart);
+        reservation.calculatedDistance = await this.calculateDistanceToReservation(reservation.position_depart);
       }
     } catch (error) {
       console.error('Error loading reservations:', error);
@@ -325,6 +326,50 @@ export class ReservationsPage implements OnInit {
     window.open(url, '_blank');
   }
 
+  // Calculer la distance réelle entre conducteur et position de départ de la réservation
+  private async calculateDistanceToReservation(positionDepart: string): Promise<string> {
+    try {
+      console.log('=== Calculating distance ===');
+      console.log('Position départ réservation:', positionDepart);
+      
+      // Récupérer la position du conducteur connecté (mise à jour avant avec updateConducteurPositionOnce)
+      const conducteurPosition = this.authService.getCurrentConducteurPosition();
+      console.log('Position conducteur:', conducteurPosition);
+      
+      if (!conducteurPosition) {
+        console.warn('Pas de position conducteur disponible');
+        return 'Position manquante';
+      }
+      
+      const conducteurCoords = this.extractCoordinates(conducteurPosition);
+      console.log('Coordonnées conducteur décodées:', conducteurCoords);
+      if (!conducteurCoords) {
+        return 'Position invalide';
+      }
+      
+      // Extraire les coordonnées de position_depart de la réservation
+      const departCoords = this.extractCoordinates(positionDepart);
+      console.log('Coordonnées départ décodées:', departCoords);
+      if (!departCoords) {
+        return 'Destination invalide';
+      }
+      
+      // Calculer la distance réelle (formule de Haversine)
+      const distance = this.calculateDistance(
+        conducteurCoords.lat, 
+        conducteurCoords.lng, 
+        departCoords.lat, 
+        departCoords.lng
+      );
+      
+      console.log('Distance calculée:', distance, 'km');
+      return distance.toFixed(1); // Retourner distance en km avec 1 décimale
+    } catch (error) {
+      console.error('Error calculating distance to reservation:', error);
+      return 'Erreur';
+    }
+  }
+
   // Calculer la durée entre position conducteur et réservation
   private async calculateDuration(positionDepart: string): Promise<string> {
     try {
@@ -365,23 +410,31 @@ export class ReservationsPage implements OnInit {
   // Extraire coordonnées depuis format POINT(lng lat) ou WKB
   private extractCoordinates(pointString: string): {lat: number, lng: number} | null {
     try {
-      // Format: POINT(2.5891101 48.6277155)
+      console.log('Extracting coordinates from:', pointString);
+      
+      // Format texte: POINT(2.5847236 48.6273519) - utilisé par les réservations
       if (pointString.startsWith('POINT(')) {
         const coords = pointString.replace('POINT(', '').replace(')', '').split(' ');
-        return {
+        const result = {
           lng: parseFloat(coords[0]),
           lat: parseFloat(coords[1])
         };
+        console.log('Extracted POINT coordinates:', result);
+        return result;
       }
       
-      // Format WKB (format binaire PostGIS) - exemple: 0101000020E6100000BC96900F7AB604401C7C613255504840
+      // Format WKB (format binaire PostGIS) - utilisé par les conducteurs
+      // Exemple: 0101000020E6100000BC96900F7AB604401C7C613255504840
       if (pointString.length > 30 && pointString.match(/^[0-9A-F]+$/i)) {
-        return this.decodeWKB(pointString);
+        const result = this.decodeWKB(pointString);
+        console.log('Extracted WKB coordinates:', result);
+        return result;
       }
       
+      console.warn('Unknown coordinate format:', pointString);
       return null;
     } catch (error) {
-      console.error('Error extracting coordinates:', error);
+      console.error('Error extracting coordinates:', error, 'from:', pointString);
       return null;
     }
   }
