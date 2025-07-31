@@ -425,7 +425,10 @@ export class ReservationsPage implements OnInit {
       
       // Format WKB (format binaire PostGIS) - utilisé par les conducteurs
       // Exemple: 0101000020E6100000BC96900F7AB604401C7C613255504840
-      if (pointString.length > 30 && pointString.match(/^[0-9A-F]+$/i)) {
+      // Doit commencer par 0101000020E6100000 (POINT avec SRID 4326)
+      if (pointString.length >= 50 && 
+          pointString.match(/^[0-9A-F]+$/i) && 
+          pointString.toUpperCase().startsWith('0101000020E6100000')) {
         const result = this.decodeWKB(pointString);
         console.log('Extracted WKB coordinates:', result);
         return result;
@@ -442,20 +445,45 @@ export class ReservationsPage implements OnInit {
   // Décoder le format WKB (Well-Known Binary) de PostGIS
   private decodeWKB(wkbHex: string): {lat: number, lng: number} | null {
     try {
-      // Exemple: 0101000020E6100000BC96900F7AB604401C7C613255504840
-      // Les coordonnées sont dans les derniers 16 bytes (32 caractères hex)
-      if (wkbHex.length >= 58) {
-        // Extraire les 8 bytes pour X (longitude) et 8 bytes pour Y (latitude)
-        const xHex = wkbHex.substring(18, 34); // 16 chars = 8 bytes
-        const yHex = wkbHex.substring(34, 50); // 16 chars = 8 bytes
+      console.log('Decoding WKB:', wkbHex);
+      
+      // Format WKB PostGIS: 
+      // - 1 byte: endian (01)
+      // - 4 bytes: geometry type (01000020)
+      // - 4 bytes: SRID (E6100000 = 4326)
+      // - 8 bytes: X coordinate (longitude)
+      // - 8 bytes: Y coordinate (latitude)
+      
+      if (wkbHex.length >= 50) { // Au minimum 25 bytes = 50 caractères hex
+        // Vérifier que c'est bien un POINT avec SRID 4326
+        const geometryType = wkbHex.substring(2, 10); // 01000020
+        const srid = wkbHex.substring(10, 18); // E6100000
         
-        // Convertir de little-endian hex vers float64
-        const lng = this.hexToFloat64(xHex);
-        const lat = this.hexToFloat64(yHex);
+        console.log('Geometry type:', geometryType);
+        console.log('SRID:', srid);
         
-        // Vérifier que les coordonnées sont valides
-        if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-          return { lat, lng };
+        if (geometryType.toUpperCase() === '01000020' && srid.toUpperCase() === 'E6100000') {
+          // Extraire les coordonnées (little-endian)
+          const xHex = wkbHex.substring(18, 34); // 8 bytes pour longitude
+          const yHex = wkbHex.substring(34, 50); // 8 bytes pour latitude
+          
+          console.log('X hex:', xHex);
+          console.log('Y hex:', yHex);
+          
+          // Convertir de little-endian hex vers float64
+          const lng = this.hexToFloat64LittleEndian(xHex);
+          const lat = this.hexToFloat64LittleEndian(yHex);
+          
+          console.log('Decoded coordinates:', { lat, lng });
+          
+          // Vérifier que les coordonnées sont valides
+          if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+            return { lat, lng };
+          } else {
+            console.warn('Invalid coordinates range:', { lat, lng });
+          }
+        } else {
+          console.warn('Not a POINT geometry or wrong SRID');
         }
       }
       
@@ -468,24 +496,24 @@ export class ReservationsPage implements OnInit {
   }
 
   // Convertir hex little-endian vers float64
-  private hexToFloat64(hexStr: string): number {
+  private hexToFloat64LittleEndian(hexStr: string): number {
     try {
-      // Inverser l'ordre des bytes (little-endian vers big-endian)
-      let reversed = '';
-      for (let i = hexStr.length - 2; i >= 0; i -= 2) {
-        reversed += hexStr.substr(i, 2);
-      }
+      console.log('Converting hex to float64:', hexStr);
       
-      // Convertir hex vers ArrayBuffer puis vers float64
+      // Convertir hex vers ArrayBuffer directement (little-endian)
       const buffer = new ArrayBuffer(8);
       const view = new DataView(buffer);
       
+      // Lire les bytes dans l'ordre little-endian
       for (let i = 0; i < 8; i++) {
-        const byte = parseInt(reversed.substr(i * 2, 2), 16);
+        const byte = parseInt(hexStr.substr(i * 2, 2), 16);
         view.setUint8(i, byte);
       }
       
-      return view.getFloat64(0, false); // big-endian
+      // Lire comme float64 little-endian
+      const result = view.getFloat64(0, true); // true = little-endian
+      console.log('Converted result:', result);
+      return result;
     } catch (error) {
       console.error('Error converting hex to float64:', error);
       return 0;
