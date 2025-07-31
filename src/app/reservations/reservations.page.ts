@@ -93,6 +93,14 @@ export class ReservationsPage implements OnInit {
   private async updateConducteurPositionOnce() {
     try {
       const { Geolocation } = await import('@capacitor/geolocation');
+      const { Capacitor } = await import('@capacitor/core');
+      
+      // Désactiver sur web (Vercel) - fonctionne seulement sur mobile
+      if (Capacitor.getPlatform() === 'web') {
+        console.log('GPS disabled on web - mobile only feature');
+        return;
+      }
+      
       const conducteurId = this.authService.getCurrentConducteurId();
       
       if (!conducteurId) {

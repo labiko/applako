@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Geolocation } from '@capacitor/geolocation';
+import { Capacitor } from '@capacitor/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 
@@ -19,6 +20,12 @@ export class GeolocationService {
   async startLocationTracking() {
     if (this.isTracking) {
       console.log('Location tracking already active');
+      return;
+    }
+
+    // Désactiver sur web (Vercel) - fonctionne seulement sur mobile
+    if (Capacitor.getPlatform() === 'web') {
+      console.log('GPS tracking disabled on web - mobile only feature');
       return;
     }
 
