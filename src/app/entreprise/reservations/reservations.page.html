@@ -48,6 +48,62 @@
     </ion-segment>
   </div>
 
+  <!-- Filtres par date -->
+  <div class="date-filters-section">
+    <div class="date-filter-header">
+      <ion-icon name="calendar-outline" class="filter-icon"></ion-icon>
+      <span class="filter-title">Filtrer par date</span>
+    </div>
+    
+    <div class="date-filter-controls">
+      <!-- Sélecteur de type de filtre -->
+      <ion-segment 
+        [(ngModel)]="dateFilter" 
+        (ionChange)="onDateFilterChange($event)"
+        class="date-segment">
+        <ion-segment-button value="all">
+          <ion-label>Toutes</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="today">
+          <ion-icon name="today-outline"></ion-icon>
+          <ion-label>Aujourd'hui</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="custom">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <ion-label>Personnalisé</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+
+      <!-- Sélecteur de plage de dates (visible seulement en mode personnalisé) -->
+      <div *ngIf="dateFilter === 'custom'" class="custom-date-range">
+        <div class="date-range-inputs">
+          <div class="date-input-group">
+            <ion-label class="date-label">Du</ion-label>
+            <ion-button 
+              fill="outline" 
+              size="small" 
+              (click)="openDatePicker()"
+              class="date-picker-button">
+              <ion-icon name="calendar-outline" slot="start"></ion-icon>
+              {{ formatDateForDisplay(startDate) }}
+            </ion-button>
+          </div>
+          <div class="date-input-group">
+            <ion-label class="date-label">Au</ion-label>
+            <ion-button 
+              fill="outline" 
+              size="small" 
+              (click)="openDatePicker()"
+              class="date-picker-button">
+              <ion-icon name="calendar-outline" slot="start"></ion-icon>
+              {{ formatDateForDisplay(endDate) }}
+            </ion-button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Pull to refresh -->
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
@@ -379,6 +435,68 @@
               Valider cette course
             </ion-button>
           </div>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <!-- Modal de sélection de dates -->
+  <ion-modal [isOpen]="isDatePickerOpen" (didDismiss)="closeDatePicker()" class="date-picker-modal">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>
+            <ion-icon name="calendar-outline" slot="start"></ion-icon>
+            Sélectionner une période
+          </ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeDatePicker()">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      
+      <ion-content class="ion-padding">
+        <div class="date-picker-content">
+          <div class="date-input-section">
+            <h3>Date de début</h3>
+            <ion-item class="date-item">
+              <ion-label position="stacked">Sélectionner la date de début</ion-label>
+              <ion-input
+                type="date"
+                [(ngModel)]="startDate"
+                [max]="endDate"
+                (ionInput)="onDateRangeChange()"
+                class="date-input">
+              </ion-input>
+            </ion-item>
+          </div>
+          
+          <div class="date-input-section">
+            <h3>Date de fin</h3>
+            <ion-item class="date-item">
+              <ion-label position="stacked">Sélectionner la date de fin</ion-label>
+              <ion-input
+                type="date"
+                [(ngModel)]="endDate"
+                [min]="startDate"
+                (ionInput)="onDateRangeChange()"
+                class="date-input">
+              </ion-input>
+            </ion-item>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <ion-button 
+            expand="block" 
+            (click)="closeDatePicker()"
+            [disabled]="!startDate || !endDate"
+            color="primary">
+            <ion-icon name="checkmark" slot="start"></ion-icon>
+            Appliquer le filtre
+          </ion-button>
         </div>
       </ion-content>
     </ng-template>

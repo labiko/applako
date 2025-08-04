@@ -86,6 +86,187 @@
   }
 }
 
+// Date filters section
+.date-filters-section {
+  padding: 0 1rem 1.5rem 1rem;
+  
+  .date-filter-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    
+    .filter-icon {
+      color: var(--lako-green);
+      font-size: 1.2rem;
+    }
+    
+    .filter-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--lako-dark);
+    }
+  }
+  
+  .date-segment {
+    --background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 4px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(193, 241, 29, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 1rem;
+    
+    ion-segment-button {
+      --background-checked: var(--lako-green);
+      --color-checked: var(--lako-dark);
+      --border-radius: 12px;
+      margin: 2px;
+      font-weight: 500;
+      font-size: 0.85rem;
+      
+      ion-icon {
+        font-size: 1rem;
+        margin-right: 0.25rem;
+      }
+    }
+  }
+  
+  .custom-date-range {
+    animation: slideIn 0.3s ease-out;
+    
+    .date-range-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      
+      .date-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        
+        .date-label {
+          font-size: 0.9rem;
+          font-weight: 500;
+          color: var(--lako-dark);
+        }
+        
+        .date-picker-button {
+          --background: rgba(255, 255, 255, 0.9);
+          --color: var(--lako-dark);
+          --border-color: rgba(193, 241, 29, 0.3);
+          --border-radius: 12px;
+          height: 40px;
+          font-size: 0.85rem;
+          
+          &:hover {
+            --background: rgba(193, 241, 29, 0.1);
+          }
+          
+          ion-icon {
+            font-size: 1rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Date picker modal
+.date-picker-modal {
+  --border-radius: 24px 24px 0 0;
+  
+  ion-header {
+    ion-toolbar {
+      --background: var(--lako-green);
+      --color: var(--lako-dark);
+      
+      ion-title {
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        
+        ion-icon {
+          font-size: 1.2rem;
+        }
+      }
+      
+      ion-button {
+        --color: var(--lako-dark);
+      }
+    }
+  }
+  
+  .date-picker-content {
+    .date-input-section {
+      margin-bottom: 2rem;
+      
+      h3 {
+        color: var(--lako-dark);
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid rgba(193, 241, 29, 0.3);
+      }
+      
+      .date-item {
+        --background: rgba(255, 255, 255, 0.9);
+        --border-radius: 12px;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(193, 241, 29, 0.2);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        
+        .date-input {
+          --color: var(--lako-dark);
+          --placeholder-color: var(--lako-gray);
+          font-size: 1rem;
+          
+          input {
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: var(--lako-dark);
+            font-size: 1rem;
+            
+            &:focus {
+              outline: 2px solid var(--lako-green);
+              outline-offset: 2px;
+            }
+          }
+        }
+      }
+    }
+    
+    .modal-actions {
+      margin-top: 2rem;
+      
+      ion-button {
+        --border-radius: 12px;
+        height: 48px;
+        font-weight: 600;
+        
+        ion-icon {
+          font-size: 1.1rem;
+        }
+      }
+    }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 // Loading state
 .loading-container {
   display: flex;

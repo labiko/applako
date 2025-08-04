@@ -93,7 +93,15 @@
             <div class="detail-item clickable" (click)="openGoogleMaps(reservation)">
               <ion-icon name="location" color="primary"></ion-icon>
               <ion-text color="primary">
-                <strong>Destination:</strong> {{ reservation.destination_nom || 'Non spécifiée' }}
+                <strong>Départ:</strong> {{ reservation.depart_nom || 'Non spécifiée' }}
+                <ion-icon name="open-outline" class="external-link-icon"></ion-icon>
+              </ion-text>
+            </div>
+
+            <div class="detail-item clickable" (click)="navigateToDestination(reservation)" *ngIf="reservation.position_arrivee">
+              <ion-icon name="flag" color="success"></ion-icon>
+              <ion-text color="success">
+                <strong>Destination:</strong> {{ reservation.destination_nom || 'Destination finale' }}
                 <ion-icon name="open-outline" class="external-link-icon"></ion-icon>
               </ion-text>
             </div>

@@ -4,6 +4,7 @@ export interface Reservation {
   vehicle_type: string;
   position_depart: string;  // WKB format coordinates
   position_arrivee: string; // WKB format coordinates
+  depart_nom?: string; // Nom textuel du lieu de départ
   destination_nom: string;
   distance_km: number;
   prix_total: number;

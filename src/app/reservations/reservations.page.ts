@@ -24,7 +24,7 @@ import {
   LoadingController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { location, time, person, call, checkmark, close, car, resize, card, carSportOutline, openOutline, timeOutline, checkmarkCircle, closeCircle } from 'ionicons/icons';
+import { location, time, person, call, checkmark, close, car, resize, card, carSportOutline, openOutline, timeOutline, checkmarkCircle, closeCircle, flag } from 'ionicons/icons';
 import { SupabaseService } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
 import { Reservation } from '../models/reservation.model';
@@ -69,7 +69,7 @@ export class ReservationsPage implements OnInit {
     private toastController: ToastController,
     private loadingController: LoadingController
   ) {
-    addIcons({ location, time, person, call, checkmark, close, car, resize, card, carSportOutline, openOutline, timeOutline, checkmarkCircle, closeCircle });
+    addIcons({ location, time, person, call, checkmark, close, car, resize, card, carSportOutline, openOutline, timeOutline, checkmarkCircle, closeCircle, flag });
   }
 
   ngOnInit() {
@@ -354,26 +354,81 @@ export class ReservationsPage implements OnInit {
     return price.toLocaleString('fr-FR');
   }
 
-  // Ouvrir Google Maps avec la destination
+  // Ouvrir Google Maps avec navigation directe vers le point de récupération du client
   openGoogleMaps(reservation: Reservation) {
-    // Extraire les coordonnées de position_arrivee si disponible
-    let url = '';
+    let destination = '';
     
+    // Extraire la position de départ (où récupérer le client)
+    if (reservation.position_depart) {
+      const departCoords = this.extractCoordinates(reservation.position_depart);
+      if (departCoords) {
+        destination = `${departCoords.lat},${departCoords.lng}`;
+      } else {
+        // Fallback sur le nom de la position de départ
+        destination = encodeURIComponent(reservation.position_depart);
+      }
+    }
+    
+    // Si pas de position de départ, utiliser la destination finale
+    if (!destination && reservation.position_arrivee) {
+      const arriveeCoords = this.extractCoordinates(reservation.position_arrivee);
+      if (arriveeCoords) {
+        destination = `${arriveeCoords.lat},${arriveeCoords.lng}`;
+      }
+    }
+    
+    // Fallback ultime sur le nom de destination
+    if (!destination) {
+      destination = encodeURIComponent(reservation.destination_nom);
+    }
+    
+    // Navigation directe depuis la position actuelle vers le point de pickup
+    // Google Maps utilisera automatiquement la position GPS actuelle comme point de départ
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+    
+    console.log('🗺️ Opening navigation from current location to pickup client:', { 
+      destination, 
+      url,
+      reservationId: reservation.id 
+    });
+    
+    // Ouvrir dans l'app Google Maps ou navigateur
+    window.open(url, '_system');
+  }
+
+  // Naviguer vers la destination finale (où déposer le client)
+  navigateToDestination(reservation: Reservation) {
+    let finalDestination = '';
+    
+    // Extraire la destination finale (où déposer le client)
     if (reservation.position_arrivee) {
-      const coords = this.extractCoordinates(reservation.position_arrivee);
-      if (coords) {
-        url = `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`;
+      const arriveeCoords = this.extractCoordinates(reservation.position_arrivee);
+      if (arriveeCoords) {
+        finalDestination = `${arriveeCoords.lat},${arriveeCoords.lng}`;
       }
     }
     
     // Fallback sur le nom de destination
-    if (!url) {
-      const destination = encodeURIComponent(reservation.destination_nom);
-      url = `https://www.google.com/maps/search/?api=1&query=${destination}`;
+    if (!finalDestination) {
+      finalDestination = encodeURIComponent(reservation.destination_nom);
     }
     
-    // Ouvrir dans un nouvel onglet/app
-    window.open(url, '_blank');
+    if (!finalDestination) {
+      console.warn('No final destination available for reservation:', reservation.id);
+      return;
+    }
+    
+    // Navigation directe depuis la position actuelle vers la destination finale
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${finalDestination}&travelmode=driving`;
+    
+    console.log('🗺️ Opening navigation from current location to final destination:', { 
+      finalDestination, 
+      url,
+      reservationId: reservation.id 
+    });
+    
+    // Ouvrir dans l'app Google Maps ou navigateur
+    window.open(url, '_system');
   }
 
   // Calculer la distance réelle entre conducteur et position de départ de la réservation

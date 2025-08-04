@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
   IonContent, 
@@ -29,7 +29,11 @@ import {
   IonAccordion,
   IonAccordionGroup,
   IonAvatar,
-  IonText
+  IonText,
+  IonDatetime,
+  IonButtons,
+  IonSelect,
+  IonSelectOption
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
@@ -48,7 +52,12 @@ import {
   map,
   star,
   calendar,
-  call
+  call,
+  calendarOutline,
+  todayOutline,
+  filterOutline,
+  close,
+  checkmark
 } from 'ionicons/icons';
 import { EntrepriseService } from '../../services/entreprise.service';
 
@@ -68,6 +77,7 @@ interface ConducteurGroup {
   imports: [
     CommonModule,
     FormsModule,
+    DatePipe,
     IonContent, 
     IonHeader, 
     IonTitle, 
@@ -95,7 +105,11 @@ interface ConducteurGroup {
     IonAccordion,
     IonAccordionGroup,
     IonAvatar,
-    IonText
+    IonText,
+    IonDatetime,
+    IonButtons,
+    IonSelect,
+    IonSelectOption
   ]
 })
 
@@ -106,6 +120,12 @@ export class EntrepriseReservationsPage implements OnInit {
   isLoading = true;
   selectedFilter = 'all';
   searchTerm = '';
+  
+  // Filtres de date
+  dateFilter = 'all'; // 'all', 'today', 'custom'
+  startDate: string = '';
+  endDate: string = '';
+  isDatePickerOpen = false;
   
   // Modal de validation
   isValidationModalOpen = false;
@@ -134,7 +154,12 @@ export class EntrepriseReservationsPage implements OnInit {
       map,
       star,
       calendar,
-      call
+      call,
+      calendarOutline,
+      todayOutline,
+      filterOutline,
+      close,
+      checkmark
     });
   }
 
@@ -172,6 +197,136 @@ export class EntrepriseReservationsPage implements OnInit {
     this.groupByConducteur();
   }
 
+  // Gestion des filtres de date
+  onDateFilterChange(event: any) {
+    this.dateFilter = event.detail.value;
+    
+    if (this.dateFilter === 'today') {
+      // Définir automatiquement la date d'aujourd'hui
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      this.startDate = todayStr;
+      this.endDate = todayStr;
+    } else if (this.dateFilter === 'all') {
+      // Réinitialiser les dates
+      this.startDate = '';
+      this.endDate = '';
+    }
+    
+    this.groupByConducteur();
+  }
+
+  onDateRangeChange() {
+    // Appelé quand les dates personnalisées changent
+    console.log('📅 Date range changed:', { startDate: this.startDate, endDate: this.endDate });
+    
+    if (this.startDate && this.endDate) {
+      // Valider que la date de début n'est pas après la date de fin
+      if (new Date(this.startDate) > new Date(this.endDate)) {
+        this.endDate = this.startDate;
+      }
+      
+      this.dateFilter = 'custom';
+      this.groupByConducteur();
+    }
+  }
+
+  applyDateFilter(reservations: any[]): any[] {
+    console.log('🔍 Applying date filter:', { 
+      dateFilter: this.dateFilter, 
+      startDate: this.startDate, 
+      endDate: this.endDate,
+      totalReservations: reservations.length 
+    });
+
+    if (this.dateFilter === 'all') {
+      return reservations;
+    }
+
+    if (this.dateFilter === 'today') {
+      const today = new Date();
+      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+      
+      console.log('📅 Today filter:', { todayStart, todayEnd });
+      
+      const filtered = reservations.filter(reservation => {
+        const createdAt = new Date(reservation.created_at);
+        const isInRange = createdAt >= todayStart && createdAt <= todayEnd;
+        if (isInRange) {
+          console.log('✅ Reservation matches today:', { 
+            id: reservation.id, 
+            created_at: reservation.created_at, 
+            createdAt 
+          });
+        }
+        return isInRange;
+      });
+      
+      console.log(`📊 Today filter result: ${filtered.length}/${reservations.length} reservations`);
+      return filtered;
+    }
+
+    if (this.dateFilter === 'custom' && this.startDate && this.endDate) {
+      const start = new Date(this.startDate);
+      const end = new Date(this.endDate);
+      end.setHours(23, 59, 59); // Inclure toute la journée de fin
+      
+      console.log('📅 Custom range filter:', { start, end });
+      
+      const filtered = reservations.filter(reservation => {
+        const createdAt = new Date(reservation.created_at);
+        const isInRange = createdAt >= start && createdAt <= end;
+        if (isInRange) {
+          console.log('✅ Reservation matches custom range:', { 
+            id: reservation.id, 
+            created_at: reservation.created_at, 
+            createdAt 
+          });
+        }
+        return isInRange;
+      });
+      
+      console.log(`📊 Custom filter result: ${filtered.length}/${reservations.length} reservations`);
+      return filtered;
+    }
+
+    return reservations;
+  }
+
+  openDatePicker() {
+    this.isDatePickerOpen = true;
+  }
+
+  closeDatePicker() {
+    this.isDatePickerOpen = false;
+  }
+
+  // Méthodes utilitaires pour l'affichage des dates
+  formatDateForDisplay(dateString: string): string {
+    if (!dateString) return 'Sélectionner';
+    
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit', 
+        year: 'numeric'
+      });
+    } catch (error) {
+      return 'Sélectionner';
+    }
+  }
+
+  getTodayFormatted(): string {
+    const today = new Date();
+    return today.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  }
+
   groupByConducteur() {
     // Filtrer d'abord par statut
     let filteredReservations;
@@ -188,6 +343,9 @@ export class EntrepriseReservationsPage implements OnInit {
       // Autres filtres
       filteredReservations = this.reservations.filter(r => r.statut === this.selectedFilter);
     }
+
+    // Filtrer par date
+    filteredReservations = this.applyDateFilter(filteredReservations);
 
     // Puis par terme de recherche
     if (this.searchTerm) {
@@ -358,7 +516,7 @@ export class EntrepriseReservationsPage implements OnInit {
     return text.substring(0, maxLength) + '...';
   }
 
-  formatGPSToMapsLink(position: string): string {
+  formatGPSToMapsLink(position: string, useNavigation: boolean = true): string {
     if (!position) return '';
     
     // Vérifier si c'est un format POINT(lon lat)
@@ -366,17 +524,32 @@ export class EntrepriseReservationsPage implements OnInit {
     if (pointMatch) {
       const lon = pointMatch[1];
       const lat = pointMatch[2];
-      return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+      
+      if (useNavigation) {
+        // Navigation directe vers les coordonnées
+        return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=driving`;
+      } else {
+        // Simple recherche
+        return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+      }
     }
     
     // Si c'est déjà une adresse texte
     const encodedAddress = encodeURIComponent(position + ', Conakry, Guinée');
-    return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+    
+    if (useNavigation) {
+      // Navigation directe vers l'adresse
+      return `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}&travelmode=driving`;
+    } else {
+      // Simple recherche
+      return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+    }
   }
 
   openPositionInMaps(position: string) {
-    const mapsUrl = this.formatGPSToMapsLink(position);
-    window.open(mapsUrl, '_blank');
+    const mapsUrl = this.formatGPSToMapsLink(position, true); // true pour navigation directe
+    console.log('🗺️ Opening navigation from current location to:', { position, url: mapsUrl });
+    window.open(mapsUrl, '_system');
   }
 
   formatDistance(distance: number): string {
