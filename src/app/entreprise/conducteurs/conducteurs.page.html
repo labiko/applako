@@ -118,6 +118,10 @@
                 <ion-icon name="call"></ion-icon>
                 {{ conducteur.telephone }}
               </p>
+              <p class="conducteur-creation" *ngIf="conducteur.date_inscription">
+                <ion-icon name="calendar"></ion-icon>
+                Créé le {{ formatDateCreation(conducteur.date_inscription) }}
+              </p>
               <ion-badge 
                 [color]="getStatusColor(conducteur.statut, conducteur.hors_ligne)"
                 class="status-badge">
@@ -522,12 +526,10 @@
       <div class="form-section">
         <h3>Informations véhicule</h3>
         <ion-item>
-          <ion-label position="stacked">Type de véhicule</ion-label>
-          <ion-select [(ngModel)]="createForm.vehicle_type" placeholder="Sélectionner">
-            <ion-select-option value="berline">Berline</ion-select-option>
-            <ion-select-option value="suv">SUV</ion-select-option>
-            <ion-select-option value="minibus">Minibus</ion-select-option>
-            <ion-select-option value="pickup">Pickup</ion-select-option>
+          <ion-label position="stacked">Type de véhicule *</ion-label>
+          <ion-select [(ngModel)]="createForm.vehicle_type" placeholder="Sélectionner le type">
+            <ion-select-option value="moto">Moto</ion-select-option>
+            <ion-select-option value="voiture">Voiture</ion-select-option>
           </ion-select>
         </ion-item>
         

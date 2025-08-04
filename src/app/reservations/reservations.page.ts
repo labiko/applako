@@ -76,17 +76,62 @@ export class ReservationsPage implements OnInit {
     // Initialiser le statut en ligne basé sur les données du conducteur
     const conducteur = this.authService.getCurrentConducteur();
     if (conducteur) {
-      this.isOnline = !conducteur.hors_ligne; // Inverser car hors_ligne = false signifie en ligne
+      console.log('🔍 Conducteur actuel:', { 
+        id: conducteur.id, 
+        hors_ligne: conducteur.hors_ligne, 
+        hors_ligne_type: typeof conducteur.hors_ligne,
+        isOnlineCalculated: !conducteur.hors_ligne 
+      });
+      
+      // Si hors_ligne n'est pas défini, considérer comme en ligne par défaut
+      const horsLigne = conducteur.hors_ligne ?? false;
+      this.isOnline = !horsLigne;
+      
+      console.log('📊 État initial calculé:', { horsLigne, isOnline: this.isOnline });
+    } else {
+      console.log('❌ Aucun conducteur connecté');
     }
   }
 
 
    async ionViewWillEnter() {
+     // Synchroniser l'état hors_ligne avec la base de données
+     await this.syncConducteurStatus();
+     
      // Mettre à jour la position du conducteur
     // await this.updateConducteurPositionOnce();
      
      // Charger les réservations
      this.loadReservations();
+  }
+
+  // Synchroniser l'état du conducteur avec la base de données
+  async syncConducteurStatus() {
+    const conducteurId = this.authService.getCurrentConducteurId();
+    if (!conducteurId) return;
+
+    try {
+      const status = await this.supabaseService.getConducteurStatus(conducteurId);
+      if (status) {
+        console.log('🔄 Synchronisation statut depuis la base:', status);
+        this.isOnline = !status.hors_ligne;
+        
+        // Mettre à jour les données locales
+        const conducteur = this.authService.getCurrentConducteur();
+        if (conducteur) {
+          conducteur.hors_ligne = status.hors_ligne;
+          conducteur.derniere_activite = status.derniere_activite;
+          (this.authService as any).currentConducteurSubject.next(conducteur);
+        }
+        
+        console.log('📊 État synchronisé:', { 
+          hors_ligne: status.hors_ligne, 
+          isOnline: this.isOnline 
+        });
+      }
+    } catch (error) {
+      console.error('Erreur lors de la synchronisation du statut:', error);
+    }
   }
 
   // Mettre à jour la position une seule fois avec optimisation
@@ -603,6 +648,12 @@ export class ReservationsPage implements OnInit {
     const isOnline = event.detail.checked;
     const conducteurId = this.authService.getCurrentConducteurId();
     
+    console.log('🔄 Toggle status:', { 
+      isOnline, 
+      willSetHorsLigne: !isOnline,
+      currentIsOnline: this.isOnline
+    });
+    
     if (!conducteurId) {
       this.presentToast('Erreur: Conducteur non connecté', 'danger');
       return;
@@ -626,6 +677,10 @@ export class ReservationsPage implements OnInit {
         // Mettre à jour les données locales du conducteur
         const conducteur = this.authService.getCurrentConducteur();
         if (conducteur) {
+          console.log('📝 Mise à jour données locales:', { 
+            avant: conducteur.hors_ligne, 
+            après: !isOnline 
+          });
           conducteur.hors_ligne = !isOnline;
           conducteur.derniere_activite = new Date().toISOString();
           (this.authService as any).currentConducteurSubject.next(conducteur);
@@ -656,4 +711,5 @@ export class ReservationsPage implements OnInit {
       await loading.dismiss();
     }
   }
+
 }

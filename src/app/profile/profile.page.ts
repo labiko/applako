@@ -20,7 +20,7 @@ import {
   IonListHeader
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { person, call, mail, car, star, settings, logOut, personCircleOutline } from 'ionicons/icons';
+import { person, call, mail, car, star, settings, logOut, personCircleOutline, business, colorPalette, idCard, speedometer } from 'ionicons/icons';
 import { AuthService } from '../services/auth.service';
 import { SupabaseService } from '../services/supabase.service';
 
@@ -51,7 +51,7 @@ import { SupabaseService } from '../services/supabase.service';
 })
 export class ProfilePage implements OnInit {
 
-  driver = {
+  driver: any = {
     name: 'Jean Dupont',
     phone: '+33 6 12 34 56 78',
     email: 'jean.dupont@email.com',
@@ -66,7 +66,7 @@ export class ProfilePage implements OnInit {
     private supabaseService: SupabaseService,
     private router: Router
   ) {
-    addIcons({ person, call, mail, car, star, settings, logOut, personCircleOutline });
+    addIcons({ person, call, mail, car, star, settings, logOut, personCircleOutline, business, colorPalette, idCard, speedometer });
   }
 
   ngOnInit() {
@@ -90,8 +90,12 @@ export class ProfilePage implements OnInit {
         name: `${conducteur.prenom || ''} ${conducteur.nom || ''}`.trim() || 'Conducteur',
         phone: conducteur.telephone || '',
         email: conducteur.email || '',
-        vehicle: conducteur.vehicule_type || 'Non spécifié',
-        rating: 4.8, // TODO: Calculer la vraie note moyenne si disponible
+        vehicle_type: conducteur.vehicle_type || '',
+        vehicle_marque: conducteur.vehicle_marque || '',
+        vehicle_modele: conducteur.vehicle_modele || '',
+        vehicle_couleur: conducteur.vehicle_couleur || '',
+        vehicle_plaque: conducteur.vehicle_plaque || '',
+        rating: conducteur.note_moyenne || 5.0,
         totalRides: totalRides,
         memberSince: memberSince
       };
@@ -101,6 +105,14 @@ export class ProfilePage implements OnInit {
   onSettings() {
     // TODO: Implement settings navigation
     console.log('Navigate to settings');
+  }
+
+  getVehicleTypeLabel(vehicleType: string): string {
+    switch (vehicleType) {
+      case 'moto': return 'Moto';
+      case 'voiture': return 'Voiture';
+      default: return vehicleType || 'Non spécifié';
+    }
   }
 
   onLogout() {

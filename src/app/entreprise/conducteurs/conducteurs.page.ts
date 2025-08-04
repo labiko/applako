@@ -60,7 +60,8 @@ import {
   chatbubbleEllipses,
   save,
   addCircle,
-  personAdd
+  personAdd,
+  calendar
 } from 'ionicons/icons';
 import { EntrepriseService, ConducteurStats } from '../../services/entreprise.service';
 
@@ -152,7 +153,8 @@ export class ConducteursPage implements OnInit {
       chatbubbleEllipses,
       save,
       addCircle,
-      personAdd
+      personAdd,
+      calendar
     });
   }
 
@@ -279,6 +281,17 @@ export class ConducteursPage implements OnInit {
     }).format(amount);
   }
 
+  formatDateCreation(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
   getPerformanceColor(percentage: number): string {
     if (percentage >= 90) return 'success';
     if (percentage >= 70) return 'warning';
@@ -377,7 +390,7 @@ export class ConducteursPage implements OnInit {
       nom: '',
       prenom: '',
       telephone: '',
-      vehicle_type: 'berline',
+      vehicle_type: 'voiture', // Valeur par défaut conforme à la DB
       vehicle_marque: '',
       vehicle_modele: '',
       vehicle_plaque: ''
@@ -392,8 +405,8 @@ export class ConducteursPage implements OnInit {
 
   async createConducteur() {
     // Validation basique
-    if (!this.createForm.nom || !this.createForm.prenom || !this.createForm.telephone) {
-      console.error('Veuillez remplir tous les champs obligatoires');
+    if (!this.createForm.nom || !this.createForm.prenom || !this.createForm.telephone || !this.createForm.vehicle_type) {
+      console.error('Veuillez remplir tous les champs obligatoires (nom, prénom, téléphone, type de véhicule)');
       return;
     }
 

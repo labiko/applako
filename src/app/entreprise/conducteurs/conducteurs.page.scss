@@ -296,7 +296,8 @@
             flex-direction: column;
             gap: 0.5rem;
             
-            .conducteur-phone {
+            .conducteur-phone,
+            .conducteur-creation {
               display: flex;
               align-items: center;
               gap: 0.5rem;
@@ -307,6 +308,15 @@
               ion-icon {
                 font-size: 0.9rem;
                 color: var(--lako-green);
+              }
+            }
+            
+            .conducteur-creation {
+              font-size: 0.8rem;
+              margin-top: 0.25rem;
+              
+              ion-icon {
+                color: var(--ion-color-medium);
               }
             }
             

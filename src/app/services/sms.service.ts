@@ -80,6 +80,27 @@ export class SMSService {
     return true;
   }
   
+  async envoyerMotDePasseConducteur(telephone: string, motDePasse: string, nomConducteur: string): Promise<boolean> {
+    const message = `Bienvenue ${nomConducteur}!\nVotre compte conducteur LokoTaxi a été créé.\nMot de passe: ${motDePasse}\nTéléchargez l'app conducteur.\nLokoTaxi`;
+    
+    // Simulation visuelle du SMS mot de passe
+    console.log('╔══════════════════════════════════════════════╗');
+    console.log('║ 📱 SMS MOT DE PASSE ENVOYÉ                   ║');
+    console.log('╠══════════════════════════════════════════════╣');
+    console.log(`║ Destinataire: ${telephone.padEnd(31)} ║`);
+    console.log('╠══════════════════════════════════════════════╣');
+    console.log('║ Message:                                      ║');
+    console.log(`║ Bienvenue ${nomConducteur.padEnd(33)} ║`);
+    console.log('║ Votre compte conducteur LokoTaxi a été créé. ║');
+    console.log(`║ Mot de passe: ${motDePasse.padEnd(33)} ║`);
+    console.log('║ Téléchargez l\'app conducteur.                ║');
+    console.log('║ LokoTaxi                                      ║');
+    console.log('╚══════════════════════════════════════════════╝');
+    
+    await this.logSMS(telephone, message, 'creation_conducteur');
+    return Math.random() > 0.02; // 98% succès
+  }
+
   async envoyerSMS(telephone: string, message: string, type: string, referenceId?: string): Promise<boolean> {
     console.log(`📱 SMS GENERIC: ${telephone} - ${message}`);
     await this.logSMS(telephone, message, type, referenceId);

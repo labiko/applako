@@ -8,7 +8,13 @@ export interface Conducteur {
   nom?: string;
   prenom?: string;
   email?: string;
-  vehicule_type?: string;
+  vehicule_type?: string; // Nom legacy pour compatibilité
+  vehicle_type?: string;
+  vehicle_marque?: string;
+  vehicle_modele?: string;
+  vehicle_couleur?: string;
+  vehicle_plaque?: string;
+  note_moyenne?: number;
   statut?: string;
   position_actuelle?: string; // Position GPS du conducteur
   date_update_position?: string; // Date de dernière mise à jour position

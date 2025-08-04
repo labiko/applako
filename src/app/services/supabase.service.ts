@@ -312,23 +312,47 @@ export class SupabaseService {
   // Mettre à jour le statut en ligne/hors ligne du conducteur
   async updateConducteurStatus(conducteurId: string, hors_ligne: boolean): Promise<boolean> {
     try {
-      const { error } = await this.supabase
+      const { data, error } = await this.supabase
         .from('conducteurs')
         .update({ 
           hors_ligne: hors_ligne,
           derniere_activite: new Date().toISOString()
         })
-        .eq('id', conducteurId);
+        .eq('id', conducteurId)
+        .select();
 
       if (error) {
         console.error('Error updating conductor status:', error);
         return false;
       }
 
+      console.log('Conductor status updated:', { conducteurId, hors_ligne, updated: data?.length });
       return true;
     } catch (error) {
       console.error('Error in updateConducteurStatus:', error);
       return false;
+    }
+  }
+
+
+  // Récupérer l'état actuel du conducteur depuis la base
+  async getConducteurStatus(conducteurId: string): Promise<{hors_ligne: boolean, derniere_activite: string} | null> {
+    try {
+      const { data, error } = await this.supabase
+        .from('conducteurs')
+        .select('hors_ligne, derniere_activite')
+        .eq('id', conducteurId)
+        .single();
+
+      if (error) {
+        console.error('Error getting conductor status:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error in getConducteurStatus:', error);
+      return null;
     }
   }
 

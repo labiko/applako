@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { EntrepriseAuthService } from './entreprise-auth.service';
+import { SMSService } from './sms.service';
 
 export interface DashboardMetrics {
   courses_total: number;
@@ -50,7 +51,8 @@ export class EntrepriseService {
 
   constructor(
     private supabaseService: SupabaseService,
-    private entrepriseAuthService: EntrepriseAuthService
+    private entrepriseAuthService: EntrepriseAuthService,
+    private smsService: SMSService
   ) {}
 
   // Obtenir les métriques du dashboard
@@ -253,25 +255,50 @@ export class EntrepriseService {
         return false;
       }
 
-      const { error } = await this.supabaseService.client
+      // Générer un mot de passe à 6 chiffres
+      const motDePasse = this.genererMotDePasse6Chiffres();
+
+      // Préparons les données pour le conducteur
+      const newConducteur = {
+        nom: conducteurData.nom,
+        prenom: conducteurData.prenom,
+        telephone: conducteurData.telephone,
+        vehicle_type: conducteurData.vehicle_type || 'voiture',
+        vehicle_marque: conducteurData.vehicle_marque || '',
+        vehicle_modele: conducteurData.vehicle_modele || '',
+        vehicle_plaque: conducteurData.vehicle_plaque || '',
+        entreprise_id: entrepriseId,
+        statut: 'disponible', // Valeur conforme à la contrainte DB
+        hors_ligne: false,
+        password: motDePasse
+      };
+
+      console.log('Création conducteur avec données:', newConducteur);
+
+      const { data, error } = await this.supabaseService.client
         .from('conducteurs')
-        .insert({
-          nom: conducteurData.nom,
-          prenom: conducteurData.prenom,
-          telephone: conducteurData.telephone,
-          vehicle_type: conducteurData.vehicle_type || 'berline',
-          vehicle_marque: conducteurData.vehicle_marque,
-          vehicle_modele: conducteurData.vehicle_modele,
-          vehicle_plaque: conducteurData.vehicle_plaque,
-          entreprise_id: entrepriseId,
-          statut: 'actif',
-          hors_ligne: false
-        });
+        .insert(newConducteur)
+        .select();
 
       if (error) {
-        console.error('Erreur création conducteur:', error);
+        console.error('Erreur création conducteur - Détails:', {
+          error,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         return false;
       }
+
+      console.log('Conducteur créé avec succès:', data);
+
+      // Envoyer le mot de passe par SMS
+      await this.smsService.envoyerMotDePasseConducteur(
+        conducteurData.telephone,
+        motDePasse,
+        `${conducteurData.prenom} ${conducteurData.nom}`
+      );
 
       return true;
     } catch (error) {
@@ -416,5 +443,10 @@ export class EntrepriseService {
       default:
         return '';
     }
+  }
+
+  // Générer un mot de passe à 6 chiffres
+  private genererMotDePasse6Chiffres(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
   }
 }
