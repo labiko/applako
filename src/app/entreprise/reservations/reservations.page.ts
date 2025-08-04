@@ -519,11 +519,15 @@ export class EntrepriseReservationsPage implements OnInit {
   formatGPSToMapsLink(position: string, useNavigation: boolean = true): string {
     if (!position) return '';
     
+    console.log('🗺️ Formatting GPS link for position:', position);
+    
     // Vérifier si c'est un format POINT(lon lat)
     const pointMatch = position.match(/POINT\(([\-\d\.]+)\s+([\-\d\.]+)\)/);
     if (pointMatch) {
       const lon = pointMatch[1];
       const lat = pointMatch[2];
+      
+      console.log('📍 POINT format detected:', { lat, lon });
       
       if (useNavigation) {
         // Navigation directe vers les coordonnées
@@ -534,7 +538,29 @@ export class EntrepriseReservationsPage implements OnInit {
       }
     }
     
+    // Vérifier si c'est un format WKB (commence par 0101000020E6100000)
+    if (position.length >= 50 && 
+        position.match(/^[0-9A-F]+$/i) && 
+        position.toUpperCase().startsWith('0101000020E6100000')) {
+      
+      console.log('📍 WKB format detected, decoding...');
+      const coords = this.decodeWKB(position);
+      
+      if (coords) {
+        console.log('📍 WKB decoded coordinates:', coords);
+        
+        if (useNavigation) {
+          // Navigation directe vers les coordonnées
+          return `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}&travelmode=driving`;
+        } else {
+          // Simple recherche
+          return `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`;
+        }
+      }
+    }
+    
     // Si c'est déjà une adresse texte
+    console.log('📍 Text format detected, using as address');
     const encodedAddress = encodeURIComponent(position + ', Conakry, Guinée');
     
     if (useNavigation) {
@@ -560,5 +586,76 @@ export class EntrepriseReservationsPage implements OnInit {
   getRatingStars(note: number): number[] {
     if (!note) return [];
     return Array(Math.floor(note)).fill(0);
+  }
+
+  // Décoder le format WKB (Well-Known Binary) de PostGIS
+  decodeWKB(wkbHex: string): {lat: number, lng: number} | null {
+    try {
+      console.log('🔍 Decoding WKB:', wkbHex);
+      
+      if (wkbHex.length >= 50) { // Au minimum 25 bytes = 50 caractères hex
+        // Vérifier que c'est bien un POINT avec SRID 4326
+        const geometryType = wkbHex.substring(2, 10); // 01000020
+        const srid = wkbHex.substring(10, 18); // E6100000
+        
+        console.log('Geometry type:', geometryType);
+        console.log('SRID:', srid);
+        
+        if (geometryType.toUpperCase() === '01000020' && srid.toUpperCase() === 'E6100000') {
+          // Extraire les coordonnées (little-endian)
+          const xHex = wkbHex.substring(18, 34); // 8 bytes pour longitude
+          const yHex = wkbHex.substring(34, 50); // 8 bytes pour latitude
+          
+          console.log('X hex:', xHex);
+          console.log('Y hex:', yHex);
+          
+          // Convertir de little-endian hex vers float64
+          const lng = this.hexToFloat64LittleEndian(xHex);
+          const lat = this.hexToFloat64LittleEndian(yHex);
+          
+          console.log('Decoded coordinates:', { lat, lng });
+          
+          // Vérifier que les coordonnées sont valides
+          if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+            return { lat, lng };
+          } else {
+            console.warn('Invalid coordinates range:', { lat, lng });
+          }
+        } else {
+          console.warn('Not a POINT geometry or wrong SRID');
+        }
+      }
+      
+      console.warn('Format WKB non supporté:', wkbHex);
+      return null;
+    } catch (error) {
+      console.error('Error decoding WKB:', error);
+      return null;
+    }
+  }
+
+  // Convertir hex little-endian vers float64
+  hexToFloat64LittleEndian(hexStr: string): number {
+    try {
+      console.log('Converting hex to float64:', hexStr);
+      
+      // Convertir hex vers ArrayBuffer directement (little-endian)
+      const buffer = new ArrayBuffer(8);
+      const view = new DataView(buffer);
+      
+      // Lire les bytes dans l'ordre little-endian
+      for (let i = 0; i < 8; i++) {
+        const byte = parseInt(hexStr.substr(i * 2, 2), 16);
+        view.setUint8(i, byte);
+      }
+      
+      // Lire comme float64 little-endian
+      const result = view.getFloat64(0, true); // true = little-endian
+      console.log('Converted result:', result);
+      return result;
+    } catch (error) {
+      console.error('Error converting hex to float64:', error);
+      return 0;
+    }
   }
 }

@@ -184,12 +184,24 @@
             </div>
 
             <!-- Position de départ cliquable -->
-            <div class="position-depart-section" (click)="openInMaps(reservation.position_depart, $event)">
+            <div class="position-depart-section" (click)="openPositionInMaps(reservation.position_depart)">
               <div class="location-item departure">
                 <div class="location-indicator start"></div>
                 <div class="location-details">
-                  <ion-label class="location-label">Position de départ</ion-label>
-                  <p class="address-text">{{ reservation.position_depart || 'Position non spécifiée' }}</p>
+                  <ion-label class="location-label">Départ</ion-label>
+                  <p class="address-text">{{ reservation.depart_nom || 'Position non spécifiée' }}</p>
+                </div>
+                <ion-icon name="map" class="map-icon"></ion-icon>
+              </div>
+            </div>
+
+            <!-- Position d'arrivée cliquable -->
+            <div class="position-arrivee-section" (click)="openPositionInMaps(reservation.position_arrivee)" *ngIf="reservation.position_arrivee">
+              <div class="location-item arrival">
+                <div class="location-indicator end"></div>
+                <div class="location-details">
+                  <ion-label class="location-label">Destination</ion-label>
+                  <p class="address-text">{{ reservation.destination_nom || 'Destination non spécifiée' }}</p>
                 </div>
                 <ion-icon name="map" class="map-icon"></ion-icon>
               </div>

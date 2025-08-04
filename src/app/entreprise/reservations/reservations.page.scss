@@ -909,8 +909,9 @@
   }
 }
 
-// Styles additionnels pour la section position de départ
-.position-depart-section {
+// Styles additionnels pour les sections de position
+.position-depart-section,
+.position-arrivee-section {
   margin: 1rem 0;
   cursor: pointer;
   
@@ -920,8 +921,6 @@
     gap: 0.75rem;
     padding: 0.75rem;
     border-radius: 12px;
-    background: rgba(33, 150, 243, 0.1);
-    border: 1px solid rgba(33, 150, 243, 0.2);
     transition: all 0.3s ease;
     
     &:hover {
@@ -934,6 +933,16 @@
       }
     }
     
+    &.departure {
+      background: rgba(33, 150, 243, 0.1);
+      border: 1px solid rgba(33, 150, 243, 0.2);
+    }
+    
+    &.arrival {
+      background: rgba(76, 175, 80, 0.1);
+      border: 1px solid rgba(76, 175, 80, 0.2);
+    }
+    
     .location-indicator {
       width: 12px;
       height: 12px;
@@ -943,6 +952,11 @@
       &.start {
         background: #2196F3;
         box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.3);
+      }
+      
+      &.end {
+        background: #4CAF50;
+        box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
       }
     }
     
