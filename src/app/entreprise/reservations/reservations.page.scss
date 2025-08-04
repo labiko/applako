@@ -1,0 +1,895 @@
+// Modern reservations page with accordions and maps integration
+.modern-content {
+  --background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+// Modern toolbar
+.modern-toolbar {
+  --background: var(--lako-green);
+  --color: var(--lako-dark);
+  
+  .modern-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    
+    .title-icon {
+      font-size: 1.2rem;
+    }
+  }
+}
+
+// Header section with gradient
+.header-section {
+  background: linear-gradient(135deg, var(--lako-green), rgba(193, 241, 29, 0.8));
+  padding: 2rem 1rem 1.5rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0 0 24px 24px;
+  box-shadow: 0 4px 20px rgba(193, 241, 29, 0.3);
+  
+  .header-content {
+    text-align: center;
+    
+    .main-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--lako-dark);
+      margin: 0 0 0.5rem 0;
+      letter-spacing: -0.01em;
+    }
+    
+    .subtitle {
+      font-size: 1rem;
+      color: rgba(21, 21, 21, 0.8);
+      margin: 0;
+      font-weight: 400;
+    }
+  }
+}
+
+// Search section
+.search-section {
+  padding: 0 1rem 1rem 1rem;
+  
+  .modern-searchbar {
+    --background: rgba(255, 255, 255, 0.9);
+    --border-radius: 16px;
+    --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --placeholder-color: var(--lako-gray);
+    --color: var(--lako-dark);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+}
+
+// Filters section
+.filters-section {
+  padding: 0 1rem 1rem 1rem;
+  
+  .modern-segment {
+    --background: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    padding: 4px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    
+    ion-segment-button {
+      --background-checked: var(--lako-green);
+      --color-checked: var(--lako-dark);
+      --border-radius: 12px;
+      margin: 2px;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// Loading state
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  
+  .loading-spinner {
+    --color: var(--lako-green);
+    width: 40px;
+    height: 40px;
+    margin-bottom: 1rem;
+  }
+  
+  .loading-text {
+    color: var(--lako-gray);
+    font-size: 1rem;
+    font-weight: 500;
+  }
+}
+
+// Conducteurs container
+.conducteurs-container {
+  padding: 0 1rem 2rem 1rem;
+  
+  .modern-accordion-group {
+    background: transparent;
+    
+    .conducteur-accordion {
+      margin-bottom: 1rem;
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      
+      &.expanded {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+      }
+      
+      .conducteur-header {
+        --background: transparent;
+        --padding: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-radius: 16px 16px 0 0;
+        
+        &:hover {
+          --background: rgba(193, 241, 29, 0.1);
+        }
+        
+        .conducteur-avatar {
+          width: 50px;
+          height: 50px;
+          
+          .avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--lako-green), rgba(193, 241, 29, 0.8));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            ion-icon {
+              color: var(--lako-dark);
+              font-size: 1.5rem;
+            }
+          }
+        }
+        
+        .conducteur-info {
+          .conducteur-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--lako-dark);
+            margin: 0 0 0.5rem 0;
+          }
+          
+          .conducteur-stats {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            
+            .stat-chip {
+              --background: rgba(193, 241, 29, 0.2);
+              --color: var(--lako-dark);
+              height: 28px;
+              font-size: 0.8rem;
+              border-radius: 14px;
+              
+              &.revenue {
+                --background: rgba(255, 193, 7, 0.2);
+              }
+              
+              ion-icon {
+                font-size: 0.9rem;
+                margin-right: 0.25rem;
+              }
+            }
+          }
+        }
+        
+        .expand-icon {
+          color: var(--lako-green);
+          font-size: 1.2rem;
+          transition: transform 0.3s ease;
+        }
+      }
+      
+      .reservations-content {
+        padding: 0;
+        background: rgba(248, 249, 250, 0.5);
+        
+        .reservation-card {
+          margin: 0;
+          padding: 1rem;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+          background: rgba(255, 255, 255, 0.7);
+          transition: all 0.3s ease;
+          
+          &:last-child {
+            border-bottom: none;
+            border-radius: 0 0 16px 16px;
+          }
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateX(4px);
+          }
+          
+          .reservation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            
+            .reservation-info {
+              .client-name {
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: var(--lako-dark);
+                margin: 0 0 0.25rem 0;
+              }
+              
+              .reservation-date {
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+                font-size: 0.9rem;
+                color: var(--lako-gray);
+                margin: 0;
+                
+                ion-icon {
+                  font-size: 0.9rem;
+                }
+              }
+            }
+            
+            .status-badge {
+              font-size: 0.8rem;
+              font-weight: 500;
+              padding: 0.25rem 0.75rem;
+              border-radius: 12px;
+            }
+          }
+          
+          .itinerary-section {
+            position: relative;
+            margin: 1rem 0;
+            
+            .location-item {
+              display: flex;
+              align-items: center;
+              gap: 0.75rem;
+              padding: 0.75rem;
+              border-radius: 12px;
+              transition: all 0.3s ease;
+              cursor: pointer;
+              
+              &:hover {
+                background: rgba(193, 241, 29, 0.1);
+                transform: translateX(4px);
+                
+                .map-icon {
+                  color: var(--lako-green);
+                  transform: scale(1.1);
+                }
+              }
+              
+              &.departure {
+                background: rgba(33, 150, 243, 0.1);
+                border: 1px solid rgba(33, 150, 243, 0.2);
+              }
+              
+              &.destination {
+                background: rgba(76, 175, 80, 0.1);
+                border: 1px solid rgba(76, 175, 80, 0.2);
+              }
+              
+              .location-indicator {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                flex-shrink: 0;
+                
+                &.start {
+                  background: #2196F3;
+                  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.3);
+                }
+                
+                &.end {
+                  background: #4CAF50;
+                  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+                }
+              }
+              
+              .location-details {
+                flex: 1;
+                
+                .location-label {
+                  font-size: 0.8rem;
+                  font-weight: 600;
+                  color: var(--lako-gray);
+                  margin-bottom: 0.25rem;
+                }
+                
+                .address-text {
+                  font-size: 0.9rem;
+                  color: var(--lako-dark);
+                  margin: 0;
+                  line-height: 1.3;
+                }
+              }
+              
+              .map-icon {
+                color: var(--lako-gray);
+                font-size: 1.2rem;
+                transition: all 0.3s ease;
+              }
+            }
+            
+            .route-line {
+              position: absolute;
+              left: 1.4rem;
+              top: 3rem;
+              bottom: 3rem;
+              width: 2px;
+              background: linear-gradient(to bottom, #2196F3, #4CAF50);
+              border-radius: 1px;
+            }
+          }
+          
+          .reservation-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            
+            .financial-info {
+              display: flex;
+              flex-direction: column;
+              gap: 0.5rem;
+              
+              .price-info,
+              .contact-info {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                font-size: 0.9rem;
+                
+                ion-icon {
+                  color: var(--lako-green);
+                  font-size: 1rem;
+                }
+                
+                .price {
+                  font-weight: 600;
+                  color: var(--lako-dark);
+                }
+                
+                .phone {
+                  color: var(--lako-gray);
+                }
+              }
+            }
+            
+            .validate-btn {
+              --border-radius: 12px;
+              height: 36px;
+              font-size: 0.9rem;
+              font-weight: 500;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Empty state
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  
+  .empty-icon {
+    font-size: 4rem;
+    color: var(--lako-gray);
+    opacity: 0.5;
+    margin-bottom: 1rem;
+  }
+  
+  .empty-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--lako-dark);
+    margin: 0 0 0.5rem 0;
+  }
+  
+  .empty-text {
+    font-size: 1rem;
+    color: var(--lako-gray);
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .header-section {
+    padding: 1.5rem 1rem 1rem 1rem;
+    
+    .header-content {
+      .main-title {
+        font-size: 1.5rem;
+      }
+      
+      .subtitle {
+        font-size: 0.9rem;
+      }
+    }
+  }
+  
+  .conducteurs-container {
+    padding: 0 0.5rem 2rem 0.5rem;
+    
+    .conducteur-accordion {
+      .conducteur-header {
+        --padding: 0.75rem;
+        
+        .conducteur-avatar {
+          width: 40px;
+          height: 40px;
+        }
+        
+        .conducteur-info {
+          .conducteur-name {
+            font-size: 1.1rem;
+          }
+          
+          .conducteur-stats {
+            .stat-chip {
+              font-size: 0.75rem;
+              height: 24px;
+            }
+          }
+        }
+      }
+      
+      .reservations-content {
+        .reservation-card {
+          padding: 0.75rem;
+          
+          .itinerary-section {
+            .location-item {
+              padding: 0.5rem;
+              
+              .location-details {
+                .address-text {
+                  font-size: 0.85rem;
+                }
+              }
+            }
+          }
+          
+          .reservation-footer {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+            
+            .validate-btn {
+              align-self: stretch;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .search-section,
+  .filters-section {
+    padding: 0 0.5rem 1rem 0.5rem;
+  }
+  
+  .filters-section {
+    .modern-segment {
+      ion-segment-button {
+        font-size: 0.8rem;
+      }
+    }
+  }
+}
+
+// Modal de détails styles
+.details-modal {
+  --border-radius: 24px 24px 0 0;
+  
+  .modal-toolbar {
+    --background: var(--lako-green);
+    --color: var(--lako-dark);
+    
+    ion-button {
+      --color: var(--lako-dark);
+    }
+  }
+  
+  .modal-content {
+    .modal-header {
+      background: linear-gradient(135deg, rgba(193, 241, 29, 0.1), rgba(193, 241, 29, 0.05));
+      padding: 1.5rem;
+      border-radius: 16px;
+      margin-bottom: 1.5rem;
+      
+      .modal-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--lako-dark);
+        margin: 0 0 0.75rem 0;
+      }
+      
+      .modal-status {
+        font-size: 0.9rem;
+        padding: 0.35rem 1rem;
+        border-radius: 20px;
+        font-weight: 500;
+      }
+    }
+    
+    .info-section {
+      margin-bottom: 1.5rem;
+      
+      .section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--lako-dark);
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid rgba(193, 241, 29, 0.3);
+        
+        ion-icon {
+          color: var(--lako-green);
+          font-size: 1.3rem;
+        }
+      }
+      
+      .info-content {
+        padding-left: 0.5rem;
+        
+        .info-item {
+          font-size: 0.95rem;
+          color: var(--lako-dark);
+          margin-bottom: 0.5rem;
+          line-height: 1.5;
+          
+          strong {
+            color: var(--lako-gray);
+            font-weight: 600;
+            margin-right: 0.5rem;
+          }
+        }
+        
+        .location-block {
+          margin-bottom: 1rem;
+          
+          .location-type {
+            font-size: 0.9rem;
+            color: var(--lako-gray);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+          }
+          
+          .location-with-map {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: rgba(193, 241, 29, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            
+            &:hover {
+              background: rgba(193, 241, 29, 0.2);
+              transform: translateX(4px);
+              
+              .map-link-icon {
+                color: var(--lako-green);
+                transform: scale(1.2);
+              }
+            }
+            
+            .location-text {
+              flex: 1;
+              font-size: 0.9rem;
+              color: var(--lako-dark);
+              margin: 0;
+              word-break: break-word;
+            }
+            
+            .map-link-icon {
+              color: var(--lako-gray);
+              font-size: 1.2rem;
+              transition: all 0.3s ease;
+              margin-left: 0.5rem;
+            }
+          }
+          
+          .location-info {
+            padding: 0.75rem;
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(76, 175, 80, 0.2);
+            
+            .location-text {
+              font-size: 0.95rem;
+              color: var(--lako-dark);
+              margin: 0;
+              font-weight: 500;
+            }
+          }
+        }
+        
+        .detail-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+          gap: 1rem;
+          
+          .detail-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(193, 241, 29, 0.2);
+            border-radius: 12px;
+            
+            .detail-card-icon {
+              color: var(--lako-green);
+              font-size: 1.5rem;
+            }
+            
+            .detail-card-content {
+              .detail-label {
+                font-size: 0.8rem;
+                color: var(--lako-gray);
+                margin: 0 0 0.25rem 0;
+              }
+              
+              .detail-value {
+                font-size: 1rem;
+                font-weight: 600;
+                color: var(--lako-dark);
+                margin: 0;
+              }
+            }
+          }
+        }
+        
+        .rating-section {
+          margin-bottom: 1rem;
+          
+          .stars {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+            
+            .star-filled {
+              color: #FFD700;
+              font-size: 1.2rem;
+            }
+            
+            .rating-value {
+              margin-left: 0.5rem;
+              color: var(--lako-gray);
+              font-size: 0.9rem;
+            }
+          }
+        }
+        
+        .comment-section {
+          .comment-box {
+            margin-top: 0.5rem;
+            padding: 1rem;
+            background: rgba(248, 249, 250, 0.8);
+            border-left: 3px solid var(--lako-green);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--lako-dark);
+            font-style: italic;
+          }
+        }
+      }
+    }
+    
+    .modal-actions {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      
+      .action-button {
+        --background: var(--lako-green);
+        --color: var(--lako-dark);
+        --border-radius: 12px;
+        font-weight: 600;
+        height: 48px;
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
+// Styles additionnels pour la section position de départ
+.position-depart-section {
+  margin: 1rem 0;
+  cursor: pointer;
+  
+  .location-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 12px;
+    background: rgba(33, 150, 243, 0.1);
+    border: 1px solid rgba(33, 150, 243, 0.2);
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background: rgba(193, 241, 29, 0.1);
+      transform: translateX(4px);
+      
+      .map-icon {
+        color: var(--lako-green);
+        transform: scale(1.1);
+      }
+    }
+    
+    .location-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      
+      &.start {
+        background: #2196F3;
+        box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.3);
+      }
+    }
+    
+    .location-details {
+      flex: 1;
+      
+      .location-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--lako-gray);
+        margin-bottom: 0.25rem;
+      }
+      
+      .address-text {
+        font-size: 0.9rem;
+        color: var(--lako-dark);
+        margin: 0;
+        line-height: 1.3;
+      }
+    }
+    
+    .map-icon {
+      color: var(--lako-gray);
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+    }
+  }
+}
+
+// Détails de réservation dans la carte
+.reservation-details {
+  margin-top: 1rem;
+  
+  .detail-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      
+      .detail-icon {
+        color: var(--lako-green);
+        font-size: 1rem;
+      }
+      
+      .detail-value {
+        color: var(--lako-dark);
+        
+        &.price-total {
+          font-weight: 600;
+        }
+        
+        &.comment-preview {
+          color: var(--lako-gray);
+          font-style: italic;
+        }
+      }
+    }
+  }
+}
+
+// Action de carte
+.card-action {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  
+  .details-btn {
+    --color: var(--lako-green);
+    font-size: 0.9rem;
+    font-weight: 500;
+    
+    ion-icon {
+      margin-right: 0.25rem;
+    }
+  }
+}
+
+// Amélioration du header de réservation
+.reservation-header {
+  margin-bottom: 1rem;
+  
+  .reservation-info {
+    flex: 1;
+    
+    .destination-name {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--lako-dark);
+      margin: 0 0 0.5rem 0;
+      
+      ion-icon {
+        color: var(--lako-green);
+        font-size: 1.2rem;
+      }
+    }
+    
+    .reservation-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      
+      .reservation-date {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.85rem;
+        color: var(--lako-gray);
+        
+        ion-icon {
+          font-size: 0.9rem;
+        }
+      }
+      
+      .status-badge {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 10px;
+        font-weight: 500;
+      }
+    }
+  }
+}

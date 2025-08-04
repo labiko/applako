@@ -1,0 +1,561 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>
+      <ion-icon name="wallet" slot="start"></ion-icon>
+      Versements
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Refresher -->
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Segments de navigation -->
+  <div class="segments-container">
+    <ion-segment [(ngModel)]="selectedSegment" (ionChange)="onSegmentChanged($event)" scrollable>
+      <ion-segment-button value="a-verser">
+        <ion-icon name="cash"></ion-icon>
+        <ion-label>À verser</ion-label>
+      </ion-segment-button>
+      
+      <ion-segment-button value="en-attente">
+        <ion-icon name="hourglass"></ion-icon>
+        <ion-label>En attente</ion-label>
+      </ion-segment-button>
+      
+      <ion-segment-button value="historique">
+        <ion-icon name="documentText"></ion-icon>
+        <ion-label>Historique</ion-label>
+      </ion-segment-button>
+      
+      <ion-segment-button value="file-attente">
+        <ion-icon name="people"></ion-icon>
+        <ion-label>File d'attente</ion-label>
+      </ion-segment-button>
+      
+      <ion-segment-button value="dashboard">
+        <ion-icon name="analytics"></ion-icon>
+        <ion-label>Dashboard</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Chargement des données...</p>
+  </div>
+
+  <!-- ONGLET 1: À VERSER -->
+  <div *ngIf="selectedSegment === 'a-verser' && !isLoading">
+    <div class="section-header">
+      <h2>Conducteurs avec montants à verser</h2>
+      <ion-badge color="primary">{{ conducteursVersements.length }}</ion-badge>
+    </div>
+
+    <!-- Vue Kanban/Cards -->
+    <div class="versements-kanban">
+      <div class="conducteur-versement-card" 
+           *ngFor="let conducteurVersement of conducteursVersements; trackBy: trackByConducteur"
+           [class.has-anomalies]="conducteurVersement.anomalies && conducteurVersement.anomalies.length > 0">
+        
+        <!-- Header du conducteur -->
+        <div class="card-header">
+          <div class="conducteur-info">
+            <ion-avatar>
+              <div class="avatar-placeholder">
+                <ion-icon name="people"></ion-icon>
+              </div>
+            </ion-avatar>
+            <div class="info-details">
+              <h3>{{ conducteurVersement.conducteur.prenom }} {{ conducteurVersement.conducteur.nom }}</h3>
+              <p>📱 {{ conducteurVersement.conducteur.telephone }}</p>
+            </div>
+          </div>
+          
+          <div class="montant-info">
+            <div class="montant-principal">{{ formatCurrency(conducteurVersement.montantTotal) }}</div>
+            <div class="courses-count">({{ conducteurVersement.nombreCourses }} courses)</div>
+          </div>
+        </div>
+
+        <!-- Indicateurs -->
+        <div class="card-indicators">
+          <ion-chip color="primary" *ngIf="conducteurVersement.priorite === 'vip'">
+            <ion-icon name="star"></ion-icon>
+            <ion-label>VIP</ion-label>
+          </ion-chip>
+          
+          <ion-chip 
+            *ngFor="let anomalie of conducteurVersement.anomalies" 
+            [color]="getAnomalieColor(anomalie.severity)">
+            <ion-icon name="warning"></ion-icon>
+            <ion-label>{{ anomalie.type }}</ion-label>
+          </ion-chip>
+        </div>
+
+        <!-- Détails des réservations (collapsible) -->
+        <div class="reservations-details">
+          <ion-button 
+            fill="clear" 
+            size="small" 
+            (click)="voirDetailsReservations(conducteurVersement)"
+            class="details-toggle">
+            <ion-icon name="eye" slot="start"></ion-icon>
+            VOIR {{ conducteurVersement.nombreCourses }} RÉSERVATIONS
+          </ion-button>
+        </div>
+
+        <!-- Actions -->
+        <div class="card-actions">
+          <ion-button 
+            expand="block" 
+            color="primary" 
+            (click)="traiterVersement(conducteurVersement)">
+            <ion-icon name="cash" slot="start"></ion-icon>
+            Effectuer le versement
+          </ion-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message si aucun versement -->
+    <div class="empty-state" *ngIf="conducteursVersements.length === 0">
+      <ion-icon name="checkmarkCircle" color="success"></ion-icon>
+      <h3>Aucun versement en attente</h3>
+      <p>Tous les conducteurs sont à jour avec leurs versements.</p>
+    </div>
+  </div>
+
+  <!-- ONGLET 2: EN ATTENTE DE VALIDATION -->
+  <div *ngIf="selectedSegment === 'en-attente' && !isLoading">
+    <div class="section-header">
+      <h2>Réservations en attente de validation</h2>
+      <ion-badge color="warning">{{ reservationsEnAttente.length }}</ion-badge>
+    </div>
+
+    <ion-list>
+      <ion-item *ngFor="let reservation of reservationsEnAttente">
+        <ion-avatar slot="start">
+          <div class="avatar-placeholder">
+            <ion-icon name="people"></ion-icon>
+          </div>
+        </ion-avatar>
+        
+        <ion-label>
+          <h3>{{ reservation.conducteurs?.prenom }} {{ reservation.conducteurs?.nom }}</h3>
+          <p>{{ reservation.destination_nom }}</p>
+          <p>{{ formatCurrency(reservation.prix_total) }} • {{ formatDate(reservation.created_at) }}</p>
+        </ion-label>
+        
+        <ion-badge color="warning" slot="end">En attente OTP</ion-badge>
+      </ion-item>
+    </ion-list>
+
+    <div class="empty-state" *ngIf="reservationsEnAttente.length === 0">
+      <ion-icon name="checkmarkCircle" color="success"></ion-icon>
+      <h3>Aucune réservation en attente</h3>
+      <p>Toutes les courses ont été validées.</p>
+    </div>
+  </div>
+
+  <!-- ONGLET 3: HISTORIQUE -->
+  <div *ngIf="selectedSegment === 'historique' && !isLoading">
+    <div class="section-header">
+      <h2>Historique des versements</h2>
+      <ion-badge color="success">{{ historiqueVersements.length }}</ion-badge>
+    </div>
+
+    <ion-list>
+      <ion-item *ngFor="let versement of historiqueVersements; trackBy: trackByVersement">
+        <ion-avatar slot="start">
+          <div class="avatar-placeholder">
+            <ion-icon name="people"></ion-icon>
+          </div>
+        </ion-avatar>
+        
+        <ion-label>
+          <h3>{{ versement.conducteur.prenom }} {{ versement.conducteur.nom }}</h3>
+          <p>{{ formatDate(versement.date_versement) }}</p>
+          <p>{{ formatCurrency(versement.montant) }}</p>
+          <p class="versement-id">ID: {{ versement.id }}</p>
+        </ion-label>
+        
+        <div slot="end" class="versement-badges">
+          <ion-badge [color]="getStatusColor(versement.statut)">
+            {{ getStatusText(versement.statut) }}
+          </ion-badge>
+          
+          <ion-button 
+            fill="clear" 
+            size="small" 
+            (click)="voirDetailsHistorique(versement)">
+            <ion-icon name="eye"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-item>
+    </ion-list>
+
+    <div class="empty-state" *ngIf="historiqueVersements.length === 0">
+      <ion-icon name="documentText" color="medium"></ion-icon>
+      <h3>Aucun historique</h3>
+      <p>Les versements effectués apparaîtront ici.</p>
+    </div>
+  </div>
+
+  <!-- ONGLET 4: FILE D'ATTENTE -->
+  <div *ngIf="selectedSegment === 'file-attente' && !isLoading">
+    <div class="section-header">
+      <h2>File d'attente des conducteurs</h2>
+      <ion-badge color="medium">{{ fileAttente.length }}</ion-badge>
+    </div>
+
+    <div class="file-attente-list">
+      <div class="attente-item" *ngFor="let entry of fileAttente; let i = index">
+        <div class="position-badge">{{ i + 1 }}</div>
+        
+        <div class="conducteur-info">
+          <h4>{{ entry.conducteur.prenom }} {{ entry.conducteur.nom }}</h4>
+          <p>{{ entry.conducteur.telephone }}</p>
+          <p>Arrivé à {{ formatDate(entry.tempsArrivee.toISOString()) }}</p>
+        </div>
+        
+        <div class="temps-attente">
+          <ion-badge [color]="entry.priorite === 'vip' ? 'warning' : 'medium'">
+            {{ entry.tempsAttenteEstime }}min
+          </ion-badge>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="fileAttente.length === 0">
+      <ion-icon name="time" color="medium"></ion-icon>
+      <h3>File d'attente vide</h3>
+      <p>Aucun conducteur en attente actuellement.</p>
+    </div>
+  </div>
+
+  <!-- ONGLET 5: DASHBOARD -->
+  <div *ngIf="selectedSegment === 'dashboard' && !isLoading">
+    <div class="section-header">
+      <h2>Tableau de bord temps réel</h2>
+    </div>
+
+    <!-- Métriques principales -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-icon success">
+          <ion-icon name="cash"></ion-icon>
+        </div>
+        <div class="metric-info">
+          <h3>{{ formatCurrency(dashboardData.montantTotalJour) }}</h3>
+          <p>Versements aujourd'hui</p>
+        </div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-icon primary">
+          <ion-icon name="people"></ion-icon>
+        </div>
+        <div class="metric-info">
+          <h3>{{ dashboardData.nombreConducteursPresents }}</h3>
+          <p>Conducteurs présents</p>
+        </div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-icon warning">
+          <ion-icon name="time"></ion-icon>
+        </div>
+        <div class="metric-info">
+          <h3>{{ dashboardData.tempsAttenteMoyen }}min</h3>
+          <p>Attente moyenne</p>
+        </div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-icon secondary">
+          <ion-icon name="checkmarkCircle"></ion-icon>
+        </div>
+        <div class="metric-info">
+          <h3>{{ dashboardData.tauxSuccesOTP }}%</h3>
+          <p>Succès OTP</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progression -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Activité en cours</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="progress-item">
+          <span>Versements en cours</span>
+          <ion-badge color="warning">{{ dashboardData.nombreVersementsEnCours }}</ion-badge>
+        </div>
+        
+        <div class="progress-item">
+          <span>Montant moyen par versement</span>
+          <span>{{ formatCurrency(dashboardData.montantMoyenParVersement) }}</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
+
+<!-- MODAL VALIDATION OTP -->
+<ion-modal [isOpen]="isOTPModalOpen" (didDismiss)="closeOTPModal()" class="otp-modal">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>
+          <ion-icon name="key" slot="start"></ion-icon>
+          Validation OTP Versement
+        </ion-title>
+        <ion-button slot="end" fill="clear" (click)="closeOTPModal()" class="close-button">
+          <ion-icon name="close"></ion-icon>
+        </ion-button>
+      </ion-toolbar>
+    </ion-header>
+    
+    <ion-content class="ion-padding" *ngIf="selectedVersement">
+      <!-- Info conducteur -->
+      <div class="conducteur-summary">
+        <ion-avatar>
+          <div class="avatar-placeholder">
+            <ion-icon name="people"></ion-icon>
+          </div>
+        </ion-avatar>
+        <div class="summary-info">
+          <h3>{{ selectedVersement.conducteur.prenom }} {{ selectedVersement.conducteur.nom }}</h3>
+          <p>📱 {{ selectedVersement.conducteur.telephone }}</p>
+          <p>💰 {{ formatCurrency(selectedVersement.montant) }}</p>
+        </div>
+      </div>
+      
+      <!-- Statut SMS -->
+      <div class="sms-status">
+        <ion-item color="success">
+          <ion-icon name="checkmarkCircle" slot="start"></ion-icon>
+          <ion-label>
+            <h3>SMS envoyé avec succès</h3>
+            <p>Le conducteur doit vous communiquer le code reçu</p>
+          </ion-label>
+        </ion-item>
+      </div>
+      
+      <!-- Saisie OTP -->
+      <div class="otp-input-section">
+        <h4>Code OTP (4 chiffres)</h4>
+        <div class="otp-inputs">
+          <ion-input 
+            type="tel" 
+            maxlength="1" 
+            class="otp-digit"
+            [(ngModel)]="otpDigits[0]"
+            (ionInput)="onOTPDigitInput(0, $event)"
+            id="otp-0">
+          </ion-input>
+          <ion-input 
+            type="tel" 
+            maxlength="1" 
+            class="otp-digit"
+            [(ngModel)]="otpDigits[1]"
+            (ionInput)="onOTPDigitInput(1, $event)"
+            id="otp-1">
+          </ion-input>
+          <ion-input 
+            type="tel" 
+            maxlength="1" 
+            class="otp-digit"
+            [(ngModel)]="otpDigits[2]"
+            (ionInput)="onOTPDigitInput(2, $event)"
+            id="otp-2">
+          </ion-input>
+          <ion-input 
+            type="tel" 
+            maxlength="1" 
+            class="otp-digit"
+            [(ngModel)]="otpDigits[3]"
+            (ionInput)="onOTPDigitInput(3, $event)"
+            id="otp-3">
+          </ion-input>
+        </div>
+        
+        <div class="otp-info">
+          <p *ngIf="otpError" class="error-message">{{ otpError }}</p>
+          <p>Tentatives restantes: {{ 3 - (selectedVersement.otp_attempts || 0) }}/3</p>
+          <ion-button fill="clear" size="small" (click)="renvoyerOTP()">
+            <ion-icon name="refresh" slot="start"></ion-icon>
+            Renvoyer le code
+          </ion-button>
+        </div>
+      </div>
+      
+      <!-- Options simplifiées -->
+      <div class="options-versement">
+        <ion-item>
+          <ion-label>
+            <h3>Options du versement</h3>
+            <p>Le versement sera enregistré avec la date et l'heure actuelles</p>
+          </ion-label>
+        </ion-item>
+      </div>
+      
+      <!-- Commentaire -->
+      <ion-item>
+        <ion-label position="stacked">Commentaire (optionnel)</ion-label>
+        <ion-textarea [(ngModel)]="commentaireVersement" rows="3"></ion-textarea>
+      </ion-item>
+      
+      <!-- Actions -->
+      <div class="modal-actions">
+        <ion-button expand="block" color="danger" fill="outline" (click)="annulerVersement()">
+          <ion-icon name="close" slot="start"></ion-icon>
+          Annuler le versement
+        </ion-button>
+        
+        <ion-button 
+          expand="block" 
+          color="primary" 
+          (click)="validerVersement()"
+          [disabled]="!isOTPComplete()">
+          <ion-icon name="checkmarkCircle" slot="start"></ion-icon>
+          Valider le versement
+        </ion-button>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<!-- MODAL DÉTAILS DES RÉSERVATIONS MODERNISÉE -->
+<ion-modal [isOpen]="isDetailsModalOpen" (didDismiss)="closeDetailsModal()" class="modern-details-modal">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>
+          <div class="header-content">
+            <ion-icon name="car" class="header-icon"></ion-icon>
+            <div class="header-text">
+              <h2>{{ selectedVersement?.conducteur?.prenom }} {{ selectedVersement?.conducteur?.nom }}</h2>
+              <p>Détails des courses</p>
+            </div>
+          </div>
+        </ion-title>
+        <ion-button slot="end" fill="clear" (click)="closeDetailsModal()" class="close-button">
+          <ion-icon name="close"></ion-icon>
+        </ion-button>
+      </ion-toolbar>
+    </ion-header>
+    
+    <ion-content *ngIf="selectedVersement && selectedVersement.reservations">
+      <!-- En-tête avec statistiques -->
+      <div class="stats-header">
+        <div class="stat-card primary">
+          <div class="stat-number">{{ selectedVersement.reservations.length }}</div>
+          <div class="stat-label">
+            <ion-icon name="car"></ion-icon>
+            Courses
+          </div>
+        </div>
+        
+        <div class="stat-card success">
+          <div class="stat-number">{{ formatCurrency(selectedVersement.montant) }}</div>
+          <div class="stat-label">
+            <ion-icon name="wallet"></ion-icon>
+            Total
+          </div>
+        </div>
+        
+        <div class="stat-card secondary">
+          <div class="stat-number">{{ getMoyennePrix() }} GNF</div>
+          <div class="stat-label">
+            <ion-icon name="stats-chart"></ion-icon>
+            Moyenne
+          </div>
+        </div>
+      </div>
+
+      <!-- Liste des réservations modernisée -->
+      <div class="modern-reservations-list">
+        <div class="reservation-card" *ngFor="let reservation of selectedVersement.reservations; let i = index">
+          <!-- Header de la course -->
+          <div class="course-header">
+            <div class="course-number">
+              <span class="number-badge">{{ i + 1 }}</span>
+            </div>
+            <div class="course-destination">
+              <h3>{{ reservation.destination_nom }}</h3>
+              <p class="course-time">{{ formatTime(reservation.created_at) }}</p>
+              <p class="course-id">ID: {{ reservation.id }}</p>
+            </div>
+            <div class="course-price">
+              <span class="price-amount">{{ formatCurrency(reservation.prix_total) }}</span>
+            </div>
+          </div>
+
+          <!-- Détails de la course -->
+          <div class="course-details">
+            <div class="detail-grid">
+              <div class="detail-item">
+                <ion-icon name="location" color="primary"></ion-icon>
+                <div class="detail-content">
+                  <span class="detail-label">Départ</span>
+                  <span class="detail-value">{{ reservation.position_depart }}</span>
+                </div>
+              </div>
+              
+              <div class="detail-item">
+                <ion-icon name="call" color="success"></ion-icon>
+                <div class="detail-content">
+                  <span class="detail-label">Client</span>
+                  <span class="detail-value">{{ reservation.client_phone }}</span>
+                </div>
+              </div>
+              
+              <div class="detail-item" *ngIf="reservation.distance_km">
+                <ion-icon name="speedometer" color="warning"></ion-icon>
+                <div class="detail-content">
+                  <span class="detail-label">Distance</span>
+                  <span class="detail-value">{{ reservation.distance_km }} km</span>
+                </div>
+              </div>
+              
+              <div class="detail-item validation-item" *ngIf="reservation.date_code_validation">
+                <ion-icon name="checkmarkCircle" color="success"></ion-icon>
+                <div class="detail-content">
+                  <span class="detail-label">Validé</span>
+                  <span class="detail-value">{{ formatTime(reservation.date_code_validation) }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Commentaire si présent -->
+            <div class="course-comment" *ngIf="reservation.commentaire">
+              <ion-chip color="tertiary" class="comment-chip">
+                <ion-icon name="chatbubbleEllipses"></ion-icon>
+                <ion-label>{{ reservation.commentaire }}</ion-label>
+              </ion-chip>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer avec actions -->
+      <div class="modal-footer">
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          color="medium"
+          (click)="exporterReservations()">
+          <ion-icon name="download" slot="start"></ion-icon>
+          Exporter la liste
+        </ion-button>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

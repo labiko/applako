@@ -1,0 +1,369 @@
+.welcome-section {
+  margin-bottom: 24px;
+  text-align: center;
+  
+  h2 {
+    color: var(--lako-dark);
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+  }
+  
+  .subtitle {
+    color: var(--lako-gray);
+    font-size: 1rem;
+    margin: 0 0 12px 0;
+    font-weight: 500;
+  }
+  
+  .info-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(193, 241, 29, 0.1);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: var(--lako-dark);
+    
+    .info-icon {
+      color: var(--lako-green);
+      font-size: 1rem;
+    }
+  }
+}
+
+.period-selector {
+  margin-bottom: 24px;
+  --background: var(--lako-cream);
+  --indicator-color: var(--lako-green);
+  border-radius: 12px;
+  
+  ion-segment-button {
+    --color: var(--lako-gray);
+    --color-checked: var(--lako-dark);
+    --indicator-color: var(--lako-green);
+    
+    ion-label {
+      font-weight: 500;
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  
+  ion-spinner {
+    margin-bottom: 16px;
+  }
+  
+  p {
+    color: var(--lako-gray);
+    font-size: 0.9rem;
+  }
+}
+
+.metrics-grid {
+  margin-bottom: 24px;
+  
+  ion-col {
+    padding: 4px;
+  }
+}
+
+.metric-card {
+  margin: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  }
+  
+  ion-card-content {
+    padding: 20px 16px;
+    text-align: center;
+    position: relative;
+  }
+  
+  .metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    
+    .metric-icon {
+      ion-icon {
+        font-size: 2rem;
+        opacity: 0.9;
+      }
+    }
+    
+    .metric-info {
+      .info-tooltip {
+        font-size: 1rem;
+        color: var(--lako-gray);
+        opacity: 0.6;
+        cursor: help;
+        
+        &:hover {
+          opacity: 1;
+          color: var(--lako-green);
+        }
+      }
+    }
+  }
+  
+  .metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--lako-dark);
+    margin-bottom: 4px;
+  }
+  
+  .metric-label {
+    font-size: 0.9rem;
+    color: var(--lako-dark);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  
+  .metric-description {
+    font-size: 0.75rem;
+    color: var(--lako-gray);
+    font-weight: 500;
+    opacity: 0.8;
+  }
+  
+  .metric-evolution {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    
+    &.positive {
+      background: rgba(0, 150, 57, 0.1);
+      color: #009639;
+    }
+    
+    &.negative {
+      background: rgba(235, 68, 90, 0.1);
+      color: #eb445a;
+    }
+    
+    &.neutral {
+      background: rgba(121, 121, 121, 0.1);
+      color: var(--lako-gray);
+    }
+  }
+}
+
+.courses-card {
+  .metric-icon ion-icon {
+    color: #4CAF50;
+  }
+}
+
+.revenue-card {
+  .metric-icon ion-icon {
+    color: #FF9500;
+  }
+}
+
+.drivers-card {
+  .metric-icon ion-icon {
+    color: #2196F3;
+  }
+}
+
+.rating-card {
+  .metric-icon ion-icon {
+    color: #FFD700;
+  }
+}
+
+.summary-card {
+  margin: 0 0 24px 0;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  
+  ion-card-header {
+    padding-bottom: 8px;
+    
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--lako-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+      
+      ion-icon {
+        color: var(--lako-green);
+        font-size: 1.3rem;
+      }
+    }
+  }
+  
+  .financial-item {
+    text-align: center;
+    padding: 8px 0;
+    
+    .financial-label {
+      font-size: 0.8rem;
+      color: var(--lako-gray);
+      margin-bottom: 4px;
+    }
+    
+    .financial-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--lako-dark);
+      
+      &.commission {
+        color: #eb445a;
+      }
+      
+      &.net {
+        color: #009639;
+      }
+    }
+  }
+}
+
+.performance-card {
+  margin: 0;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  
+  ion-card-header {
+    padding-bottom: 8px;
+    
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--lako-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+      
+      ion-icon {
+        color: var(--lako-green);
+        font-size: 1.3rem;
+      }
+    }
+  }
+  
+  .performance-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    .performance-label {
+      flex: 0 0 100px;
+      font-size: 0.85rem;
+      color: var(--lako-gray);
+      font-weight: 500;
+    }
+    
+    .performance-bar {
+      flex: 1;
+      height: 8px;
+      background: rgba(121, 121, 121, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      
+      .progress-bar {
+        height: 100%;
+        background: var(--lako-green);
+        border-radius: 4px;
+        transition: width 0.8s ease;
+        
+        &.satisfaction {
+          background: #FFD60A;
+        }
+      }
+    }
+    
+    .performance-value {
+      flex: 0 0 50px;
+      text-align: right;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--lako-dark);
+    }
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  text-align: center;
+  
+  .empty-icon {
+    font-size: 4rem;
+    color: var(--lako-gray);
+    opacity: 0.5;
+    margin-bottom: 16px;
+  }
+  
+  h3 {
+    color: var(--lako-dark);
+    font-size: 1.3rem;
+    margin: 0 0 8px 0;
+  }
+  
+  p {
+    color: var(--lako-gray);
+    font-size: 0.9rem;
+    max-width: 300px;
+    line-height: 1.4;
+    margin: 0 0 24px 0;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .metric-card {
+    .metric-value {
+      font-size: 1.3rem;
+    }
+    
+    .metric-icon ion-icon {
+      font-size: 1.8rem;
+    }
+  }
+  
+  .financial-item {
+    .financial-value {
+      font-size: 1rem;
+    }
+  }
+  
+  .performance-item {
+    .performance-label {
+      flex: 0 0 80px;
+      font-size: 0.8rem;
+    }
+    
+    .performance-value {
+      flex: 0 0 40px;
+      font-size: 0.8rem;
+    }
+  }
+}

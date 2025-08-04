@@ -67,6 +67,12 @@ The application expects a `reservations` table in Supabase with these columns:
 - `created_at`: Timestamp
 - `updated_at`: Timestamp
 
+### Database Structure Reference
+For complete database structure analysis and schema details, refer to:
+`C:\Users\diall\Documents\LABICOTAXI\SCRIPT\db_structure.sql`
+
+This file contains the complete database schema including all tables, columns, relationships, and constraints. Always consult this file when analyzing database structure or implementing new features that require database modifications.
+
 ## Git Repository & Deployment
 
 ### Repository Information

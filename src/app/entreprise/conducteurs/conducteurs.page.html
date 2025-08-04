@@ -1,0 +1,561 @@
+<ion-header [translucent]="true">
+  <ion-toolbar class="modern-toolbar">
+    <ion-title class="modern-title">
+      <ion-icon name="people" class="title-icon"></ion-icon>
+      Conducteurs
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="modern-content">
+  
+  <!-- En-tête avec gradient et statistiques -->
+  <div class="header-section">
+    <div class="header-content">
+      <div class="title-with-button">
+        <h1 class="main-title">Gestion des Conducteurs</h1>
+        <ion-button (click)="openCreateModal()" class="create-button" fill="solid" color="dark">
+          <ion-icon name="addCircle" slot="start"></ion-icon>
+          Nouveau
+        </ion-button>
+      </div>
+      <p class="subtitle">Suivez votre équipe en temps réel</p>
+      
+      <!-- Statistiques rapides -->
+      <div class="quick-stats">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <ion-icon name="people"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ conducteurs.length }}</div>
+            <div class="stat-label">Total</div>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon online">
+            <ion-icon name="ellipse"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getConducteursEnLigne() }}</div>
+            <div class="stat-label">En ligne</div>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon available">
+            <ion-icon name="checkmark-circle"></ion-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getConducteursDisponibles() }}</div>
+            <div class="stat-label">Disponibles</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barre de recherche moderne -->
+  <div class="search-section">
+    <ion-searchbar
+      [(ngModel)]="searchTerm"
+      (ionInput)="onSearchChange($event)"
+      placeholder="Rechercher par nom, téléphone, véhicule..."
+      class="modern-searchbar"
+      show-clear-button="focus">
+    </ion-searchbar>
+  </div>
+
+  <!-- Filtres par statut -->
+  <div class="filters-section">
+    <ion-segment 
+      [(ngModel)]="selectedFilter" 
+      (ionChange)="onFilterChange($event)"
+      class="modern-segment">
+      <ion-segment-button value="all">
+        <ion-label>Tous</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="online">
+        <ion-label>En ligne</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="offline">
+        <ion-label>Hors ligne</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
+
+  <!-- Pull to refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Loading spinner -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent" class="loading-spinner"></ion-spinner>
+    <p class="loading-text">Chargement des conducteurs...</p>
+  </div>
+
+  <!-- Liste des conducteurs -->
+  <div *ngIf="!isLoading && filteredConducteurs.length > 0" class="conducteurs-container">
+    <div 
+      *ngFor="let conducteur of filteredConducteurs; trackBy: trackByConducteur"
+      class="conducteur-card">
+      
+      <!-- En-tête du conducteur -->
+      <div class="conducteur-header">
+        <div class="conducteur-basic-info">
+          <ion-avatar class="conducteur-avatar">
+            <div class="avatar-content">
+              <ion-icon name="person"></ion-icon>
+            </div>
+          </ion-avatar>
+          
+          <div class="conducteur-details">
+            <h3 class="conducteur-name">{{ conducteur.prenom }} {{ conducteur.nom }}</h3>
+            <div class="conducteur-meta">
+              <p class="conducteur-phone">
+                <ion-icon name="call"></ion-icon>
+                {{ conducteur.telephone }}
+              </p>
+              <ion-badge 
+                [color]="getStatusColor(conducteur.statut, conducteur.hors_ligne)"
+                class="status-badge">
+                <ion-icon name="ellipse" class="status-dot"></ion-icon>
+                {{ getStatusText(conducteur.statut, conducteur.hors_ligne) }}
+              </ion-badge>
+            </div>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          <ion-button 
+            fill="clear" 
+            size="small"
+            (click)="editConducteur(conducteur)"
+            class="edit-button">
+            <ion-icon name="create"></ion-icon>
+          </ion-button>
+          
+          <ion-button 
+            fill="clear" 
+            size="small"
+            (click)="callConducteur(conducteur.telephone)"
+            class="call-button">
+            <ion-icon name="call"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+
+      <!-- Informations du véhicule -->
+      <div class="vehicle-section" *ngIf="conducteur.vehicle_marque || conducteur.vehicle_modele || conducteur.vehicle_plaque">
+        <div class="vehicle-info">
+          <div class="vehicle-icon">
+            <ion-icon [name]="getVehicleIcon(conducteur.vehicle_type)"></ion-icon>
+          </div>
+          <div class="vehicle-details">
+            <p class="vehicle-name">{{ conducteur.vehicle_marque }} {{ conducteur.vehicle_modele }}</p>
+            <p class="vehicle-plate">{{ conducteur.vehicle_plaque }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistiques de performance -->
+      <div class="performance-section">
+        <div class="performance-grid">
+          
+          <div class="performance-item">
+            <div class="perf-icon courses">
+              <ion-icon name="car"></ion-icon>
+            </div>
+            <div class="perf-content">
+              <div class="perf-value">{{ conducteur.nombre_courses || 0 }}</div>
+              <div class="perf-label">Courses</div>
+            </div>
+          </div>
+          
+          <div class="performance-item">
+            <div class="perf-icon rating">
+              <ion-icon name="star"></ion-icon>
+            </div>
+            <div class="perf-content">
+              <div class="perf-value">{{ (conducteur.note_moyenne || 5).toFixed(1) }}</div>
+              <div class="perf-label">Note moyenne</div>
+            </div>
+          </div>
+          
+          <div class="performance-item" *ngIf="conducteur.chiffre_affaires">
+            <div class="perf-icon revenue">
+              <ion-icon name="wallet"></ion-icon>
+            </div>
+            <div class="perf-content">
+              <div class="perf-value">{{ formatCurrency(conducteur.chiffre_affaires!) }}</div>
+              <div class="perf-label">Revenus</div>
+            </div>
+          </div>
+          
+          <div class="performance-item" *ngIf="conducteur.taux_acceptation">
+            <div class="perf-icon acceptance">
+              <ion-icon name="checkmark-circle"></ion-icon>
+            </div>
+            <div class="perf-content">
+              <div class="perf-value">{{ conducteur.taux_acceptation }}%</div>
+              <div class="perf-label">Taux acceptation</div>
+              <ion-progress-bar 
+                [value]="(conducteur.taux_acceptation || 0) / 100"
+                [color]="getPerformanceColor(conducteur.taux_acceptation || 0)"
+                class="performance-bar">
+              </ion-progress-bar>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+
+      <!-- Contact et actions -->
+      <div class="actions-section">
+        <div class="contact-info">
+          <ion-chip class="contact-chip" (click)="callConducteur(conducteur.telephone)">
+            <ion-icon name="call"></ion-icon>
+            <ion-label>{{ conducteur.telephone }}</ion-label>
+          </ion-chip>
+        </div>
+        
+        <div class="action-buttons">
+          <ion-button 
+            fill="outline" 
+            size="small"
+            (click)="viewConducteurReservations(conducteur)"
+            class="action-btn reservations-btn">
+            <ion-icon name="document-text" slot="start"></ion-icon>
+            Réservations ({{ conducteur.total_reservations || 0 }})
+          </ion-button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Message si aucun conducteur -->
+  <div *ngIf="!isLoading && filteredConducteurs.length === 0" class="empty-state">
+    <ion-icon name="people" class="empty-icon"></ion-icon>
+    <h3 class="empty-title">Aucun conducteur trouvé</h3>
+    <p class="empty-text">
+      {{ searchTerm || selectedFilter !== 'all' 
+         ? 'Aucun résultat pour vos critères de recherche' 
+         : 'Votre entreprise n\'a pas encore de conducteurs enregistrés' }}
+    </p>
+    <ion-button 
+      (click)="loadConducteurs()" 
+      color="primary"
+      class="refresh-btn">
+      <ion-icon name="refresh" slot="start"></ion-icon>
+      Actualiser
+    </ion-button>
+  </div>
+
+  <!-- Modal d'édition du conducteur -->
+  <ion-modal [isOpen]="isEditModalOpen" (didDismiss)="closeEditModal()" class="edit-modal">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>
+            <ion-icon name="create" slot="start"></ion-icon>
+            Modifier le conducteur
+          </ion-title>
+          <ion-button slot="end" fill="clear" (click)="closeEditModal()" class="close-button">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding" *ngIf="selectedConducteur">
+        <form (ngSubmit)="saveConducteur()" #conducteurForm="ngForm">
+          
+          <!-- Informations personnelles -->
+          <div class="form-section">
+            <h3>Informations personnelles</h3>
+            
+            <ion-item>
+              <ion-label position="stacked">Prénom</ion-label>
+              <ion-input 
+                [(ngModel)]="editForm.prenom" 
+                name="prenom"
+                required
+                placeholder="Prénom du conducteur">
+              </ion-input>
+            </ion-item>
+            
+            <ion-item>
+              <ion-label position="stacked">Nom</ion-label>
+              <ion-input 
+                [(ngModel)]="editForm.nom" 
+                name="nom"
+                required
+                placeholder="Nom du conducteur">
+              </ion-input>
+            </ion-item>
+            
+            <ion-item>
+              <ion-label position="stacked">Téléphone</ion-label>
+              <ion-input 
+                [(ngModel)]="editForm.telephone" 
+                name="telephone"
+                type="tel"
+                required
+                placeholder="+224 XXX XXX XXX">
+              </ion-input>
+            </ion-item>
+          </div>
+
+          <!-- Informations véhicule -->
+          <div class="form-section">
+            <h3>Véhicule</h3>
+            
+            <ion-item>
+              <ion-label position="stacked">Type de véhicule</ion-label>
+              <ion-select [(ngModel)]="editForm.vehicle_type" name="vehicle_type">
+                <ion-select-option value="moto">Moto</ion-select-option>
+                <ion-select-option value="voiture">Voiture</ion-select-option>
+              </ion-select>
+            </ion-item>
+            
+            <ion-item>
+              <ion-label position="stacked">Marque</ion-label>
+              <ion-input 
+                [(ngModel)]="editForm.vehicle_marque" 
+                name="vehicle_marque"
+                placeholder="Ex: Toyota, Honda">
+              </ion-input>
+            </ion-item>
+            
+            <ion-item>
+              <ion-label position="stacked">Modèle</ion-label>
+              <ion-input 
+                [(ngModel)]="editForm.vehicle_modele" 
+                name="vehicle_modele"
+                placeholder="Ex: Corolla, CBR">
+              </ion-input>
+            </ion-item>
+            
+            <ion-item>
+              <ion-label position="stacked">Numéro de plaque</ion-label>
+              <ion-input 
+                [(ngModel)]="editForm.vehicle_plaque" 
+                name="vehicle_plaque"
+                placeholder="Ex: ABC-123">
+              </ion-input>
+            </ion-item>
+          </div>
+
+          <!-- Statut -->
+          <div class="form-section">
+            <h3>Statut</h3>
+            
+            <ion-item>
+              <ion-label position="stacked">Statut</ion-label>
+              <ion-select [(ngModel)]="editForm.statut" name="statut">
+                <ion-select-option value="disponible">Disponible</ion-select-option>
+                <ion-select-option value="occupe">Occupé</ion-select-option>
+                <ion-select-option value="hors_service">Hors service</ion-select-option>
+                <ion-select-option value="inactif">Inactif</ion-select-option>
+              </ion-select>
+            </ion-item>
+            
+            <ion-item>
+              <ion-checkbox 
+                [(ngModel)]="editForm.hors_ligne" 
+                name="hors_ligne">
+              </ion-checkbox>
+              <ion-label>Hors ligne</ion-label>
+            </ion-item>
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <ion-button 
+              expand="block" 
+              type="submit"
+              [disabled]="!conducteurForm.valid || isSaving">
+              <ion-spinner *ngIf="isSaving" slot="start"></ion-spinner>
+              <ion-icon *ngIf="!isSaving" name="save" slot="start"></ion-icon>
+              {{ isSaving ? 'Enregistrement...' : 'Enregistrer les modifications' }}
+            </ion-button>
+          </div>
+        </form>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <!-- Modal des réservations du conducteur -->
+  <ion-modal [isOpen]="isReservationsModalOpen" (didDismiss)="closeReservationsModal()" class="reservations-modal">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>
+            <ion-icon name="document-text" slot="start"></ion-icon>
+            Réservations de {{ selectedConducteur?.prenom }} {{ selectedConducteur?.nom }}
+          </ion-title>
+          <ion-button slot="end" fill="clear" (click)="closeReservationsModal()" class="close-button">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding" *ngIf="selectedConducteur">
+        
+        <!-- Statistiques rapides -->
+        <div class="reservations-stats">
+          <div class="stat-card">
+            <ion-icon name="checkmark-circle" class="stat-icon completed"></ion-icon>
+            <div class="stat-info">
+              <div class="stat-value">{{ getCompletedReservationsCount() }}</div>
+              <div class="stat-label">Terminées</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <ion-icon name="time" class="stat-icon pending"></ion-icon>
+            <div class="stat-info">
+              <div class="stat-value">{{ getPendingReservationsCount() }}</div>
+              <div class="stat-label">En attente</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <ion-icon name="cash" class="stat-icon revenue"></ion-icon>
+            <div class="stat-info">
+              <div class="stat-value">{{ formatCurrency(getTotalRevenue()) }}</div>
+              <div class="stat-label">Revenus</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="isLoadingReservations" class="loading-reservations">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Chargement des réservations...</p>
+        </div>
+
+        <!-- Liste des réservations -->
+        <div *ngIf="!isLoadingReservations && conducteurReservations.length > 0" class="reservations-list">
+          <div 
+            *ngFor="let reservation of conducteurReservations; trackBy: trackByReservation"
+            class="reservation-item">
+            
+            <div class="reservation-header">
+              <div class="reservation-info">
+                <h4 class="destination">{{ reservation.destination_nom || 'Destination non spécifiée' }}</h4>
+                <p class="date">{{ formatDate(reservation.created_at) }}</p>
+              </div>
+              <ion-badge [color]="getReservationStatusColor(reservation.statut)">
+                {{ getReservationStatusText(reservation.statut) }}
+              </ion-badge>
+            </div>
+            
+            <div class="reservation-details">
+              <div class="detail-row">
+                <ion-icon name="location" class="detail-icon"></ion-icon>
+                <span class="detail-text">{{ reservation.position_depart || 'Position de départ' }}</span>
+              </div>
+              <div class="detail-row" *ngIf="reservation.client_phone">
+                <ion-icon name="call" class="detail-icon"></ion-icon>
+                <span class="detail-text">{{ reservation.client_phone }}</span>
+              </div>
+              <div class="detail-row" *ngIf="reservation.prix_total">
+                <ion-icon name="cash" class="detail-icon"></ion-icon>
+                <span class="detail-text">{{ formatCurrency(reservation.prix_total) }}</span>
+              </div>
+            </div>
+            
+            <div class="reservation-comment" *ngIf="reservation.commentaire">
+              <ion-icon name="chatbubble-ellipses"></ion-icon>
+              <span>{{ reservation.commentaire }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message vide -->
+        <div *ngIf="!isLoadingReservations && conducteurReservations.length === 0" class="empty-reservations">
+          <ion-icon name="document-text" class="empty-icon"></ion-icon>
+          <h3>Aucune réservation</h3>
+          <p>Ce conducteur n'a pas encore de réservations enregistrées.</p>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+</ion-content>
+
+<!-- Modal de création de conducteur -->
+<ion-modal [isOpen]="isCreateModalOpen" (didDismiss)="closeCreateModal()" class="edit-modal">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>
+          <ion-icon name="personAdd" slot="start"></ion-icon>
+          Nouveau Conducteur
+        </ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeCreateModal()">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    
+    <ion-content class="ion-padding">
+      <div class="form-section">
+        <h3>Informations personnelles</h3>
+        <ion-item>
+          <ion-label position="stacked">Nom *</ion-label>
+          <ion-input [(ngModel)]="createForm.nom" type="text" placeholder="Nom du conducteur"></ion-input>
+        </ion-item>
+        
+        <ion-item>
+          <ion-label position="stacked">Prénom *</ion-label>
+          <ion-input [(ngModel)]="createForm.prenom" type="text" placeholder="Prénom du conducteur"></ion-input>
+        </ion-item>
+        
+        <ion-item>
+          <ion-label position="stacked">Téléphone *</ion-label>
+          <ion-input [(ngModel)]="createForm.telephone" type="tel" placeholder="622123456"></ion-input>
+        </ion-item>
+      </div>
+      
+      <div class="form-section">
+        <h3>Informations véhicule</h3>
+        <ion-item>
+          <ion-label position="stacked">Type de véhicule</ion-label>
+          <ion-select [(ngModel)]="createForm.vehicle_type" placeholder="Sélectionner">
+            <ion-select-option value="berline">Berline</ion-select-option>
+            <ion-select-option value="suv">SUV</ion-select-option>
+            <ion-select-option value="minibus">Minibus</ion-select-option>
+            <ion-select-option value="pickup">Pickup</ion-select-option>
+          </ion-select>
+        </ion-item>
+        
+        <ion-item>
+          <ion-label position="stacked">Marque</ion-label>
+          <ion-input [(ngModel)]="createForm.vehicle_marque" type="text" placeholder="Ex: Toyota"></ion-input>
+        </ion-item>
+        
+        <ion-item>
+          <ion-label position="stacked">Modèle</ion-label>
+          <ion-input [(ngModel)]="createForm.vehicle_modele" type="text" placeholder="Ex: Corolla"></ion-input>
+        </ion-item>
+        
+        <ion-item>
+          <ion-label position="stacked">Plaque d'immatriculation</ion-label>
+          <ion-input [(ngModel)]="createForm.vehicle_plaque" type="text" placeholder="Ex: RC-123-AB"></ion-input>
+        </ion-item>
+      </div>
+      
+      <div class="form-actions">
+        <ion-button expand="block" color="medium" fill="outline" (click)="closeCreateModal()">
+          Annuler
+        </ion-button>
+        <ion-button expand="block" color="primary" (click)="createConducteur()" [disabled]="isCreating">
+          <ion-spinner name="dots" *ngIf="isCreating"></ion-spinner>
+          <span *ngIf="!isCreating">Créer le conducteur</span>
+        </ion-button>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

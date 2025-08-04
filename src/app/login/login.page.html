@@ -1,80 +1,173 @@
-<ion-content [fullscreen]="true" class="login-content">
+<ion-content [fullscreen]="true" class="modern-login-content">
+  <!-- Background effects -->
+  <div class="login-background">
+    <div class="gradient-overlay"></div>
+    <div class="geometric-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+  </div>
+
   <div class="login-container">
-    <!-- Header with modern car icon -->
+    <!-- Header with back button -->
     <div class="header-section">
-      <div class="car-icon">
-        <ion-icon name="car-sport" class="modern-car"></ion-icon>
-      </div>
-      <h1 class="app-title">AppLako</h1>
-      <p class="app-subtitle">Votre partenaire transport</p>
+      <ion-button 
+        fill="clear" 
+        (click)="goBack()" 
+        class="back-button">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
     </div>
 
-    <!-- Login Form -->
-    <div class="form-container">
-      <h2 class="form-title">Connexion Chauffeur</h2>
+    <!-- Modern login card -->
+    <div class="login-card">
+      <div class="card-background"></div>
       
-      <form (ngSubmit)="onLogin()" #loginForm="ngForm" class="login-form">
-        <!-- Phone input with Guinea flag -->
-        <div class="input-group">
-          <ion-item class="modern-input">
-            <div class="input-prefix" slot="start">
-              <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAyNCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgiIGhlaWdodD0iMTgiIGZpbGw9IiNDRTExMjYiLz4KPHJlY3QgeD0iOCIgd2lkdGg9IjgiIGhlaWdodD0iMTgiIGZpbGw9IiNGRkNFMDAiLz4KPHJlY3QgeD0iMTYiIHdpZHRoPSI4IiBoZWlnaHQ9IjE4IiBmaWxsPSIjMDA5NjM5Ii8+Cjwvc3ZnPgo=" alt="🇬🇳" class="guinea-flag">
-            </div>
-            <!-- <ion-label position="floating">Numéro de téléphone</ion-label> -->
-            <ion-input 
-              type="tel" 
-              [(ngModel)]="credentials.phone" 
-              name="phone"
-              required
-              placeholder="+224...">
-            </ion-input>
-            <ion-icon name="call" slot="end" class="input-icon"></ion-icon>
-          </ion-item>
+      <!-- Logo and title -->
+      <div class="brand-header">
+        <div class="logo-wrapper">
+          <div class="logo-circle">
+            <ion-icon [name]="userType === 'conducteur' ? 'car-sport' : 'business'" class="brand-icon"></ion-icon>
+          </div>
+          <div class="logo-glow"></div>
         </div>
-
-        <!-- Password input -->
-        <div class="input-group">
-          <ion-item class="modern-input">
-            <ion-label position="floating">Mot de passe</ion-label>
-            <ion-input 
-              [type]="showPassword ? 'text' : 'password'"
-              [(ngModel)]="credentials.password" 
-              name="password"
-              required>
-            </ion-input>
-            <ion-button 
-              fill="clear" 
-              slot="end" 
-              (click)="togglePassword()"
-              class="password-toggle">
-              <ion-icon [name]="showPassword ? 'eye-off' : 'eye'"></ion-icon>
-            </ion-button>
-          </ion-item>
+        
+        <div class="brand-info">
+          <h1 class="brand-name">LokoTaxi</h1>
+          <p class="space-type">{{ userType === 'conducteur' ? 'Espace Conducteur' : 'Espace Entreprise' }}</p>
+          <div class="type-badge" [class.conducteur]="userType === 'conducteur'" [class.entreprise]="userType === 'entreprise'">
+            <ion-icon [name]="userType === 'conducteur' ? 'person' : 'business'"></ion-icon>
+            <span>{{ userType === 'conducteur' ? 'Conducteur' : 'Entreprise' }}</span>
+          </div>
         </div>
-
-        <!-- Login Button -->
-        <ion-button 
-          expand="full" 
-          type="submit" 
-          [disabled]="!loginForm.form.valid || isLoading"
-          class="login-button">
-          <ion-spinner name="crescent" *ngIf="isLoading" slot="start"></ion-spinner>
-          <ion-icon name="log-in" *ngIf="!isLoading" slot="start"></ion-icon>
-          {{ isLoading ? 'Connexion en cours...' : 'Se connecter' }}
-        </ion-button>
-      </form>
-
-      <!-- Error Message -->
-      <div *ngIf="errorMessage" class="error-message">
-        <ion-icon name="alert-circle" class="error-icon"></ion-icon>
-        <ion-text color="danger">{{ errorMessage }}</ion-text>
       </div>
-    </div>
 
-    <!-- Footer -->
-    <div class="footer-section">
-      <p class="footer-text">Conakry, Guinée</p>
-      <p class="version-text">Version 1.0.0</p>
+      <!-- Login Form -->
+      <div class="form-section">
+      
+        <form (ngSubmit)="onLogin()" #loginForm="ngForm" class="modern-form">
+          <!-- Dynamic input field -->
+          <div class="input-container">
+            <!-- Phone input (conducteur only) -->
+            <div class="modern-input-group" *ngIf="userType === 'conducteur'">
+              <div class="input-wrapper">
+                <div class="input-prefix">
+                  <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAyNCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgiIGhlaWdodD0iMTgiIGZpbGw9IiNDRTExMjYiLz4KPHJlY3QgeD0iOCIgd2lkdGg9IjgiIGhlaWdodD0iMTgiIGZpbGw9IiNGRkNFMDAiLz4KPHJlY3QgeD0iMTYiIHdpZHRoPSI4IiBoZWlnaHQ9IjE4IiBmaWxsPSIjMDA5NjM5Ii8+Cjwvc3ZnPgo=" alt="🇬🇳" class="country-flag">
+                </div>
+                <input 
+                  type="tel" 
+                  [(ngModel)]="credentials.phone" 
+                  name="phone"
+                  [required]="userType === 'conducteur'"
+                  placeholder="Numéro de téléphone"
+                  class="modern-input">
+                <div class="input-suffix">
+                  <ion-icon name="call" class="input-icon"></ion-icon>
+                </div>
+              </div>
+              <div class="input-label">Téléphone</div>
+            </div>
+
+            <!-- Email input (entreprise only) -->
+            <div class="modern-input-group" *ngIf="userType === 'entreprise'">
+              <div class="input-wrapper">
+                <input 
+                  type="email" 
+                  [(ngModel)]="credentials.email" 
+                  name="email"
+                  required
+                  placeholder="Email de l'entreprise"
+                  class="modern-input">
+                <div class="input-suffix">
+                  <ion-icon name="mail" class="input-icon"></ion-icon>
+                </div>
+              </div>
+              <div class="input-label">Email entreprise</div>
+            </div>
+
+            <!-- Password input (required only for conducteur and existing entreprise) -->
+            <div class="modern-input-group" *ngIf="userType === 'conducteur'">
+              <div class="input-wrapper">
+                <input 
+                  [type]="showPassword ? 'text' : 'password'"
+                  [(ngModel)]="credentials.password" 
+                  name="password"
+                  required
+                  placeholder="Mot de passe"
+                  class="modern-input">
+                <div class="input-suffix">
+                  <ion-button 
+                    fill="clear" 
+                    (click)="togglePassword()"
+                    class="password-toggle">
+                    <ion-icon [name]="showPassword ? 'eye-off' : 'eye'"></ion-icon>
+                  </ion-button>
+                </div>
+              </div>
+              <div class="input-label">Mot de passe</div>
+            </div>
+
+            <!-- Optional password for entreprise -->
+            <div class="modern-input-group" *ngIf="userType === 'entreprise'">
+              <div class="input-wrapper">
+                <input 
+                  [type]="showPassword ? 'text' : 'password'"
+                  [(ngModel)]="credentials.password" 
+                  name="password"
+                  placeholder="Mot de passe (optionnel pour première connexion)"
+                  class="modern-input">
+                <div class="input-suffix">
+                  <ion-button 
+                    fill="clear" 
+                    (click)="togglePassword()"
+                    class="password-toggle">
+                    <ion-icon [name]="showPassword ? 'eye-off' : 'eye'"></ion-icon>
+                  </ion-button>
+                </div>
+              </div>
+              <div class="input-label">Mot de passe</div>
+            </div>
+          </div>
+
+          <!-- Modern login button -->
+          <div class="button-container">
+            <button 
+              type="submit" 
+              [disabled]="!loginForm.form.valid || isLoading"
+              class="modern-login-button"
+              [class.loading]="isLoading">
+              
+              <div class="button-content">
+                <ion-spinner name="crescent" *ngIf="isLoading" class="button-spinner"></ion-spinner>
+                <ion-icon name="log-in" *ngIf="!isLoading" class="button-icon"></ion-icon>
+                <span class="button-text">
+                  {{ isLoading ? 'Connexion en cours...' : 'Se connecter' }}
+                </span>
+              </div>
+              
+              <div class="button-glow"></div>
+            </button>
+          </div>
+
+          <!-- Error Message -->
+          <div *ngIf="errorMessage" class="modern-error-message">
+            <div class="error-content">
+              <ion-icon name="alert-circle" class="error-icon"></ion-icon>
+              <span class="error-text">{{ errorMessage }}</span>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Footer info -->
+      <div class="footer-info">
+        <div class="location-info">
+          <ion-icon name="location"></ion-icon>
+          <span>Conakry, Guinée</span>
+        </div>
+        <p class="version-info">Version 2.0.0</p>
+      </div>
     </div>
   </div>
 </ion-content>

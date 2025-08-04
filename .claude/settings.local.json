@@ -20,7 +20,8 @@
       "Bash(git branch:*)",
       "Bash(cp:*)",
       "Bash(copy:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": []
   }

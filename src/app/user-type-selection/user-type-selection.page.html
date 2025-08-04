@@ -1,0 +1,124 @@
+<ion-content [fullscreen]="true" class="modern-content">
+  <!-- Background gradient -->
+  <div class="gradient-background"></div>
+  
+  <!-- Floating particles animation -->
+  <div class="particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <div class="content-container">
+    <!-- Modern logo section -->
+    <div class="brand-section">
+      <div class="logo-container">
+        <div class="logo-circle">
+          <ion-icon name="car-sport" class="main-logo"></ion-icon>
+        </div>
+        <div class="logo-rings">
+          <div class="ring ring-1"></div>
+          <div class="ring ring-2"></div>
+        </div>
+      </div>
+      
+      <div class="brand-text">
+        <h1 class="brand-title">LokoTaxi</h1>
+        <p class="brand-subtitle">Votre partenaire mobilité</p>
+        <div class="brand-accent"></div>
+      </div>
+    </div>
+
+    <!-- Modern selection cards -->
+    <div class="selection-section">
+      <h2 class="selection-title">Choisir votre espace</h2>
+      
+      <div class="cards-container">
+        <!-- Conducteur Card -->
+        <div class="modern-card driver-card" (click)="selectConducteur()">
+          <div class="card-background"></div>
+          <div class="card-content">
+            <div class="card-icon-container">
+              <div class="icon-background driver-bg"></div>
+              <ion-icon name="person" class="card-icon"></ion-icon>
+            </div>
+            
+            <div class="card-text">
+              <h3>Conducteur</h3>
+              <p>Gérez vos courses en temps réel</p>
+              <ul class="features-list">
+                <li>• Réservations instantanées</li>
+                <li>• GPS intégré</li>
+                <li>• Paiements sécurisés</li>
+              </ul>
+            </div>
+            
+            <div class="card-action">
+              <ion-button 
+                fill="clear" 
+                size="large"
+                (click)="selectConducteur()"
+                class="action-button driver-button">
+                <span>Commencer</span>
+                <ion-icon name="arrow-forward" slot="end"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+          
+          <div class="card-decoration">
+            <div class="decoration-circle"></div>
+            <div class="decoration-line"></div>
+          </div>
+        </div>
+
+        <!-- Entreprise Card -->
+        <div class="modern-card enterprise-card" (click)="selectEntreprise()">
+          <div class="card-background"></div>
+          <div class="card-content">
+            <div class="card-icon-container">
+              <div class="icon-background enterprise-bg"></div>
+              <ion-icon name="business" class="card-icon"></ion-icon>
+            </div>
+            
+            <div class="card-text">
+              <h3>Entreprise</h3>
+              <p>Pilotez votre flotte intelligemment</p>
+              <ul class="features-list">
+                <li>• Analytics avancés</li>
+                <li>• Gestion d'équipe</li>
+                <li>• Rapports financiers</li>
+              </ul>
+            </div>
+            
+            <div class="card-action">
+              <ion-button 
+                fill="clear" 
+                size="large"
+                (click)="selectEntreprise()"
+                class="action-button enterprise-button">
+                <span>Accéder</span>
+                <ion-icon name="arrow-forward" slot="end"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+          
+          <div class="card-decoration">
+            <div class="decoration-circle"></div>
+            <div class="decoration-line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer info -->
+    <div class="footer-info">
+      <div class="location-badge">
+        <ion-icon name="location"></ion-icon>
+        <span>Conakry, Guinée</span>
+      </div>
+      <p class="version">Version 2.0.0</p>
+    </div>
+  </div>
+</ion-content>

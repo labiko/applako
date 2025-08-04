@@ -83,7 +83,7 @@ export class ReservationsPage implements OnInit {
 
    async ionViewWillEnter() {
      // Mettre à jour la position du conducteur
-     await this.updateConducteurPositionOnce();
+    // await this.updateConducteurPositionOnce();
      
      // Charger les réservations
      this.loadReservations();

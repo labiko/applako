@@ -1,0 +1,1094 @@
+// Modern conducteurs page with advanced design and search functionality
+.modern-content {
+  --background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+// Modern toolbar
+.modern-toolbar {
+  --background: var(--lako-green);
+  --color: var(--lako-dark);
+  
+  .modern-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    
+    .title-icon {
+      font-size: 1.2rem;
+    }
+  }
+  
+  .add-button {
+    --background: transparent;
+    --background-hover: rgba(21, 21, 21, 0.1);
+    --background-activated: rgba(21, 21, 21, 0.2);
+    --color: var(--lako-dark);
+    --color-hover: var(--lako-dark);
+    
+    ion-icon {
+      font-size: 2rem !important;
+      color: var(--lako-dark) !important;
+    }
+    
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+}
+
+// Header section with gradient and statistics
+.header-section {
+  background: linear-gradient(135deg, var(--lako-green), rgba(193, 241, 29, 0.8));
+  padding: 2rem 1rem 1.5rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0 0 24px 24px;
+  box-shadow: 0 4px 20px rgba(193, 241, 29, 0.3);
+  
+  .header-content {
+    text-align: center;
+    
+    .title-with-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+      
+      .main-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--lako-dark);
+        margin: 0;
+        letter-spacing: -0.01em;
+      }
+      
+      .create-button {
+        --background: var(--lako-dark);
+        --background-hover: rgba(21, 21, 21, 0.9);
+        --color: var(--lako-green);
+        --border-radius: 25px;
+        font-weight: 600;
+        padding: 0 1.5rem;
+        height: 38px;
+        
+        ion-icon {
+          font-size: 1.2rem;
+          margin-right: 0.3rem;
+        }
+        
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+      }
+    }
+    
+    .subtitle {
+      font-size: 1rem;
+      color: rgba(21, 21, 21, 0.8);
+      margin: 0 0 1.5rem 0;
+      font-weight: 400;
+    }
+    
+    // Quick statistics cards
+    .quick-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+      
+      .stat-card {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 16px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stat-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(193, 241, 29, 0.2);
+          
+          &.online {
+            background: rgba(76, 175, 80, 0.2);
+            
+            ion-icon {
+              color: #4CAF50;
+            }
+          }
+          
+          &.available {
+            background: rgba(33, 150, 243, 0.2);
+            
+            ion-icon {
+              color: #2196F3;
+            }
+          }
+          
+          ion-icon {
+            font-size: 1.2rem;
+            color: var(--lako-dark);
+          }
+        }
+        
+        .stat-content {
+          .stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--lako-dark);
+            margin: 0;
+          }
+          
+          .stat-label {
+            font-size: 0.8rem;
+            color: var(--lako-gray);
+            margin: 0;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Search section
+.search-section {
+  padding: 0 1rem 1rem 1rem;
+  
+  .modern-searchbar {
+    --background: rgba(255, 255, 255, 0.9);
+    --border-radius: 16px;
+    --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --placeholder-color: var(--lako-gray);
+    --color: var(--lako-dark);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+}
+
+// Filters section
+.filters-section {
+  padding: 0 1rem 1rem 1rem;
+  
+  .modern-segment {
+    --background: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    padding: 4px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    
+    ion-segment-button {
+      --background-checked: var(--lako-green);
+      --color-checked: var(--lako-dark);
+      --border-radius: 12px;
+      margin: 2px;
+      font-weight: 500;
+      font-size: 0.85rem;
+    }
+  }
+}
+
+// Loading state
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  
+  .loading-spinner {
+    --color: var(--lako-green);
+    width: 40px;
+    height: 40px;
+    margin-bottom: 1rem;
+  }
+  
+  .loading-text {
+    color: var(--lako-gray);
+    font-size: 1rem;
+    font-weight: 500;
+  }
+}
+
+// Conducteurs container
+.conducteurs-container {
+  padding: 0 1rem 2rem 1rem;
+  
+  .conducteur-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    // Conducteur header section
+    .conducteur-header {
+      display: flex;
+      align-items: center;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, rgba(193, 241, 29, 0.1), rgba(193, 241, 29, 0.05));
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      
+      .conducteur-basic-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+        
+        .conducteur-avatar {
+          width: 60px;
+          height: 60px;
+          
+          .avatar-content {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--lako-green), rgba(193, 241, 29, 0.8));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(193, 241, 29, 0.3);
+            
+            ion-icon {
+              color: var(--lako-dark);
+              font-size: 1.8rem;
+            }
+          }
+        }
+        
+        .conducteur-details {
+          flex: 1;
+          
+          .conducteur-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--lako-dark);
+            margin: 0 0 0.5rem 0;
+            letter-spacing: -0.01em;
+          }
+          
+          .conducteur-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            
+            .conducteur-phone {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              font-size: 0.85rem;
+              color: var(--lako-gray);
+              margin: 0;
+              
+              ion-icon {
+                font-size: 0.9rem;
+                color: var(--lako-green);
+              }
+            }
+            
+            .status-badge {
+              display: flex;
+              align-items: center;
+              gap: 0.25rem;
+              font-size: 0.8rem;
+              font-weight: 600;
+              padding: 0.25rem 0.75rem;
+              border-radius: 12px;
+              align-self: flex-start;
+              
+              .status-dot {
+                font-size: 0.6rem;
+              }
+            }
+          }
+        }
+      }
+      
+      .header-actions {
+        display: flex;
+        gap: 0.5rem;
+        
+        .edit-button {
+          --color: var(--lako-gray);
+          --background-hover: rgba(193, 241, 29, 0.1);
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          
+          &:hover {
+            --color: var(--lako-green);
+          }
+          
+          ion-icon {
+            font-size: 1.1rem;
+          }
+        }
+        
+        .call-button {
+          --color: var(--lako-green);
+          --background-hover: rgba(193, 241, 29, 0.1);
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          
+          ion-icon {
+            font-size: 1.1rem;
+          }
+        }
+      }
+    }
+    
+    // Vehicle section
+    .vehicle-section {
+      padding: 1rem 1.5rem;
+      background: rgba(248, 249, 250, 0.5);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      
+      .vehicle-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        
+        .vehicle-icon {
+          width: 45px;
+          height: 45px;
+          background: rgba(33, 150, 243, 0.1);
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          
+          ion-icon {
+            font-size: 1.3rem;
+            color: #2196F3;
+          }
+        }
+        
+        .vehicle-details {
+          .vehicle-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--lako-dark);
+            margin: 0 0 0.25rem 0;
+          }
+          
+          .vehicle-plate {
+            font-size: 0.9rem;
+            color: var(--lako-gray);
+            margin: 0;
+            font-weight: 500;
+            text-transform: uppercase;
+          }
+        }
+      }
+    }
+    
+    // Performance section
+    .performance-section {
+      padding: 1.5rem;
+      
+      .performance-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+        
+        .performance-item {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 1rem;
+          background: rgba(248, 249, 250, 0.8);
+          border-radius: 12px;
+          border: 1px solid rgba(0, 0, 0, 0.05);
+          transition: all 0.3s ease;
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          }
+          
+          .perf-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            &.courses {
+              background: rgba(33, 150, 243, 0.1);
+              
+              ion-icon {
+                color: #2196F3;
+              }
+            }
+            
+            &.rating {
+              background: rgba(255, 193, 7, 0.1);
+              
+              ion-icon {
+                color: #FFC107;
+              }
+            }
+            
+            &.revenue {
+              background: rgba(76, 175, 80, 0.1);
+              
+              ion-icon {
+                color: #4CAF50;
+              }
+            }
+            
+            &.acceptance {
+              background: rgba(156, 39, 176, 0.1);
+              
+              ion-icon {
+                color: #9C27B0;
+              }
+            }
+            
+            ion-icon {
+              font-size: 1.1rem;
+            }
+          }
+          
+          .perf-content {
+            flex: 1;
+            
+            .perf-value {
+              font-size: 1.2rem;
+              font-weight: 700;
+              color: var(--lako-dark);
+              margin: 0 0 0.25rem 0;
+            }
+            
+            .perf-label {
+              font-size: 0.8rem;
+              color: var(--lako-gray);
+              margin: 0 0 0.5rem 0;
+              font-weight: 500;
+            }
+            
+            .performance-bar {
+              height: 4px;
+              border-radius: 2px;
+              margin-top: 0.25rem;
+            }
+          }
+        }
+      }
+    }
+    
+    // Actions section
+    .actions-section {
+      padding: 1rem 1.5rem 1.5rem 1.5rem;
+      background: rgba(248, 249, 250, 0.3);
+      
+      .contact-info {
+        margin-bottom: 1rem;
+        
+        .contact-chip {
+          --background: rgba(193, 241, 29, 0.15);
+          --color: var(--lako-dark);
+          border-radius: 20px;
+          padding: 0.5rem 1rem;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          
+          &:hover {
+            --background: rgba(193, 241, 29, 0.25);
+            transform: scale(1.02);
+          }
+          
+          ion-icon {
+            margin-right: 0.5rem;
+            font-size: 1rem;
+          }
+        }
+      }
+      
+      .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        
+        .action-btn {
+          --border-radius: 12px;
+          height: 36px;
+          font-size: 0.85rem;
+          font-weight: 500;
+          flex: 1;
+          
+          &.location-btn {
+            --color: #2196F3;
+            --border-color: #2196F3;
+            
+            &:hover {
+              --background: rgba(33, 150, 243, 0.1);
+            }
+          }
+          
+          &.reservations-btn {
+            --color: var(--lako-green);
+            --border-color: var(--lako-green);
+            
+            &:hover {
+              --background: rgba(193, 241, 29, 0.1);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Empty state
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  
+  .empty-icon {
+    font-size: 4rem;
+    color: var(--lako-gray);
+    opacity: 0.5;
+    margin-bottom: 1rem;
+  }
+  
+  .empty-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--lako-dark);
+    margin: 0 0 0.5rem 0;
+  }
+  
+  .empty-text {
+    font-size: 1rem;
+    color: var(--lako-gray);
+    margin: 0 0 1.5rem 0;
+    line-height: 1.5;
+  }
+  
+  .refresh-btn {
+    --border-radius: 16px;
+    --padding-start: 1.5rem;
+    --padding-end: 1.5rem;
+    height: 44px;
+    font-weight: 600;
+  }
+}
+
+// Styles pour les modals
+.edit-modal, .reservations-modal {
+  --border-radius: 24px 24px 0 0;
+  
+  ion-header {
+    ion-toolbar {
+      --background: var(--ion-color-primary);
+      --color: white;
+      
+      ion-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        
+        ion-icon {
+          font-size: 1.2rem;
+        }
+      }
+      
+      .close-button {
+        --color: white;
+        --background-hover: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        
+        ion-icon {
+          font-size: 1.3rem;
+        }
+      }
+    }
+  }
+  
+  .form-section {
+    margin-bottom: 2rem;
+    
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--lako-dark);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid rgba(193, 241, 29, 0.3);
+    }
+    
+    ion-item {
+      --border-radius: 12px;
+      --background: rgba(255, 255, 255, 0.9);
+      margin-bottom: 1rem;
+      
+      ion-label {
+        font-weight: 500;
+      }
+    }
+  }
+  
+  .form-actions {
+    margin-top: 2rem;
+    
+    ion-button {
+      --border-radius: 12px;
+      height: 48px;
+      font-weight: 600;
+    }
+  }
+}
+
+.reservations-modal {
+  --background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  
+  .reservations-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+    
+    .stat-card {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1.25rem;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      border: 1px solid rgba(193, 241, 29, 0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      }
+      
+      .stat-icon {
+        font-size: 1.8rem;
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        &.completed { 
+          color: #4CAF50; 
+          background: rgba(76, 175, 80, 0.1);
+        }
+        &.pending { 
+          color: #FF9500; 
+          background: rgba(255, 149, 0, 0.1);
+        }
+        &.revenue { 
+          color: var(--lako-green); 
+          background: rgba(193, 241, 29, 0.1);
+        }
+      }
+      
+      .stat-info {
+        .stat-value {
+          font-size: 1.4rem;
+          font-weight: 700;
+          color: var(--lako-dark);
+          margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+          font-size: 0.85rem;
+          color: var(--lako-gray);
+          font-weight: 500;
+          white-space: nowrap;
+        }
+      }
+    }
+  }
+  
+  .loading-reservations {
+    text-align: center;
+    padding: 2rem;
+    
+    ion-spinner {
+      margin-bottom: 1rem;
+    }
+  }
+  
+  .reservations-list {
+    .reservation-item {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      border: 1px solid rgba(193, 241, 29, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        border-color: rgba(193, 241, 29, 0.3);
+      }
+      
+      .reservation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        
+        .reservation-info {
+          flex: 1;
+          
+          .destination {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--lako-dark);
+            margin: 0 0 0.5rem 0;
+            line-height: 1.3;
+          }
+          
+          .date {
+            font-size: 0.85rem;
+            color: var(--lako-gray);
+            margin: 0;
+            font-weight: 500;
+          }
+        }
+        
+        ion-badge {
+          font-size: 0.75rem;
+          font-weight: 600;
+          padding: 0.4rem 0.8rem;
+          border-radius: 12px;
+        }
+      }
+      
+      .reservation-details {
+        margin-bottom: 1rem;
+        background: rgba(248, 249, 250, 0.6);
+        border-radius: 12px;
+        padding: 1rem;
+        
+        .detail-row {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          margin-bottom: 0.75rem;
+          
+          &:last-child {
+            margin-bottom: 0;
+          }
+          
+          .detail-icon {
+            color: var(--lako-green);
+            font-size: 1rem;
+            width: 20px;
+            flex-shrink: 0;
+          }
+          
+          .detail-text {
+            font-size: 0.9rem;
+            color: var(--lako-dark);
+            font-weight: 500;
+            flex: 1;
+          }
+        }
+      }
+      
+      .reservation-comment {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(193, 241, 29, 0.1), rgba(193, 241, 29, 0.05));
+        border-radius: 12px;
+        border: 1px solid rgba(193, 241, 29, 0.2);
+        font-size: 0.9rem;
+        color: var(--lako-dark);
+        font-style: italic;
+        line-height: 1.4;
+        
+        ion-icon {
+          color: var(--lako-green);
+          font-size: 1.1rem;
+          margin-top: 0.2rem;
+          flex-shrink: 0;
+        }
+      }
+    }
+  }
+  
+  .empty-reservations {
+    text-align: center;
+    padding: 3rem 1rem;
+    
+    .empty-icon {
+      font-size: 3rem;
+      color: var(--lako-gray);
+      opacity: 0.5;
+      margin-bottom: 1rem;
+    }
+    
+    h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--lako-dark);
+      margin: 0 0 0.5rem 0;
+    }
+    
+    p {
+      color: var(--lako-gray);
+      margin: 0;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .header-section {
+    padding: 1.5rem 1rem 1rem 1rem;
+    
+    .header-content {
+      .main-title {
+        font-size: 1.5rem;
+      }
+      
+      .subtitle {
+        font-size: 0.9rem;
+      }
+      
+      .quick-stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+        
+        .stat-card {
+          padding: 0.75rem;
+          
+          .stat-icon {
+            width: 35px;
+            height: 35px;
+            
+            ion-icon {
+              font-size: 1rem;
+            }
+          }
+          
+          .stat-content {
+            .stat-value {
+              font-size: 1.2rem;
+            }
+            
+            .stat-label {
+              font-size: 0.75rem;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  .conducteurs-container {
+    padding: 0 0.5rem 2rem 0.5rem;
+    
+    .conducteur-card {
+      .conducteur-header {
+        padding: 1rem;
+        
+        .conducteur-basic-info {
+          gap: 0.75rem;
+          
+          .conducteur-avatar {
+            width: 50px;
+            height: 50px;
+            
+            .avatar-content ion-icon {
+              font-size: 1.5rem;
+            }
+          }
+          
+          .conducteur-details {
+            .conducteur-name {
+              font-size: 1.1rem;
+            }
+            
+            .conducteur-meta {
+              .status-badge {
+                font-size: 0.75rem;
+                padding: 0.2rem 0.6rem;
+              }
+              
+              .last-activity {
+                font-size: 0.75rem;
+              }
+            }
+          }
+        }
+        
+        .call-button {
+          width: 35px;
+          height: 35px;
+          
+          ion-icon {
+            font-size: 1rem;
+          }
+        }
+      }
+      
+      .vehicle-section {
+        padding: 0.75rem 1rem;
+        
+        .vehicle-info {
+          gap: 0.75rem;
+          
+          .vehicle-icon {
+            width: 40px;
+            height: 40px;
+            
+            ion-icon {
+              font-size: 1.1rem;
+            }
+          }
+          
+          .vehicle-details {
+            .vehicle-name {
+              font-size: 0.9rem;
+            }
+            
+            .vehicle-plate {
+              font-size: 0.8rem;
+            }
+          }
+        }
+      }
+      
+      .performance-section {
+        padding: 1rem;
+        
+        .performance-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.75rem;
+          
+          .performance-item {
+            padding: 0.75rem;
+            
+            .perf-icon {
+              width: 30px;
+              height: 30px;
+              
+              ion-icon {
+                font-size: 1rem;
+              }
+            }
+            
+            .perf-content {
+              .perf-value {
+                font-size: 1.1rem;
+              }
+              
+              .perf-label {
+                font-size: 0.75rem;
+              }
+            }
+          }
+        }
+      }
+      
+      .actions-section {
+        padding: 1rem;
+        
+        .contact-info {
+          .contact-chip {
+            padding: 0.4rem 0.8rem;
+            
+            ion-icon {
+              font-size: 0.9rem;
+            }
+          }
+        }
+        
+        .action-buttons {
+          gap: 0.5rem;
+          
+          .action-btn {
+            height: 32px;
+            font-size: 0.8rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .search-section,
+  .filters-section {
+    padding: 0 0.5rem 1rem 0.5rem;
+  }
+  
+  .filters-section {
+    .modern-segment {
+      ion-segment-button {
+        font-size: 0.75rem;
+      }
+    }
+  }
+  
+  .header-section {
+    .header-content {
+      .quick-stats {
+        grid-template-columns: 1fr 1fr;
+        
+        .stat-card:last-child {
+          grid-column: 1 / -1;
+        }
+      }
+    }
+  }
+  
+  .conducteurs-container {
+    .conducteur-card {
+      .performance-section {
+        .performance-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      
+      .actions-section {
+        .action-buttons {
+          flex-direction: column;
+        }
+      }
+    }
+  }
+}

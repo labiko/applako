@@ -1,0 +1,953 @@
+// Variables Lako
+:host {
+  --lako-green: #C1F11D;
+  --lako-gray: #797979;
+  --lako-cream: #FFFEE9;
+  --lako-dark: #151515;
+  --lako-white: #FFFFFF;
+}
+
+// Segments de navigation
+.segments-container {
+  padding: 1rem;
+  background: var(--lako-cream);
+  border-bottom: 1px solid rgba(193, 241, 29, 0.2);
+  
+  ion-segment {
+    --background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 4px;
+    
+    ion-segment-button {
+      --background-checked: var(--lako-green);
+      --color-checked: var(--lako-dark);
+      --border-radius: 8px;
+      margin: 2px;
+      font-weight: 500;
+      font-size: 0.85rem;
+      
+      ion-icon {
+        margin-bottom: 4px;
+      }
+    }
+  }
+}
+
+// Loading state
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  
+  ion-spinner {
+    --color: var(--lako-green);
+    width: 40px;
+    height: 40px;
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    color: var(--lako-gray);
+    font-size: 1rem;
+  }
+}
+
+// Section headers
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: var(--lako-cream);
+  border-bottom: 1px solid rgba(193, 241, 29, 0.1);
+  
+  h2 {
+    margin: 0;
+    color: var(--lako-dark);
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+  
+  ion-badge {
+    --background: var(--lako-green);
+    --color: var(--lako-dark);
+    font-weight: 600;
+  }
+}
+
+// Vue Kanban pour les versements
+.versements-kanban {
+  padding: 1rem;
+  
+  .conducteur-versement-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(193, 241, 29, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      border-color: rgba(193, 241, 29, 0.4);
+    }
+    
+    &.has-anomalies {
+      border-left: 4px solid var(--ion-color-warning);
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      
+      .conducteur-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+        
+        ion-avatar {
+          width: 50px;
+          height: 50px;
+          
+          .avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--lako-green), rgba(193, 241, 29, 0.7));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            
+            ion-icon {
+              font-size: 1.8rem;
+              color: var(--lako-dark);
+            }
+          }
+        }
+        
+        .info-details {
+          h3 {
+            margin: 0 0 0.25rem 0;
+            color: var(--lako-dark);
+            font-size: 1.1rem;
+            font-weight: 600;
+          }
+          
+          p {
+            margin: 0.25rem 0;
+            color: var(--lako-gray);
+            font-size: 0.85rem;
+          }
+        }
+      }
+      
+      .montant-info {
+        text-align: right;
+        
+        .montant-principal {
+          font-size: 1.4rem;
+          font-weight: 700;
+          color: var(--lako-green);
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .courses-count {
+          font-size: 0.8rem;
+          color: var(--lako-gray);
+          margin-top: 0.25rem;
+        }
+      }
+    }
+    
+    .card-indicators {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      
+      ion-chip {
+        font-size: 0.75rem;
+        font-weight: 600;
+        
+        ion-icon {
+          font-size: 0.9rem;
+        }
+      }
+    }
+    
+    .reservations-details {
+      margin-bottom: 1rem;
+      
+      .details-toggle {
+        --color: var(--lako-gray);
+        font-size: 0.85rem;
+      }
+    }
+    
+    .card-actions {
+      ion-button {
+        --border-radius: 12px;
+        font-weight: 600;
+        
+        ion-icon {
+          font-size: 1.1rem;
+        }
+      }
+    }
+  }
+}
+
+// Dashboard metrics
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  
+  .metric-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid rgba(193, 241, 29, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+    }
+    
+    .metric-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      
+      ion-icon {
+        font-size: 2rem;
+        color: white;
+      }
+      
+      &.success {
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+      }
+      
+      &.primary {
+        background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
+      }
+      
+      &.warning {
+        background: linear-gradient(135deg, var(--ion-color-warning), var(--ion-color-warning-shade));
+      }
+      
+      &.secondary {
+        background: linear-gradient(135deg, var(--ion-color-secondary), var(--ion-color-secondary-shade));
+      }
+    }
+    
+    .metric-info {
+      h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--lako-dark);
+      }
+      
+      p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: var(--lako-gray);
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// File d'attente
+.file-attente-list {
+  padding: 1rem;
+  
+  .attente-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    border: 1px solid rgba(193, 241, 29, 0.1);
+    
+    .position-badge {
+      width: 40px;
+      height: 40px;
+      background: var(--lako-green);
+      color: var(--lako-dark);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-right: 1rem;
+    }
+    
+    .conducteur-info {
+      flex: 1;
+      
+      h4 {
+        margin: 0 0 0.25rem 0;
+        color: var(--lako-dark);
+        font-size: 1rem;
+      }
+      
+      p {
+        margin: 0.125rem 0;
+        color: var(--lako-gray);
+        font-size: 0.8rem;
+      }
+    }
+    
+    .temps-attente {
+      ion-badge {
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+// Progress items
+.progress-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  span {
+    color: var(--lako-dark);
+    font-weight: 500;
+  }
+}
+
+// Empty states
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  
+  ion-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+  
+  h3 {
+    color: var(--lako-dark);
+    margin-bottom: 0.5rem;
+  }
+  
+  p {
+    color: var(--lako-gray);
+    font-size: 0.9rem;
+  }
+}
+
+// Modal modernisée pour les détails des réservations
+.modern-details-modal {
+  --border-radius: 20px 20px 0 0;
+  --width: 100%;
+  --max-width: 800px;
+  
+  ion-header {
+    ion-toolbar {
+      --background: var(--ion-color-primary);
+      --color: white;
+      
+      .header-content {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        
+        .header-icon {
+          font-size: 1.5rem;
+          color: var(--lako-green);
+        }
+        
+        .header-text {
+          h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+          }
+          
+          p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+          }
+        }
+      }
+      
+      .close-button {
+        --color: white;
+        --background-hover: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        
+        ion-icon {
+          font-size: 1.3rem;
+        }
+      }
+    }
+  }
+  
+  // En-tête avec statistiques
+  .stats-header {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--lako-cream) 0%, rgba(255, 255, 255, 0.9) 100%);
+    
+    .stat-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border: 1px solid rgba(193, 241, 29, 0.1);
+      transition: transform 0.2s ease;
+      
+      &:hover {
+        transform: translateY(-2px);
+      }
+      
+      .stat-number {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--lako-dark);
+        
+        &.large {
+          font-size: 1.1rem;
+        }
+      }
+      
+      .stat-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--lako-gray);
+        font-weight: 500;
+        
+        ion-icon {
+          font-size: 1rem;
+        }
+      }
+      
+      &.primary {
+        border-left: 4px solid var(--ion-color-primary);
+        
+        .stat-number {
+          color: var(--ion-color-primary);
+        }
+      }
+      
+      &.success {
+        border-left: 4px solid #4CAF50;
+        
+        .stat-number {
+          color: #4CAF50;
+        }
+      }
+      
+      &.secondary {
+        border-left: 4px solid var(--ion-color-secondary);
+        
+        .stat-number {
+          color: var(--ion-color-secondary);
+        }
+      }
+    }
+  }
+  
+  // Liste modernisée des réservations
+  .modern-reservations-list {
+    padding: 1rem;
+    
+    .reservation-card {
+      background: white;
+      border-radius: 16px;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba(193, 241, 29, 0.1);
+      overflow: hidden;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        border-color: rgba(193, 241, 29, 0.3);
+      }
+      
+      .course-header {
+        display: flex;
+        align-items: center;
+        padding: 1.2rem;
+        background: linear-gradient(135deg, var(--lako-green) 0%, rgba(193, 241, 29, 0.8) 100%);
+        
+        .course-number {
+          .number-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: var(--lako-dark);
+            color: var(--lako-green);
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-right: 1rem;
+          }
+        }
+        
+        .course-destination {
+          flex: 1;
+          
+          h3 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--lako-dark);
+          }
+          
+          .course-time {
+            margin: 0;
+            font-size: 0.8rem;
+            color: rgba(21, 21, 21, 0.7);
+            font-weight: 500;
+          }
+          
+          .course-id {
+            margin: 0;
+            font-size: 0.7rem;
+            color: rgba(21, 21, 21, 0.6);
+            font-weight: 400;
+            font-family: monospace;
+          }
+        }
+        
+        .course-price {
+          .price-amount {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--lako-dark);
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+          }
+        }
+      }
+      
+      .course-details {
+        padding: 1.2rem;
+        
+        .detail-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 1rem;
+          margin-bottom: 1rem;
+          
+          .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(193, 241, 29, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(193, 241, 29, 0.1);
+            
+            ion-icon {
+              font-size: 1.2rem;
+              flex-shrink: 0;
+            }
+            
+            .detail-content {
+              display: flex;
+              flex-direction: column;
+              
+              .detail-label {
+                font-size: 0.7rem;
+                color: var(--lako-gray);
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 0.25rem;
+              }
+              
+              .detail-value {
+                font-size: 0.9rem;
+                color: var(--lako-dark);
+                font-weight: 500;
+              }
+            }
+            
+            &.validation-item {
+              background: rgba(76, 175, 80, 0.05);
+              border-color: rgba(76, 175, 80, 0.2);
+            }
+          }
+        }
+        
+        .course-comment {
+          .comment-chip {
+            --background: rgba(193, 241, 29, 0.2);
+            --color: var(--lako-dark);
+            width: 100%;
+            display: flex;
+            justify-content: flex-start;
+            
+            ion-label {
+              font-style: italic;
+              font-size: 0.85rem;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Footer de la modal
+  .modal-footer {
+    padding: 1.5rem;
+    background: var(--lako-cream);
+    border-top: 1px solid rgba(193, 241, 29, 0.1);
+    
+    ion-button {
+      --border-radius: 12px;
+      font-weight: 600;
+      
+      ion-icon {
+        font-size: 1.1rem;
+      }
+    }
+  }
+}
+
+// Modales
+.otp-modal, .details-modal {
+  --border-radius: 20px 20px 0 0;
+  
+  ion-header {
+    ion-toolbar {
+      --background: var(--ion-color-primary);
+      --color: white;
+      
+      ion-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        
+        ion-icon {
+          font-size: 1.2rem;
+        }
+      }
+      
+      .close-button {
+        --color: white;
+        --background-hover: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        
+        ion-icon {
+          font-size: 1.3rem;
+        }
+      }
+    }
+  }
+  
+  .conducteur-summary {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--lako-cream);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    
+    ion-avatar {
+      width: 60px;
+      height: 60px;
+      
+      .avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, var(--lako-green), rgba(193, 241, 29, 0.7));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        
+        ion-icon {
+          font-size: 2rem;
+          color: var(--lako-dark);
+        }
+      }
+    }
+    
+    .summary-info {
+      h3 {
+        margin: 0 0 0.25rem 0;
+        color: var(--lako-dark);
+        font-size: 1.2rem;
+        font-weight: 600;
+      }
+      
+      p {
+        margin: 0.25rem 0;
+        color: var(--lako-gray);
+        font-size: 0.9rem;
+      }
+    }
+  }
+  
+  .sms-status {
+    margin-bottom: 1.5rem;
+    
+    ion-item {
+      --background: rgba(76, 175, 80, 0.1);
+      --border-radius: 12px;
+      --inner-padding-end: 16px;
+      --inner-padding-start: 16px;
+      border: 1px solid rgba(76, 175, 80, 0.2);
+    }
+  }
+  
+  .otp-input-section {
+    margin-bottom: 1.5rem;
+    
+    h4 {
+      text-align: center;
+      color: var(--lako-dark);
+      margin-bottom: 1rem;
+    }
+    
+    .otp-inputs {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      
+      .otp-digit {
+        --background: var(--lako-cream);
+        --color: var(--lako-dark);
+        --border-radius: 12px;
+        --padding: 12px;
+        width: 60px;
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        border: 2px solid rgba(193, 241, 29, 0.3);
+        
+        &:focus-within {
+          border-color: var(--lako-green);
+        }
+      }
+    }
+    
+    .otp-info {
+      text-align: center;
+      
+      .error-message {
+        color: var(--ion-color-danger);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+      }
+      
+      p {
+        color: var(--lako-gray);
+        font-size: 0.85rem;
+        margin: 0.5rem 0;
+      }
+    }
+  }
+  
+  .options-avancees {
+    margin-bottom: 1.5rem;
+    
+    ion-item {
+      --background: rgba(255, 255, 255, 0.5);
+      --border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+  }
+  
+  .modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+    
+    ion-button {
+      --border-radius: 12px;
+      font-weight: 600;
+      
+      ion-icon {
+        font-size: 1.1rem;
+      }
+    }
+  }
+}
+
+// Badges pour versements
+.versement-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+// ID Versement dans l'historique
+.versement-id {
+  font-family: monospace !important;
+  font-size: 0.7rem !important;
+  color: var(--lako-gray) !important;
+  font-weight: 400 !important;
+  margin: 0.25rem 0 0 0 !important;
+}
+
+// Toast de succès personnalisé
+.success-versement-toast {
+  --border-radius: 16px;
+  --box-shadow: 0 8px 24px rgba(76, 175, 80, 0.3);
+  
+  .success-toast-content {
+    padding: 0.5rem 0;
+    
+    .success-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      
+      .success-icon {
+        font-size: 1.5rem;
+        color: #4CAF50;
+      }
+      
+      strong {
+        color: #2E7D32;
+        font-size: 1rem;
+      }
+    }
+    
+    .success-details {
+      margin-left: 2.25rem;
+      
+      p {
+        margin: 0.25rem 0;
+        font-size: 0.9rem;
+        color: #424242;
+        
+        strong {
+          color: #2E7D32;
+        }
+      }
+    }
+  }
+  
+  .toast-button {
+    --border-radius: 8px;
+    font-weight: 600;
+    
+    &[role="info"] {
+      --color: #4CAF50;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .otp-inputs {
+    gap: 0.5rem !important;
+    
+    .otp-digit {
+      width: 50px !important;
+      font-size: 1.2rem !important;
+    }
+  }
+  
+  .conducteur-versement-card .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    
+    .montant-info {
+      text-align: left;
+    }
+  }
+  
+  // Responsive pour la modal moderne
+  .modern-details-modal {
+    .stats-header {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      padding: 1rem;
+      
+      .stat-card {
+        padding: 1rem;
+        
+        .stat-number {
+          font-size: 1.2rem;
+        }
+      }
+    }
+    
+    .reservation-card {
+      .course-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        
+        .course-number {
+          align-self: flex-start;
+        }
+        
+        .course-destination {
+          width: 100%;
+        }
+        
+        .course-price {
+          align-self: flex-end;
+        }
+      }
+      
+      .detail-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem;
+      }
+    }
+  }
+}

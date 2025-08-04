@@ -1,0 +1,210 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>
+      <div class="header-title">
+        <ion-icon name="stats-chart" class="header-icon"></ion-icon>
+        <span>Dashboard</span>
+      </div>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Entreprise Info -->
+  <div class="welcome-section" *ngIf="entreprise">
+    <h2>Bonjour, {{ entreprise.nom }}</h2>
+    <p class="subtitle" *ngIf="metrics">{{ metrics.periode_description }}</p>
+    <div class="info-badge" *ngIf="metrics">
+      <ion-icon name="information-circle" class="info-icon"></ion-icon>
+      <span>Courses validées et revenus générés</span>
+    </div>
+  </div>
+
+  <!-- Period Selector -->
+  <ion-segment 
+    [value]="selectedPeriod" 
+    (ionChange)="onPeriodChange($event)"
+    class="period-selector">
+    <ion-segment-button value="today">
+      <ion-label>Aujourd'hui</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="week">
+      <ion-label>Semaine</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="month">
+      <ion-label>Mois</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- Loading Spinner -->
+  <div class="loading-container" *ngIf="isLoading">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Chargement des métriques...</p>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!isLoading && metrics">
+    
+    <!-- Key Metrics Cards -->
+    <ion-grid class="metrics-grid">
+      <ion-row>
+        
+        <!-- Courses Total -->
+        <ion-col size="6" size-md="3">
+          <ion-card class="metric-card courses-card">
+            <ion-card-content>
+              <div class="metric-header">
+                <div class="metric-icon">
+                  <ion-icon name="checkmark-circle"></ion-icon>
+                </div>
+                <div class="metric-info">
+                  <ion-icon name="information-circle" class="info-tooltip" title="Courses terminées et validées"></ion-icon>
+                </div>
+              </div>
+              <div class="metric-value">{{ metrics.courses_total }}</div>
+              <div class="metric-label">Courses validées</div>
+              <div class="metric-description">Terminées avec succès</div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- CA Brut -->
+        <ion-col size="6" size-md="3">
+          <ion-card class="metric-card revenue-card">
+            <ion-card-content>
+              <div class="metric-header">
+                <div class="metric-icon">
+                  <ion-icon name="cash"></ion-icon>
+                </div>
+                <div class="metric-info">
+                  <ion-icon name="information-circle" class="info-tooltip" title="Revenus totaux des courses validées"></ion-icon>
+                </div>
+              </div>
+              <div class="metric-value">{{ formatCurrency(metrics.ca_brut) }}</div>
+              <div class="metric-label">Revenus totaux</div>
+              <div class="metric-description">Chiffre d'affaires brut</div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Conducteurs Actifs -->
+        <ion-col size="6" size-md="3">
+          <ion-card class="metric-card drivers-card">
+            <ion-card-content>
+              <div class="metric-header">
+                <div class="metric-icon">
+                  <ion-icon name="people-circle"></ion-icon>
+                </div>
+                <div class="metric-info">
+                  <ion-icon name="information-circle" class="info-tooltip" title="Conducteurs connectés et disponibles"></ion-icon>
+                </div>
+              </div>
+              <div class="metric-value">{{ metrics.conducteurs_actifs }}</div>
+              <div class="metric-label">Conducteurs actifs</div>
+              <div class="metric-description">En ligne maintenant</div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Note Moyenne -->
+        <ion-col size="6" size-md="3">
+          <ion-card class="metric-card rating-card">
+            <ion-card-content>
+              <div class="metric-header">
+                <div class="metric-icon">
+                  <ion-icon name="star"></ion-icon>
+                </div>
+                <div class="metric-info">
+                  <ion-icon name="information-circle" class="info-tooltip" title="Note moyenne des conducteurs"></ion-icon>
+                </div>
+              </div>
+              <div class="metric-value">{{ metrics.note_moyenne }}/5</div>
+              <div class="metric-label">Satisfaction</div>
+              <div class="metric-description">Note moyenne clients</div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+      </ion-row>
+    </ion-grid>
+
+    <!-- Financial Summary -->
+    <ion-card class="summary-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="trending-up"></ion-icon>
+          Résumé Financier
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="4">
+              <div class="financial-item">
+                <div class="financial-label">CA Brut</div>
+                <div class="financial-value">{{ formatCurrency(metrics.ca_brut) }}</div>
+              </div>
+            </ion-col>
+            <ion-col size="4">
+              <div class="financial-item">
+                <div class="financial-label">Commission LokoTaxi</div>
+                <div class="financial-value commission">{{ formatCurrency(metrics.commission) }}</div>
+              </div>
+            </ion-col>
+            <ion-col size="4">
+              <div class="financial-item">
+                <div class="financial-label">CA Net</div>
+                <div class="financial-value net">{{ formatCurrency(metrics.ca_net) }}</div>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Performance Indicators -->
+    <ion-card class="performance-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="checkmark-circle"></ion-icon>
+          Indicateurs de Performance
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="performance-item">
+          <div class="performance-label">Taux de Complétion</div>
+          <div class="performance-bar">
+            <div class="progress-bar" [style.width.%]="metrics.taux_completion"></div>
+          </div>
+          <div class="performance-value">{{ metrics.taux_completion }}%</div>
+        </div>
+        
+        <div class="performance-item">
+          <div class="performance-label">Satisfaction Client</div>
+          <div class="performance-bar">
+            <div class="progress-bar satisfaction" [style.width.%]="(metrics.note_moyenne / 5) * 100"></div>
+          </div>
+          <div class="performance-value">{{ metrics.note_moyenne }}/5</div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && !metrics">
+    <ion-icon name="stats-chart" class="empty-icon"></ion-icon>
+    <h3>Aucune donnée disponible</h3>
+    <p>Les métriques apparaîtront une fois que vos conducteurs commenceront à effectuer des courses.</p>
+    <ion-button (click)="loadMetrics()" color="primary">
+      <ion-icon name="refresh" slot="start"></ion-icon>
+      Actualiser
+    </ion-button>
+  </div>
+
+</ion-content>

@@ -1,0 +1,35 @@
+<ion-tabs>
+  <ion-tab-bar slot="bottom" color="primary" [class.tab-bar-active]="true">
+    
+    <ion-tab-button tab="dashboard" [class.tab-selected]="selectedTab === 'dashboard'">
+      <ion-icon name="stats-chart"></ion-icon>
+      <ion-label>Dashboard</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="conducteurs" [class.tab-selected]="selectedTab === 'conducteurs'">
+      <ion-icon name="people"></ion-icon>
+      <ion-label>Conducteurs</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="reservations" [class.tab-selected]="selectedTab === 'reservations'">
+      <ion-icon name="document"></ion-icon>
+      <ion-label>Réservations</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="finances" [class.tab-selected]="selectedTab === 'finances'">
+      <ion-icon name="wallet"></ion-icon>
+      <ion-label>Finances</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="versements" [class.tab-selected]="selectedTab === 'versements'">
+      <ion-icon name="cash"></ion-icon>
+      <ion-label>Versements</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="profile" [class.tab-selected]="selectedTab === 'profile'">
+      <ion-icon name="business"></ion-icon>
+      <ion-label>Profil</ion-label>
+    </ion-tab-button>
+
+  </ion-tab-bar>
+</ion-tabs>

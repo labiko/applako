@@ -1,0 +1,103 @@
+ion-tab-bar {
+  --background: var(--lako-green);
+  --color: var(--lako-dark);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  
+  ion-tab-button {
+    --color: var(--lako-dark);
+    --color-selected: var(--lako-white);
+    --background-focused: rgba(21, 21, 21, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    
+    ion-icon {
+      font-size: 1.3rem;
+      margin-bottom: 4px;
+      transition: all 0.3s ease;
+    }
+    
+    ion-label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    &.tab-selected {
+      --background: var(--lako-dark);
+      --color: var(--lako-green);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(21, 21, 21, 0.3);
+      border-radius: 12px 12px 0 0;
+      
+      ion-icon,
+      ion-label {
+        color: var(--lako-green);
+        font-weight: 600;
+      }
+      
+      ion-icon {
+        transform: scale(1.1);
+      }
+      
+      // Indicateur visuel en haut du tab sélectionné
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 30px;
+        height: 3px;
+        background: var(--lako-green);
+        border-radius: 0 0 3px 3px;
+      }
+    }
+    
+    // Améliorer les états hover et focus
+    &:hover:not(.tab-selected) {
+      --background: rgba(21, 21, 21, 0.05);
+      transform: translateY(-1px);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+// Animation pour les transitions de tabs
+ion-tabs {
+  .tab-content {
+    transition: opacity 0.3s ease;
+  }
+}
+
+// Responsive design pour les tabs
+@media (max-width: 768px) {
+  ion-tab-bar {
+    ion-tab-button {
+      ion-icon {
+        font-size: 1.2rem;
+      }
+      
+      ion-label {
+        font-size: 0.75rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  ion-tab-bar {
+    ion-tab-button {
+      ion-icon {
+        font-size: 1.1rem;
+        margin-bottom: 2px;
+      }
+      
+      ion-label {
+        font-size: 0.7rem;
+      }
+    }
+  }
+}

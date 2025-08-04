@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 import { Conducteur } from './auth.service';
+import { Entreprise } from './entreprise-auth.service';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable({
   providedIn: 'root'
@@ -37,6 +39,92 @@ export class SupabaseService {
     }
 
     return data as Conducteur;
+  }
+
+  // Authenticate entreprise (uniquement par email)
+  async authenticateEntreprise(email: string, password?: string): Promise<Entreprise | null> {
+    const { data, error } = await this.supabase
+      .from('entreprises')
+      .select('*')
+      .eq('email', email)
+      .eq('actif', true)
+      .single();
+
+    if (error || !data) {
+      console.error('Entreprise not found:', error);
+      return null;
+    }
+
+    // Si c'est la première connexion (password_hash null), permettre la connexion sans mot de passe
+    if (!data.password_hash && data.first_login) {
+      return data as Entreprise;
+    }
+
+    // Sinon, vérifier le mot de passe avec bcrypt
+    if (password && data.password_hash && bcrypt.compareSync(password, data.password_hash)) {
+      return data as Entreprise;
+    }
+
+    console.error('Invalid password');
+    return null;
+  }
+
+  // Créer le mot de passe lors de la première connexion
+  async createEntreprisePassword(entrepriseId: string, newPassword: string): Promise<boolean> {
+    try {
+      // Hasher le mot de passe avec bcrypt
+      const saltRounds = 10;
+      const hashedPassword = bcrypt.hashSync(newPassword, saltRounds);
+
+      const { error } = await this.supabase
+        .from('entreprises')
+        .update({ 
+          password_hash: hashedPassword,
+          first_login: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', entrepriseId);
+
+      if (error) {
+        console.error('Error creating password:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error in createEntreprisePassword:', error);
+      return false;
+    }
+  }
+
+  // Vérifier si l'entreprise doit créer un mot de passe (uniquement par email)
+  async checkFirstLogin(email: string): Promise<{ needsPassword: boolean; entreprise?: Entreprise }> {
+    try {
+      const { data, error } = await this.supabase
+        .from('entreprises')
+        .select('*')
+        .eq('email', email)
+        .eq('actif', true)
+        .single();
+
+      if (error || !data) {
+        return { needsPassword: false };
+      }
+
+      console.log('Debug checkFirstLogin:', {
+        password_hash: data.password_hash,
+        first_login: data.first_login,
+        needsPassword: !data.password_hash && data.first_login
+      });
+
+      return {
+        needsPassword: !data.password_hash && data.first_login,
+        entreprise: data as Entreprise
+      };
+    } catch (error) {
+      console.error('Error checking first login:', error);
+      return { needsPassword: false };
+    }
   }
 
   // Get pending reservations for a specific conducteur
