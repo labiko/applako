@@ -359,14 +359,15 @@
               <div class="location-block">
                 <p class="location-type">Position de départ:</p>
                 <div class="location-with-map" (click)="openPositionInMaps(selectedReservationDetails.position_depart)">
-                  <p class="location-text">{{ selectedReservationDetails.position_depart || 'Non spécifiée' }}</p>
+                  <p class="location-text">{{ selectedReservationDetails.depart_nom || 'Non spécifiée' }}</p>
                   <ion-icon name="map" class="map-link-icon"></ion-icon>
                 </div>
               </div>
               <div class="location-block" *ngIf="selectedReservationDetails.destination_nom">
                 <p class="location-type">Destination:</p>
-                <div class="location-info">
+                <div class="location-with-map" (click)="openPositionInMaps(selectedReservationDetails.position_arrivee)">
                   <p class="location-text">{{ selectedReservationDetails.destination_nom }}</p>
+                  <ion-icon name="map" class="map-link-icon"></ion-icon>
                 </div>
               </div>
             </div>
