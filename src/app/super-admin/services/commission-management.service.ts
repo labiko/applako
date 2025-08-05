@@ -593,7 +593,7 @@ export class CommissionManagementService {
       const { data: entreprises, error: entreprisesError } = await this.supabaseService.client
         .from('entreprises')
         .select('id, nom')
-        .eq('statut', 'active');
+        .eq('actif', true);
 
       if (entreprisesError) throw entreprisesError;
 
@@ -683,7 +683,7 @@ export class CommissionManagementService {
       const { data: entreprises, error: entreprisesError } = await this.supabaseService.client
         .from('entreprises')
         .select('id, nom, email')
-        .eq('statut', 'active')
+        .eq('actif', true)
         .order('nom');
 
       if (entreprisesError) throw entreprisesError;
@@ -788,7 +788,8 @@ export class CommissionManagementService {
         entreprise_id: null,
         taux_commission: nouveauTaux,
         actif: true,
-        description: description || `Mise à jour taux global : ${ancienTaux}% → ${nouveauTaux}%`,
+        created_by: 'super-admin',
+        motif: description || `Mise à jour taux global : ${ancienTaux}% → ${nouveauTaux}%`,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -873,7 +874,8 @@ export class CommissionManagementService {
         entreprise_id: entrepriseId,
         taux_commission: nouveauTaux,
         actif: true,
-        description: description || `Taux spécifique ${entreprise.nom}: ${ancienTaux}% → ${nouveauTaux}%`,
+        created_by: 'super-admin',
+        motif: description || `Taux spécifique ${entreprise.nom}: ${ancienTaux}% → ${nouveauTaux}%`,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
