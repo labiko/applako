@@ -1,7 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Optional } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { EntrepriseAuthService } from './entreprise-auth.service';
 import { SMSService } from './sms.service';
+// Import conditionnel du service super-admin (isolation garantie)
+import { CommissionManagementService } from '../super-admin/services/commission-management.service';
 
 export interface DashboardMetrics {
   courses_total: number;
@@ -12,6 +14,9 @@ export interface DashboardMetrics {
   note_moyenne: number;
   taux_completion: number;
   periode_description: string;
+  // Nouveau champ pour traçabilité des commissions dynamiques
+  taux_commission?: number;
+  commission_type?: 'global' | 'specifique' | 'fallback';
   evolution: {
     courses: string;
     ca: string;
@@ -52,7 +57,10 @@ export class EntrepriseService {
   constructor(
     private supabaseService: SupabaseService,
     private entrepriseAuthService: EntrepriseAuthService,
-    private smsService: SMSService
+    private smsService: SMSService,
+    // ✅ INJECTION CONDITIONNELLE - Service super-admin avec @Optional()
+    // Si module super-admin non chargé, commissionService sera null
+    @Optional() private commissionService?: CommissionManagementService
   ) {}
 
   // Obtenir les métriques du dashboard
@@ -118,7 +126,34 @@ export class EntrepriseService {
       // Calculer les métriques
       const coursesTotal = reservations?.length || 0;
       const caBrut = reservations?.reduce((sum, r) => sum + (r.prix_total || 0), 0) || 0;
-      const commission = caBrut * 0.15; // 15% commission par défaut
+      
+      // 🔄 NOUVEAU SYSTÈME DE COMMISSION DYNAMIQUE (NON-INVASIF)
+      let tauxCommission = 15; // Fallback par défaut sécurisé
+      let commissionType: 'global' | 'specifique' | 'fallback' = 'fallback';
+      
+      if (this.commissionService) {
+        // ✅ Service super-admin disponible - Utiliser taux dynamique
+        try {
+          console.log(`📊 Calcul commission dynamique pour entreprise: ${entrepriseId}`);
+          tauxCommission = await this.commissionService.getCommissionRateIsolated(entrepriseId);
+          
+          // Déterminer le type de commission appliqué
+          const globalRate = await this.commissionService.getCurrentGlobalRate();
+          commissionType = tauxCommission === globalRate ? 'global' : 'specifique';
+          
+          console.log(`✅ Taux commission dynamique: ${tauxCommission}% (${commissionType})`);
+        } catch (error) {
+          console.warn('⚠️ Erreur taux dynamique, utilisation fallback 15%:', error);
+          tauxCommission = 15; // Fallback sécurisé
+          commissionType = 'fallback';
+        }
+      } else {
+        // ⚠️ Service super-admin non disponible - Utiliser fallback
+        console.log('📋 Service commission non disponible, utilisation fallback 15%');
+        commissionType = 'fallback';
+      }
+      
+      const commission = caBrut * (tauxCommission / 100);
       const caNet = caBrut - commission;
       
       // Note moyenne des conducteurs
@@ -145,6 +180,9 @@ export class EntrepriseService {
         note_moyenne: Math.round(noteMoyenne * 10) / 10,
         taux_completion: Math.round(tauxCompletion * 10) / 10,
         periode_description: this.getPeriodeDescription(periode),
+        // ✅ NOUVEAUX CHAMPS - Traçabilité commission dynamique
+        taux_commission: tauxCommission,
+        commission_type: commissionType,
         evolution: {
           courses: '+12%', // TODO: calculer la vraie évolution
           ca: '+8%',
@@ -448,5 +486,128 @@ export class EntrepriseService {
   // Générer un mot de passe à 6 chiffres
   private genererMotDePasse6Chiffres(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  // ============================================================================
+  // MÉTHODES UTILITAIRES COMMISSION DYNAMIQUE
+  // ============================================================================
+
+  /**
+   * Vérifier si le système de commission dynamique est actif
+   * Utilisé par les composants pour afficher des informations
+   */
+  public isCommissionSystemActive(): boolean {
+    return !!this.commissionService;
+  }
+
+  /**
+   * Obtenir des informations détaillées sur la commission appliquée
+   * Utilisé pour l'affichage dans le dashboard entreprise
+   */
+  public async getCommissionInfo(): Promise<{
+    taux: number;
+    type: 'global' | 'specifique' | 'fallback';
+    description: string;
+    system_active: boolean;
+  }> {
+    try {
+      const entrepriseId = this.entrepriseAuthService.getCurrentEntrepriseId();
+      if (!entrepriseId) {
+        return {
+          taux: 15,
+          type: 'fallback',
+          description: 'Taux par défaut (entreprise non identifiée)',
+          system_active: false
+        };
+      }
+
+      if (this.commissionService) {
+        try {
+          const taux = await this.commissionService.getCommissionRateIsolated(entrepriseId);
+          const globalRate = await this.commissionService.getCurrentGlobalRate();
+          
+          const type: 'global' | 'specifique' = taux === globalRate ? 'global' : 'specifique';
+          const description = type === 'global' 
+            ? `Taux global LokoTaxi (${taux}%)`
+            : `Taux spécifique à votre entreprise (${taux}%)`;
+
+          return {
+            taux,
+            type,
+            description,
+            system_active: true
+          };
+        } catch (error) {
+          console.warn('⚠️ Erreur récupération info commission:', error);
+          return {
+            taux: 15,
+            type: 'fallback',
+            description: 'Taux de sécurité (15%) - Erreur système',
+            system_active: true
+          };
+        }
+      } else {
+        return {
+          taux: 15,
+          type: 'fallback',
+          description: 'Taux par défaut (15%) - Système avancé non activé',
+          system_active: false
+        };
+      }
+    } catch (error) {
+      console.error('❌ Erreur récupération info commission:', error);
+      return {
+        taux: 15,
+        type: 'fallback',
+        description: 'Taux par défaut (15%) - Erreur système',
+        system_active: false
+      };
+    }
+  }
+
+  /**
+   * Calculer la commission pour un montant donné
+   * Utilise le taux dynamique si disponible
+   */
+  public async calculateCommission(montantBrut: number): Promise<{
+    commission: number;
+    montantNet: number;
+    taux: number;
+    type: 'global' | 'specifique' | 'fallback';
+  }> {
+    try {
+      const entrepriseId = this.entrepriseAuthService.getCurrentEntrepriseId();
+      let taux = 15; // Fallback
+      let type: 'global' | 'specifique' | 'fallback' = 'fallback';
+
+      if (entrepriseId && this.commissionService) {
+        try {
+          taux = await this.commissionService.getCommissionRateIsolated(entrepriseId);
+          const globalRate = await this.commissionService.getCurrentGlobalRate();
+          type = taux === globalRate ? 'global' : 'specifique';
+        } catch (error) {
+          console.warn('⚠️ Erreur calcul commission, utilisation fallback:', error);
+        }
+      }
+
+      const commission = montantBrut * (taux / 100);
+      const montantNet = montantBrut - commission;
+
+      return {
+        commission: Math.round(commission),
+        montantNet: Math.round(montantNet),
+        taux,
+        type
+      };
+    } catch (error) {
+      console.error('❌ Erreur calcul commission:', error);
+      const commission = montantBrut * 0.15;
+      return {
+        commission: Math.round(commission),
+        montantNet: Math.round(montantBrut - commission),
+        taux: 15,
+        type: 'fallback'
+      };
+    }
   }
 }

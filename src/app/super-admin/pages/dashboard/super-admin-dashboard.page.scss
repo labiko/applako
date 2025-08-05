@@ -1,0 +1,186 @@
+/**
+ * STYLES DASHBOARD SUPER-ADMIN
+ */
+
+.dashboard-container {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// Header personnalisé
+ion-header ion-toolbar {
+  ion-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    
+    ion-icon {
+      font-size: 1.2em;
+    }
+  }
+}
+
+// Carte d'accueil
+.welcome-card {
+  background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-secondary));
+  color: white;
+  margin-bottom: 1rem;
+  
+  .welcome-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .welcome-text {
+      h2 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+      
+      p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 1rem;
+      }
+    }
+    
+    .session-info {
+      text-align: right;
+      
+      small {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// Carte informations utilisateur
+.user-info-card {
+  margin-bottom: 1rem;
+  
+  ion-card-header ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ion-color-primary);
+    
+    ion-icon {
+      font-size: 1.1em;
+    }
+  }
+  
+  .info-item {
+    margin-bottom: 0.5rem;
+    padding: 8px 0;
+    
+    strong {
+      color: var(--ion-color-dark);
+      margin-right: 8px;
+    }
+  }
+}
+
+// Carte fonctionnalités
+.features-card {
+  margin-bottom: 1rem;
+  
+  ion-card-header ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ion-color-secondary);
+    
+    ion-icon {
+      font-size: 1.1em;
+    }
+  }
+  
+  ion-button {
+    height: 48px;
+    margin-bottom: 0.5rem;
+    
+    ion-icon {
+      margin-right: 8px;
+    }
+  }
+  
+  .features-note {
+    text-align: center;
+    line-height: 1.6;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(var(--ion-color-light-rgb), 0.5);
+    border-radius: 8px;
+  }
+}
+
+// Carte déconnexion
+.logout-card {
+  ion-button {
+    height: 48px;
+    font-weight: 600;
+    
+    ion-icon {
+      margin-right: 8px;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 0.5rem;
+  }
+  
+  .welcome-content {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+    
+    .session-info {
+      text-align: center;
+    }
+  }
+  
+  .info-item {
+    text-align: center;
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+ion-card {
+  animation: fadeIn 0.4s ease-out;
+  
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+  &:nth-child(4) { animation-delay: 0.4s; }
+}
+
+// États des boutons
+ion-button[disabled] {
+  --opacity: 0.6;
+  
+  &::after {
+    content: ' (Bientôt disponible)';
+    font-size: 0.8em;
+    opacity: 0.7;
+  }
+}

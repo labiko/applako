@@ -31,4 +31,8 @@ export const routes: Routes = [
     loadChildren: () => import('./entreprise/entreprise.routes').then((m) => m.routes),
     canActivate: [AuthGuard]
   },
+  {
+    path: 'super-admin',
+    loadChildren: () => import('./super-admin/super-admin.routes').then((m) => m.SUPER_ADMIN_ROUTES)
+  },
 ];

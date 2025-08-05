@@ -1,0 +1,134 @@
+<ion-content class="super-admin-login">
+  <ion-header>
+    <ion-toolbar color="dark">
+      <ion-title class="title-center">
+        <ion-icon name="shield-checkmark-outline"></ion-icon>
+        Administration LokoTaxi
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="login-container">
+    <ion-grid>
+      <ion-row class="ion-justify-content-center">
+        <ion-col size="12" size-md="6" size-lg="4">
+          
+          <!-- Logo et titre -->
+          <div class="logo-section">
+            <div class="logo-icon">
+              <ion-icon name="shield-checkmark-outline" color="primary"></ion-icon>
+            </div>
+            <h1>Super Admin</h1>
+            <p class="subtitle">Accès sécurisé administrateur</p>
+          </div>
+
+          <!-- Formulaire de connexion -->
+          <ion-card class="login-card">
+            <ion-card-header>
+              <ion-card-title>Connexion Sécurisée</ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <!-- Message d'erreur -->
+              <div *ngIf="errorMessage" class="error-message">
+                <ion-text color="danger">
+                  <p>{{ errorMessage }}</p>
+                </ion-text>
+              </div>
+
+              <!-- Avertissement tentatives -->
+              <div *ngIf="showAttemptsWarning" class="warning-message">
+                <ion-text color="warning">
+                  <p>⚠️ {{ attemptsRemaining }} tentative(s) restante(s)</p>
+                </ion-text>
+              </div>
+
+              <!-- Compte bloqué -->
+              <div *ngIf="isBlocked" class="blocked-message">
+                <ion-text color="danger">
+                  <p>🔒 Compte temporairement bloqué</p>
+                  <small>Veuillez attendre quelques minutes avant de réessayer</small>
+                </ion-text>
+              </div>
+
+              <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+                <!-- Email -->
+                <ion-item class="form-item">
+                  <ion-icon name="person-outline" slot="start" color="medium"></ion-icon>
+                  <ion-label position="stacked">Email Super-Admin</ion-label>
+                  <ion-input
+                    type="email"
+                    [(ngModel)]="email"
+                    name="email"
+                    placeholder="admin@lokotaxi.com"
+                    [disabled]="isLoading || isBlocked"
+                    autocomplete="email"
+                    required>
+                  </ion-input>
+                </ion-item>
+
+                <!-- Mot de passe -->
+                <ion-item class="form-item">
+                  <ion-icon name="lock-closed-outline" slot="start" color="medium"></ion-icon>
+                  <ion-label position="stacked">Mot de passe</ion-label>
+                  <ion-input
+                    [type]="showPassword ? 'text' : 'password'"
+                    [(ngModel)]="password"
+                    name="password"
+                    placeholder="••••••••"
+                    [disabled]="isLoading || isBlocked"
+                    autocomplete="current-password"
+                    required>
+                  </ion-input>
+                  <ion-button 
+                    fill="clear" 
+                    slot="end" 
+                    (click)="togglePasswordVisibility()"
+                    [disabled]="isLoading">
+                    <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+                  </ion-button>
+                </ion-item>
+
+                <!-- Bouton de connexion -->
+                <ion-button 
+                  expand="block" 
+                  type="submit"
+                  color="primary"
+                  class="login-button"
+                  [disabled]="!isFormValid || isLoading">
+                  
+                  <ion-spinner *ngIf="isLoading" slot="start"></ion-spinner>
+                  <span *ngIf="!isLoading">
+                    <ion-icon name="shield-checkmark-outline" slot="start"></ion-icon>
+                    Connexion Sécurisée
+                  </span>
+                  <span *ngIf="isLoading">Authentification...</span>
+                </ion-button>
+              </form>
+
+              <!-- Informations de sécurité -->
+              <div class="security-info">
+                <ion-text color="medium">
+                  <small>
+                    🔐 Connexion chiffrée SSL/TLS<br>
+                    🕒 Session expire après 1 heure d'inactivité<br>
+                    🛡️ Accès limité aux super-administrateurs uniquement
+                  </small>
+                </ion-text>
+              </div>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Footer -->
+          <div class="footer-info">
+            <ion-text color="medium">
+              <p>LokoTaxi Super Administration</p>
+              <small>Version 1.0 - Système sécurisé</small>
+            </ion-text>
+          </div>
+
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+</ion-content>

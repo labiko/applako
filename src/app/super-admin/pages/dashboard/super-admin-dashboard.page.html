@@ -1,0 +1,136 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>
+      <ion-icon name="shield-checkmark-outline"></ion-icon>
+      Dashboard Super Admin
+    </ion-title>
+    <ion-button 
+      slot="end" 
+      fill="clear" 
+      (click)="onLogout()"
+      color="light">
+      <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
+    </ion-button>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="dashboard-container">
+    
+    <!-- Message d'accueil -->
+    <ion-card class="welcome-card">
+      <ion-card-content>
+        <div class="welcome-content">
+          <div class="welcome-text">
+            <h2>{{ welcomeMessage }}</h2>
+            <p>Interface d'administration globale LokoTaxi</p>
+          </div>
+          <div class="session-info">
+            <ion-text color="medium">
+              <small>Session: {{ sessionTimeFormatted }}</small>
+            </ion-text>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Informations utilisateur -->
+    <ion-card class="user-info-card" *ngIf="currentUser">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="people-outline"></ion-icon>
+          Informations Administrateur
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <div class="info-item">
+                <strong>Nom:</strong> {{ currentUser.nom }}
+              </div>
+            </ion-col>
+            <ion-col size="12" size-md="6">
+              <div class="info-item">
+                <strong>Email:</strong> {{ currentUser.email }}
+              </div>
+            </ion-col>
+            <ion-col size="12" size-md="6">
+              <div class="info-item">
+                <strong>Statut:</strong> 
+                <ion-text color="success">Super Administrateur</ion-text>
+              </div>
+            </ion-col>
+            <ion-col size="12" size-md="6">
+              <div class="info-item">
+                <strong>Droits:</strong> 
+                <ion-text color="primary">Accès Global</ion-text>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Fonctionnalités (placeholder) -->
+    <ion-card class="features-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="settings-outline"></ion-icon>
+          Fonctionnalités Disponibles
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <ion-button 
+                expand="block" 
+                fill="outline" 
+                color="primary"
+                disabled>
+                <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
+                Vue Globale Réservations
+              </ion-button>
+            </ion-col>
+            <ion-col size="12" size-md="6">
+              <ion-button 
+                expand="block" 
+                fill="outline" 
+                color="secondary"
+                disabled>
+                <ion-icon name="business-outline" slot="start"></ion-icon>
+                Gestion Commissions
+              </ion-button>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="12">
+              <ion-text color="medium">
+                <p class="features-note">
+                  ℹ️ Interface complète en cours de développement<br>
+                  📊 Système backend fonctionnel et sécurisé<br>
+                  🔐 Authentification et audit trail activés
+                </p>
+              </ion-text>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Test de déconnexion -->
+    <ion-card class="logout-card">
+      <ion-card-content>
+        <ion-button 
+          expand="block" 
+          color="danger" 
+          (click)="onLogout()">
+          <ion-icon name="log-out-outline" slot="start"></ion-icon>
+          Déconnexion Sécurisée
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+  </div>
+</ion-content>
