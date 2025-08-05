@@ -66,6 +66,259 @@ WHERE type_config = 'enterprise_specific' AND actif = TRUE;
 
 ## 💼 **LOGIQUE MÉTIER**
 
+### **🏢 IMPACT CÔTÉ ENTREPRISE - ANALYSE COMPLÈTE**
+
+#### **📊 Calcul Automatique dans les Métriques Dashboard** :
+
+Le système de commission dynamique s'intègre **automatiquement** dans le calcul des métriques du dashboard entreprise sans modification de l'interface utilisateur :
+
+```typescript
+// Dans EntrepriseService.getDashboardMetrics()
+async getDashboardMetrics(periode: string): Promise<DashboardMetrics> {
+  const entrepriseId = this.entrepriseAuthService.getCurrentEntrepriseId();
+  const caBrut = reservations?.reduce((sum, r) => sum + (r.prix_total || 0), 0) || 0;
+  
+  // 🔄 NOUVEAU SYSTÈME DE COMMISSION DYNAMIQUE (NON-INVASIF)
+  let tauxCommission = 15; // Fallback par défaut sécurisé
+  let commissionType: 'global' | 'specifique' | 'fallback' = 'fallback';
+  
+  if (this.commissionService) {
+    // ✅ Service super-admin disponible - Utiliser taux dynamique
+    try {
+      tauxCommission = await this.commissionService.getCommissionRateIsolated(entrepriseId);
+      const globalRate = await this.commissionService.getCurrentGlobalRate();
+      commissionType = tauxCommission === globalRate ? 'global' : 'specifique';
+    } catch (error) {
+      // Fallback automatique vers 15% en cas d'erreur
+      console.warn('⚠️ Erreur taux dynamique, utilisation fallback 15%');
+    }
+  }
+  
+  const commission = caBrut * (tauxCommission / 100);
+  const caNet = caBrut - commission;
+  
+  return {
+    // ... autres métriques inchangées
+    commission_totale: commission,
+    ca_net: caNet,
+    // ✅ NOUVEAUX CHAMPS - Traçabilité pour l'entreprise
+    taux_commission: tauxCommission,
+    commission_type: commissionType
+  };
+}
+```
+
+#### **⚡ Impact Temps Réel sur les Métriques** :
+
+| **Métrique Dashboard** | **Avant (15% fixe)** | **Après (dynamique)** | **Impact** |
+|------------------------|----------------------|----------------------|------------|
+| **CA Brut** | Inchangé | Inchangé | ✅ Aucun |
+| **Commission** | `CA × 15%` | `CA × TauxDynamique%` | 🔄 **Automatique** |
+| **CA Net** | `CA - (CA × 15%)` | `CA - (CA × TauxDynamique%)` | 🔄 **Automatique** |
+| **Taux Commission** | Masqué | **Affiché : X.X%** | ✅ **Nouveau** |
+| **Type Commission** | - | **"Global" / "Spécifique"** | ✅ **Nouveau** |
+
+#### **🎯 Scénarios d'Impact Concrets** :
+
+##### **Scénario 1 : Modification Taux Global (16% → 14%)**
+```typescript
+// Entreprise "TaxiExpress" - CA mensuel : 500,000 GNF
+// AVANT modification (16%)
+{
+  ca_brut: 500000,
+  commission: 80000,    // 500,000 × 16%
+  ca_net: 420000,
+  taux_commission: 16,
+  commission_type: 'global'
+}
+
+// APRÈS modification globale (14%)
+{
+  ca_brut: 500000,
+  commission: 70000,    // 500,000 × 14% (-10,000 GNF)
+  ca_net: 430000,       // +10,000 GNF pour l'entreprise
+  taux_commission: 14,
+  commission_type: 'global'
+}
+```
+
+##### **Scénario 2 : Attribution Taux Spécifique (Global 15% → Spécifique 12%)**
+```typescript
+// Entreprise "LogistiqueVIP" - CA mensuel : 1,200,000 GNF
+// AVANT (taux global 15%)
+{
+  ca_brut: 1200000,
+  commission: 180000,   // 1,200,000 × 15%
+  ca_net: 1020000,
+  taux_commission: 15,
+  commission_type: 'global'
+}
+
+// APRÈS attribution taux spécifique (12%)
+{
+  ca_brut: 1200000,
+  commission: 144000,   // 1,200,000 × 12% (-36,000 GNF)
+  ca_net: 1056000,      // +36,000 GNF pour l'entreprise
+  taux_commission: 12,
+  commission_type: 'specifique'
+}
+```
+
+##### **Scénario 3 : Suppression Taux Spécifique (Spécifique 10% → Global 15%)**
+```typescript
+// Entreprise "TransportEco" - CA mensuel : 800,000 GNF
+// AVANT (taux spécifique 10%)
+{
+  ca_brut: 800000,
+  commission: 80000,    // 800,000 × 10%
+  ca_net: 720000,
+  taux_commission: 10,
+  commission_type: 'specifique'
+}
+
+// APRÈS suppression (retour global 15%)
+{
+  ca_brut: 800000,
+  commission: 120000,   // 800,000 × 15% (+40,000 GNF)
+  ca_net: 680000,       // -40,000 GNF pour l'entreprise
+  taux_commission: 15,
+  commission_type: 'global'
+}
+```
+
+#### **📱 Affichage Interface Entreprise** :
+
+##### **Dashboard - Section Métriques** :
+```html
+<!-- AVANT : Commission masquée -->
+<div class="metric-card">
+  <div class="metric-value">{{ formatPrice(metrics.ca_net) }}</div>
+  <div class="metric-label">Chiffre d'Affaires Net</div>
+</div>
+
+<!-- APRÈS : Commission visible avec détails -->
+<div class="metric-card commission-card">
+  <div class="metric-value">{{ formatPrice(metrics.ca_net) }}</div>
+  <div class="metric-label">CA Net</div>
+  <div class="commission-details">
+    <span class="commission-rate">{{ metrics.taux_commission }}%</span>
+    <ion-badge [color]="getTypeColor(metrics.commission_type)">
+      {{ metrics.commission_type | titlecase }}
+    </ion-badge>
+  </div>
+</div>
+```
+
+##### **Page Versements - Impact Transparent** :
+```typescript
+// Les versements utilisent déjà EntrepriseService.getDashboardMetrics()
+// → Impact automatique sans modification de code
+async loadVersements() {
+  const metrics = await this.entrepriseService.getDashboardMetrics('current');
+  
+  this.versementData = {
+    ca_brut: metrics.ca_brut,
+    commission: metrics.commission_totale,     // ✅ Utilise nouveau taux
+    ca_net: metrics.ca_net,                   // ✅ Automatiquement ajusté
+    taux_applique: metrics.taux_commission,   // ✅ Nouveau champ
+    type_commission: metrics.commission_type  // ✅ Traçabilité
+  };
+}
+```
+
+#### **🔄 Synchronisation et Cohérence** :
+
+##### **Garanties du Système** :
+1. **Cohérence Temporelle** : Modification appliquée instantanément à tous les calculs
+2. **Pas de Cache Inconsistant** : Invalidation automatique lors des changements
+3. **Audit Trail** : Traçabilité complète des modifications d'impact
+4. **Fallback Garanti** : Jamais d'erreur de calcul (retour automatique à 15%)
+
+##### **Mécanisme de Propagation** :
+```mermaid
+graph TD
+    A[Super-Admin Modifie Taux] --> B[Commission Service Update]
+    B --> C[Cache Invalidation]
+    C --> D[Prochain Appel getDashboardMetrics]
+    D --> E[Nouveau Taux Appliqué]
+    E --> F[Dashboard Entreprise MAJ]
+    E --> G[Page Versements MAJ]
+    E --> H[Tous Calculs MAJ]
+```
+
+#### **📈 Métriques d'Impact Business** :
+
+##### **Impact Financier Mensuel Estimé** :
+```typescript
+interface ImpactAnalysis {
+  entreprise_id: string;
+  ancien_taux: number;
+  nouveau_taux: number;
+  ca_mensuel_moyen: number;
+  impact_commission: number;    // Différence en GNF
+  impact_ca_net: number;        // Gain/Perte pour entreprise
+  pourcentage_variation: number; // % d'impact
+}
+
+// Exemple de calcul automatique d'impact
+async calculateImpactForEnterprise(
+  entrepriseId: string, 
+  nouveauTaux: number
+): Promise<ImpactAnalysis> {
+  const ancienTaux = await this.getCommissionRateIsolated(entrepriseId);
+  const metrics = await this.entrepriseService.getDashboardMetrics('current');
+  
+  const impact_commission = metrics.ca_brut * ((nouveauTaux - ancienTaux) / 100);
+  const impact_ca_net = -impact_commission; // Inverse pour l'entreprise
+  
+  return {
+    entreprise_id: entrepriseId,
+    ancien_taux: ancienTaux,
+    nouveau_taux: nouveauTaux,
+    ca_mensuel_moyen: metrics.ca_brut,
+    impact_commission,
+    impact_ca_net,
+    pourcentage_variation: ((nouveauTaux - ancienTaux) / ancienTaux) * 100
+  };
+}
+```
+
+#### **⚠️ Points d'Attention Entreprise** :
+
+##### **Transparence Requise** :
+- **Notification** : Les entreprises doivent être informées des changements de taux
+- **Historique** : Accès aux modifications pour justifications comptables  
+- **Prévisibilité** : Annonce à l'avance des changements majeurs
+
+##### **Recommandations Interface** :
+```typescript
+// Suggestion : Ajouter une notification en cas de changement
+async checkCommissionChange(): Promise<void> {
+  const currentRate = await this.commissionService.getCommissionRateIsolated(this.entrepriseId);
+  const lastKnownRate = localStorage.getItem(`last_rate_${this.entrepriseId}`);
+  
+  if (lastKnownRate && parseFloat(lastKnownRate) !== currentRate) {
+    await this.showCommissionChangeNotification(parseFloat(lastKnownRate), currentRate);
+  }
+  
+  localStorage.setItem(`last_rate_${this.entrepriseId}`, currentRate.toString());
+}
+
+async showCommissionChangeNotification(oldRate: number, newRate: number) {
+  const alert = await this.alertController.create({
+    header: 'Modification Taux Commission',
+    message: `Votre taux de commission a été modifié de ${oldRate}% à ${newRate}%.`,
+    buttons: [
+      { text: 'Voir Détails', handler: () => this.showCommissionDetails() },
+      { text: 'OK' }
+    ]
+  });
+  await alert.present();
+}
+```
+
+---
+
 ### **1. Calcul du Taux de Commission**
 
 #### **Algorithme de Résolution** :
