@@ -501,16 +501,26 @@
           <!-- Détails de la course -->
           <div class="course-details">
             <div class="detail-grid">
-              <div class="detail-item">
+              <div class="detail-item clickable" (click)="openPositionInMaps(reservation.position_depart)">
                 <ion-icon name="location" color="primary"></ion-icon>
                 <div class="detail-content">
                   <span class="detail-label">Départ</span>
-                  <span class="detail-value">{{ reservation.position_depart }}</span>
+                  <span class="detail-value">{{ reservation.depart_nom || 'Position non spécifiée' }}</span>
                 </div>
+                <ion-icon name="map" class="map-icon"></ion-icon>
+              </div>
+              
+              <div class="detail-item clickable" (click)="openPositionInMaps(reservation.position_arrivee)" *ngIf="reservation.position_arrivee">
+                <ion-icon name="flag" color="success"></ion-icon>
+                <div class="detail-content">
+                  <span class="detail-label">Destination</span>
+                  <span class="detail-value">{{ reservation.destination_nom || 'Destination non spécifiée' }}</span>
+                </div>
+                <ion-icon name="map" class="map-icon"></ion-icon>
               </div>
               
               <div class="detail-item">
-                <ion-icon name="call" color="success"></ion-icon>
+                <ion-icon name="call" color="secondary"></ion-icon>
                 <div class="detail-content">
                   <span class="detail-label">Client</span>
                   <span class="detail-value">{{ reservation.client_phone }}</span>

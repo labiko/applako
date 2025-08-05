@@ -21,7 +21,8 @@
       "Bash(cp:*)",
       "Bash(copy:*)",
       "Bash(git config:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": []
   }

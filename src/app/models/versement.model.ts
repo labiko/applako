@@ -14,7 +14,9 @@ export interface ConducteurVersement {
 export interface ReservationVersement {
   id: string;
   destination_nom: string;
+  depart_nom?: string;
   position_depart: string;
+  position_arrivee?: string;
   client_phone: string;
   prix_total: number;
   distance_km: number;

@@ -171,7 +171,28 @@ export class VersementService {
       const { data: reservations, error } = await this.supabaseService.client
         .from('reservations')
         .select(`
-          *,
+          id,
+          client_phone,
+          vehicle_type,
+          position_depart,
+          statut,
+          created_at,
+          conducteur_id,
+          destination_nom,
+          destination_id,
+          position_arrivee,
+          distance_km,
+          prix_total,
+          prix_par_km,
+          tarif_applique,
+          code_validation,
+          updated_at,
+          date_code_validation,
+          commentaire,
+          note_conducteur,
+          date_add_commentaire,
+          versement_id,
+          depart_nom,
           conducteurs (*)
         `)
         .eq('statut', 'completed')
@@ -179,6 +200,7 @@ export class VersementService {
         .is('versement_id', null); // Pas encore versées
 
       if (error) throw error;
+
 
       // Grouper par conducteur
       const groupedByConducteur = this.groupReservationsByConducteur(reservations || []);
@@ -405,6 +427,7 @@ export class VersementService {
 
   async getHistoriqueVersements(): Promise<Versement[]> {
     try {
+     
       const entrepriseId = this.entrepriseAuthService.getCurrentEntrepriseId();
       if (!entrepriseId) return [];
 
@@ -500,7 +523,28 @@ export class VersementService {
       const { data, error } = await this.supabaseService.client
         .from('reservations')
         .select(`
-          *,
+          id,
+          client_phone,
+          vehicle_type,
+          position_depart,
+          statut,
+          created_at,
+          conducteur_id,
+          destination_nom,
+          destination_id,
+          position_arrivee,
+          distance_km,
+          prix_total,
+          prix_par_km,
+          tarif_applique,
+          code_validation,
+          updated_at,
+          date_code_validation,
+          commentaire,
+          note_conducteur,
+          date_add_commentaire,
+          versement_id,
+          depart_nom,
           conducteurs (*)
         `)
         .eq('statut', 'completed')
@@ -508,6 +552,8 @@ export class VersementService {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      
+      
       return data || [];
 
     } catch (error) {
@@ -520,7 +566,30 @@ export class VersementService {
     try {
       const { data, error } = await this.supabaseService.client
         .from('reservations')
-        .select('*')
+        .select(`
+          id,
+          client_phone,
+          vehicle_type,
+          position_depart,
+          statut,
+          created_at,
+          conducteur_id,
+          destination_nom,
+          destination_id,
+          position_arrivee,
+          distance_km,
+          prix_total,
+          prix_par_km,
+          tarif_applique,
+          code_validation,
+          updated_at,
+          date_code_validation,
+          commentaire,
+          note_conducteur,
+          date_add_commentaire,
+          versement_id,
+          depart_nom
+        `)
         .eq('versement_id', versementId)
         .order('created_at', { ascending: false });
 
@@ -529,7 +598,9 @@ export class VersementService {
       return data?.map(r => ({
         id: r.id,
         destination_nom: r.destination_nom,
+        depart_nom: r.depart_nom,
         position_depart: r.position_depart,
+        position_arrivee: r.position_arrivee,
         client_phone: r.client_phone,
         prix_total: r.prix_total,
         distance_km: r.distance_km,

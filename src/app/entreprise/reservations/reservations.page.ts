@@ -477,12 +477,13 @@ export class EntrepriseReservationsPage implements OnInit {
     if (!dateString) return '';
     
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
+    return date.toLocaleString('fr-FR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: 'Africa/Conakry' // Timezone de la Guinée (GMT+0)
     });
   }
 

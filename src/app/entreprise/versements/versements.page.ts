@@ -461,7 +461,8 @@ export class VersementsPage implements OnInit {
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: 'Africa/Conakry' // Timezone de la Guinée (GMT+0)
     });
   }
 
@@ -470,7 +471,8 @@ export class VersementsPage implements OnInit {
       day: '2-digit',
       month: '2-digit',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: 'Africa/Conakry' // Timezone de la Guinée (GMT+0)
     });
   }
 
@@ -483,9 +485,15 @@ export class VersementsPage implements OnInit {
     }).format(moyenne);
   }
 
-  exporterReservations() {
-    // TODO: Implémenter l'export CSV/Excel
-    console.log('📊 Export des réservations en cours...');
+  async exporterReservations() {
+    const toast = await this.toastController.create({
+      message: '📊 Fonctionnalité disponible prochainement',
+      duration: 3000,
+      position: 'middle',
+      color: 'warning',
+      cssClass: 'custom-toast'
+    });
+    await toast.present();
   }
 
   async afficherMessageSucces(versement: any) {
@@ -532,5 +540,111 @@ export class VersementsPage implements OnInit {
 
   trackByVersement(index: number, item: Versement): string {
     return item.id;
+  }
+
+  // Navigation vers les positions sur Google Maps
+  openPositionInMaps(position: string) {
+    if (!position) return;
+    
+    const mapsUrl = this.formatGPSToMapsLink(position, true);
+    console.log('🗺️ Opening navigation from current location to:', { position, url: mapsUrl });
+    window.open(mapsUrl, '_system');
+  }
+
+  formatGPSToMapsLink(position: string, useNavigation: boolean = true): string {
+    if (!position) return '';
+    
+    console.log('🗺️ Formatting GPS link for position:', position);
+    
+    // Vérifier si c'est un format POINT(lon lat)
+    const pointMatch = position.match(/POINT\(([\-\d\.]+)\s+([\-\d\.]+)\)/);
+    if (pointMatch) {
+      const lon = pointMatch[1];
+      const lat = pointMatch[2];
+      
+      console.log('📍 POINT format detected:', { lat, lon });
+      
+      if (useNavigation) {
+        return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=driving`;
+      } else {
+        return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+      }
+    }
+    
+    // Vérifier si c'est un format WKB (commence par 0101000020E6100000)
+    if (position.length >= 50 && 
+        position.match(/^[0-9A-F]+$/i) && 
+        position.toUpperCase().startsWith('0101000020E6100000')) {
+      
+      console.log('📍 WKB format detected, decoding...');
+      const coords = this.decodeWKB(position);
+      
+      if (coords) {
+        console.log('📍 WKB decoded coordinates:', coords);
+        
+        if (useNavigation) {
+          return `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}&travelmode=driving`;
+        } else {
+          return `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`;
+        }
+      }
+    }
+    
+    // Si c'est déjà une adresse texte
+    console.log('📍 Text format detected, using as address');
+    const encodedAddress = encodeURIComponent(position + ', Conakry, Guinée');
+    
+    if (useNavigation) {
+      return `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}&travelmode=driving`;
+    } else {
+      return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+    }
+  }
+
+  // Décoder le format WKB (Well-Known Binary) de PostGIS
+  decodeWKB(wkbHex: string): {lat: number, lng: number} | null {
+    try {
+      console.log('🔍 Decoding WKB:', wkbHex);
+      
+      if (wkbHex.length >= 50) {
+        const geometryType = wkbHex.substring(2, 10);
+        const srid = wkbHex.substring(10, 18);
+        
+        if (geometryType.toUpperCase() === '01000020' && srid.toUpperCase() === 'E6100000') {
+          const xHex = wkbHex.substring(18, 34);
+          const yHex = wkbHex.substring(34, 50);
+          
+          const lng = this.hexToFloat64LittleEndian(xHex);
+          const lat = this.hexToFloat64LittleEndian(yHex);
+          
+          if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+            return { lat, lng };
+          }
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error decoding WKB:', error);
+      return null;
+    }
+  }
+
+  // Convertir hex little-endian vers float64
+  hexToFloat64LittleEndian(hexStr: string): number {
+    try {
+      const buffer = new ArrayBuffer(8);
+      const view = new DataView(buffer);
+      
+      for (let i = 0; i < 8; i++) {
+        const byte = parseInt(hexStr.substr(i * 2, 2), 16);
+        view.setUint8(i, byte);
+      }
+      
+      return view.getFloat64(0, true);
+    } catch (error) {
+      console.error('Error converting hex to float64:', error);
+      return 0;
+    }
   }
 }
