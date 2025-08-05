@@ -28,5 +28,11 @@ export const SUPER_ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./pages/reservations/global-reservations.page').then(m => m.GlobalReservationsPage),
     canActivate: [SuperAdminGuard],
     title: 'Super Admin - Vue Globale Réservations'
+  },
+  {
+    path: 'commissions',
+    loadComponent: () => import('./pages/commissions/commission-management.page').then(m => m.CommissionManagementPage),
+    canActivate: [SuperAdminGuard],
+    title: 'Super Admin - Gestion Commissions'
   }
 ];

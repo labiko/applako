@@ -1,0 +1,395 @@
+/**
+ * STYLES PAGE GESTION COMMISSIONS SUPER-ADMIN
+ */
+
+.page-container {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// Header
+ion-header ion-toolbar {
+  ion-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    
+    ion-icon {
+      font-size: 1.2em;
+    }
+  }
+}
+
+// Carte statistiques
+.stats-card {
+  margin-bottom: 1rem;
+  
+  ion-card-header ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ion-color-primary);
+    
+    ion-icon {
+      font-size: 1.1em;
+    }
+  }
+  
+  .stat-item {
+    text-align: center;
+    padding: 0.5rem;
+    
+    .stat-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--ion-color-dark);
+      margin-bottom: 0.25rem;
+      
+      &.primary {
+        color: var(--ion-color-primary);
+      }
+      
+      &.success {
+        color: var(--ion-color-success);
+      }
+      
+      &.warning {
+        color: var(--ion-color-warning);
+      }
+    }
+    
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--ion-color-medium);
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+  }
+}
+
+// Configuration globale
+.global-config-card {
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, rgba(var(--ion-color-primary-rgb), 0.05) 0%, rgba(var(--ion-color-primary-rgb), 0.02) 100%);
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.2);
+  
+  ion-card-header ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ion-color-primary);
+    
+    ion-icon {
+      font-size: 1.1em;
+    }
+    
+    .global-badge {
+      margin-left: auto;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+  }
+  
+  .global-info {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin: 0;
+    padding: 0.5rem 0;
+    background: rgba(var(--ion-color-primary-rgb), 0.05);
+    border-radius: 8px;
+    padding: 0.75rem;
+    border-left: 4px solid var(--ion-color-primary);
+  }
+}
+
+// Recherche
+.search-card {
+  margin-bottom: 1rem;
+  
+  ion-card-content {
+    padding: 0.5rem;
+  }
+  
+  ion-searchbar {
+    --border-radius: 12px;
+    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Loading
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  
+  ion-spinner {
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+}
+
+// Liste des entreprises
+.enterprises-card {
+  ion-card-header ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ion-color-secondary);
+    
+    ion-icon {
+      font-size: 1.1em;
+    }
+    
+    ion-button {
+      margin-left: auto;
+    }
+  }
+  
+  ion-list {
+    background: transparent;
+  }
+}
+
+.entreprise-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.5rem 0;
+  
+  .entreprise-info {
+    flex: 1;
+    
+    .entreprise-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+      margin-bottom: 0.25rem;
+    }
+    
+    .entreprise-email {
+      font-size: 0.85rem;
+      color: var(--ion-color-medium);
+      margin-bottom: 0.5rem;
+    }
+    
+    .entreprise-stats {
+      display: flex;
+      gap: 1rem;
+      
+      .stat {
+        font-size: 0.8rem;
+        color: var(--ion-color-secondary);
+        background: rgba(var(--ion-color-secondary-rgb), 0.1);
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+      }
+    }
+  }
+  
+  .taux-section {
+    text-align: right;
+    min-width: 120px;
+    
+    .taux-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--ion-color-primary);
+      margin-bottom: 0.25rem;
+      
+      &.global {
+        color: var(--ion-color-medium);
+      }
+    }
+    
+    .taux-type {
+      margin-bottom: 0.25rem;
+      
+      ion-badge {
+        font-size: 0.7rem;
+      }
+    }
+    
+    .commission-mensuelle {
+      font-size: 0.8rem;
+      color: var(--ion-color-success);
+      font-weight: 600;
+    }
+  }
+}
+
+// Actions coulissantes
+ion-item-options {
+  ion-item-option {
+    --color: white;
+    
+    &[color="primary"] {
+      --background: var(--ion-color-primary);
+    }
+    
+    &[color="danger"] {
+      --background: var(--ion-color-danger);
+    }
+  }
+}
+
+// État vide
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  
+  ion-icon {
+    color: var(--ion-color-medium);
+    margin-bottom: 1rem;
+  }
+  
+  h3 {
+    color: var(--ion-color-dark);
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+}
+
+// Informations système
+.system-info-card {
+  margin-top: 1rem;
+  background: rgba(var(--ion-color-success-rgb), 0.05);
+  border: 1px solid rgba(var(--ion-color-success-rgb), 0.2);
+  
+  .system-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    
+    ion-icon {
+      font-size: 1.5rem;
+      margin-top: 2px;
+    }
+    
+    .info-text {
+      flex: 1;
+      
+      strong {
+        color: var(--ion-color-success);
+        font-size: 0.95rem;
+      }
+      
+      p {
+        margin: 0.25rem 0 0 0;
+        font-size: 0.85rem;
+        color: var(--ion-color-medium);
+        line-height: 1.4;
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .page-container {
+    padding: 0.5rem;
+  }
+  
+  .stats-card {
+    .stat-item {
+      .stat-number {
+        font-size: 1.2rem;
+      }
+      
+      .stat-label {
+        font-size: 0.7rem;
+      }
+    }
+  }
+  
+  .entreprise-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    
+    .taux-section {
+      align-self: flex-end;
+      text-align: right;
+    }
+  }
+  
+  .global-config-card {
+    ion-card-header ion-card-title {
+      flex-wrap: wrap;
+      
+      .global-badge {
+        margin-left: 0;
+        margin-top: 0.5rem;
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stats-card,
+.global-config-card,
+.search-card,
+.enterprises-card,
+.system-info-card {
+  animation: fadeIn 0.4s ease-out;
+  
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+  &:nth-child(4) { animation-delay: 0.4s; }
+  &:nth-child(5) { animation-delay: 0.5s; }
+}
+
+// Amélioration des inputs
+ion-input {
+  --placeholder-color: var(--ion-color-medium);
+  --background: rgba(var(--ion-color-light-rgb), 0.3);
+  --border-radius: 8px;
+}
+
+// États de chargement
+ion-spinner {
+  --color: var(--ion-color-primary);
+}
+
+// Badge amélioré
+ion-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+// Boutons
+ion-button {
+  --border-radius: 8px;
+  
+  &[fill="outline"] {
+    --border-width: 1.5px;
+  }
+}

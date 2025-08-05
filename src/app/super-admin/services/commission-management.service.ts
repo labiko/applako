@@ -14,6 +14,27 @@ import {
   ApiResponse 
 } from '../models/super-admin.model';
 
+// Interfaces spécifiques à la gestion des commissions
+export interface GlobalCommissionStats {
+  taux_moyen: number;
+  commission_totale: number;
+  entreprises_avec_taux_global: number;
+  entreprises_avec_taux_specifique: number;
+  ca_total: number;
+}
+
+export interface EntrepriseCommissionInfo {
+  id: string;
+  nom: string;
+  email: string;
+  taux_actuel: number;
+  taux_global: boolean;
+  derniere_modification: string;
+  ca_mensuel: number;
+  commission_mensuelle: number;
+  nb_reservations: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -139,101 +160,7 @@ export class CommissionManagementService {
   // MODIFICATION TAUX GLOBAL
   // ============================================================================
 
-  async updateGlobalCommissionRate(
-    nouveauTaux: number, 
-    motif: string, 
-    createdBy: string
-  ): Promise<ApiResponse<boolean>> {
-    try {
-      // 1. Validation des paramètres
-      if (nouveauTaux < 0 || nouveauTaux > 100) {
-        return {
-          success: false,
-          error: 'Le taux de commission doit être entre 0 et 100%'
-        };
-      }
-
-      if (!motif.trim()) {
-        return {
-          success: false,
-          error: 'Un motif est requis pour justifier le changement'
-        };
-      }
-
-      // 2. Récupérer taux actuel pour audit
-      const ancienTaux = await this.getCurrentGlobalRate();
-
-      // 3. Calculer impact business
-      const impact = await this.calculateGlobalImpact(ancienTaux, nouveauTaux);
-
-      // 4. Créer backup automatique si impact élevé
-      if (Math.abs(impact.variation) > 100000) { // Plus de 100k GNF d'impact
-        await this.createCommissionBackup('PRE_GLOBAL_CHANGE', {
-          ancien_taux: ancienTaux,
-          nouveau_taux: nouveauTaux,
-          impact_gnf: impact.variation
-        });
-      }
-
-      // 5. Désactiver ancien taux global
-      const { error: updateError } = await this.supabaseService.client
-        .from('commission_config')
-        .update({ 
-          actif: false, 
-          date_fin: new Date().toISOString().split('T')[0],
-          updated_at: new Date().toISOString()
-        })
-        .is('entreprise_id', null)
-        .eq('type_config', 'global_default')
-        .eq('actif', true);
-
-      if (updateError) throw updateError;
-
-      // 6. Créer nouveau taux global
-      const { error: insertError } = await this.supabaseService.client
-        .from('commission_config')
-        .insert({
-          type_config: 'global_default',
-          entreprise_id: null,
-          taux_commission: nouveauTaux,
-          date_debut: new Date().toISOString().split('T')[0],
-          actif: true,
-          created_by: createdBy,
-          motif: motif.trim()
-        });
-
-      if (insertError) throw insertError;
-
-      // 7. Vider cache
-      this.clearCache();
-
-      // 8. Log audit avec impact business
-      await this.logCommissionChange(
-        'COMMISSION_CHANGE',
-        'global_default',
-        null,
-        { taux: ancienTaux },
-        { taux: nouveauTaux, motif },
-        Math.abs(impact.variation) > 50000 ? 'HIGH' : 'MEDIUM',
-        Math.abs(impact.variation)
-      );
-
-      console.log(`✅ Taux global mis à jour: ${ancienTaux}% → ${nouveauTaux}%`);
-
-      return {
-        success: true,
-        data: true,
-        message: `Taux global mis à jour avec succès: ${nouveauTaux}%`
-      };
-
-    } catch (error) {
-      console.error('❌ Erreur mise à jour taux global:', error);
-      return {
-        success: false,
-        error: 'Erreur lors de la mise à jour du taux global'
-      };
-    }
-  }
+  // Cette méthode sera remplacée par la version simplifiée plus bas
 
   // ============================================================================
   // MODIFICATION TAUX ENTREPRISE SPÉCIFIQUE
@@ -647,6 +574,409 @@ export class CommissionManagementService {
       });
     } catch (error) {
       console.error('❌ Erreur log commission:', error);
+    }
+  }
+
+  // ============================================================================
+  // MÉTHODES POUR L'INTERFACE DE GESTION DES COMMISSIONS
+  // ============================================================================
+
+  /**
+   * Récupère les statistiques globales des commissions
+   */
+  async getGlobalCommissionStats(): Promise<GlobalCommissionStats> {
+    try {
+      // 1. Récupérer le taux global actuel
+      const tauxGlobal = await this.getCurrentGlobalRate();
+
+      // 2. Récupérer toutes les entreprises et leurs commissions
+      const { data: entreprises, error: entreprisesError } = await this.supabaseService.client
+        .from('entreprises')
+        .select('id, nom')
+        .eq('statut', 'active');
+
+      if (entreprisesError) throw entreprisesError;
+
+      // 3. Récupérer les configurations spécifiques
+      const { data: configsSpecifiques, error: configsError } = await this.supabaseService.client
+        .from('commission_config')
+        .select('entreprise_id, taux_commission')
+        .eq('type_config', 'enterprise_specific')
+        .eq('actif', true);
+
+      if (configsError) throw configsError;
+
+      // 4. Calculer les réservations du mois en cours
+      const debutMois = new Date();
+      debutMois.setDate(1);
+      debutMois.setHours(0, 0, 0, 0);
+
+      const { data: reservations, error: reservationsError } = await this.supabaseService.client
+        .from('reservations')
+        .select('prix_total, conducteur_id, conducteurs!inner(entreprise_id)')
+        .gte('created_at', debutMois.toISOString())
+        .not('date_code_validation', 'is', null);
+
+      if (reservationsError) throw reservationsError;
+
+      // 5. Calculer les statistiques
+      let caTotal = 0;
+      let commissionTotale = 0;
+      const tauxUtilises: number[] = [];
+      const entreprisesAvecSpecifique = new Set(configsSpecifiques?.map(c => c.entreprise_id) || []);
+
+      for (const reservation of reservations || []) {
+        const prixTotal = reservation.prix_total || 0;
+        caTotal += prixTotal;
+
+        // Déterminer le taux appliqué
+        const entrepriseId = (reservation as any).conducteurs?.entreprise_id;
+        let tauxApplique = tauxGlobal;
+
+        if (entrepriseId && entreprisesAvecSpecifique.has(entrepriseId)) {
+          const configSpecifique = configsSpecifiques?.find(c => c.entreprise_id === entrepriseId);
+          if (configSpecifique) {
+            tauxApplique = configSpecifique.taux_commission;
+          }
+        }
+
+        tauxUtilises.push(tauxApplique);
+        commissionTotale += prixTotal * (tauxApplique / 100);
+      }
+
+      // 6. Calculer taux moyen pondéré
+      const tauxMoyen = tauxUtilises.length > 0 
+        ? tauxUtilises.reduce((sum, taux) => sum + taux, 0) / tauxUtilises.length
+        : tauxGlobal;
+
+      // 7. Compter entreprises par type
+      const totalEntreprises = entreprises?.length || 0;
+      const entreprisesAvecTauxSpecifique = entreprisesAvecSpecifique.size;
+      const entreprisesAvecTauxGlobal = totalEntreprises - entreprisesAvecTauxSpecifique;
+
+      return {
+        taux_moyen: tauxMoyen,
+        commission_totale: commissionTotale,
+        entreprises_avec_taux_global: entreprisesAvecTauxGlobal,
+        entreprises_avec_taux_specifique: entreprisesAvecTauxSpecifique,
+        ca_total: caTotal
+      };
+
+    } catch (error) {
+      console.error('❌ Erreur calcul stats globales:', error);
+      return {
+        taux_moyen: 15,
+        commission_totale: 0,
+        entreprises_avec_taux_global: 0,
+        entreprises_avec_taux_specifique: 0,
+        ca_total: 0
+      };
+    }
+  }
+
+  /**
+   * Récupère la liste des entreprises avec leurs informations de commission
+   */
+  async getEntreprisesWithCommissionInfo(): Promise<EntrepriseCommissionInfo[]> {
+    try {
+      // 1. Récupérer toutes les entreprises
+      const { data: entreprises, error: entreprisesError } = await this.supabaseService.client
+        .from('entreprises')
+        .select('id, nom, email')
+        .eq('statut', 'active')
+        .order('nom');
+
+      if (entreprisesError) throw entreprisesError;
+
+      // 2. Récupérer le taux global
+      const tauxGlobal = await this.getCurrentGlobalRate();
+
+      // 3. Récupérer les configurations spécifiques
+      const { data: configsSpecifiques, error: configsError } = await this.supabaseService.client
+        .from('commission_config')
+        .select('entreprise_id, taux_commission, updated_at')
+        .eq('type_config', 'enterprise_specific')
+        .eq('actif', true);
+
+      if (configsError) throw configsError;
+
+      // 4. Récupérer les données de performance du mois
+      const debutMois = new Date();
+      debutMois.setDate(1);
+      debutMois.setHours(0, 0, 0, 0);
+
+      const { data: reservations, error: reservationsError } = await this.supabaseService.client
+        .from('reservations')
+        .select('prix_total, conducteur_id, conducteurs!inner(entreprise_id)')
+        .gte('created_at', debutMois.toISOString())
+        .not('date_code_validation', 'is', null);
+
+      if (reservationsError) throw reservationsError;
+
+      // 5. Construire la liste des entreprises avec infos
+      const result: EntrepriseCommissionInfo[] = [];
+
+      for (const entreprise of entreprises || []) {
+        // Déterminer le taux et le type
+        const configSpecifique = configsSpecifiques?.find(c => c.entreprise_id === entreprise.id);
+        const tauxActuel = configSpecifique ? configSpecifique.taux_commission : tauxGlobal;
+        const tauxGlobal_ = !configSpecifique;
+        const derniereModification = configSpecifique 
+          ? configSpecifique.updated_at 
+          : new Date().toISOString();
+
+        // Calculer les métriques du mois
+        const reservationsEntreprise = reservations?.filter(r => 
+          (r as any).conducteurs?.entreprise_id === entreprise.id
+        ) || [];
+
+        const caMensuel = reservationsEntreprise.reduce((sum, r) => sum + (r.prix_total || 0), 0);
+        const commissionMensuelle = caMensuel * (tauxActuel / 100);
+
+        result.push({
+          id: entreprise.id,
+          nom: entreprise.nom,
+          email: entreprise.email,
+          taux_actuel: tauxActuel,
+          taux_global: tauxGlobal_,
+          derniere_modification: derniereModification,
+          ca_mensuel: caMensuel,
+          commission_mensuelle: commissionMensuelle,
+          nb_reservations: reservationsEntreprise.length
+        });
+      }
+
+      // Trier par nom
+      return result.sort((a, b) => a.nom.localeCompare(b.nom));
+
+    } catch (error) {
+      console.error('❌ Erreur récupération entreprises:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Met à jour le taux de commission global
+   */
+  async updateGlobalCommissionRate(nouveauTaux: number, description?: string): Promise<void> {
+    try {
+      // 1. Valider le taux
+      if (nouveauTaux < 0 || nouveauTaux > 50) {
+        throw new Error('Le taux de commission doit être entre 0% et 50%');
+      }
+
+      // 2. Récupérer le taux actuel pour audit
+      const ancienTaux = await this.getCurrentGlobalRate();
+
+      // 3. Créer backup avant modification
+      await this.createCommissionBackup('global_rate_update', {
+        ancien_taux: ancienTaux,
+        nouveau_taux: nouveauTaux,
+        description
+      });
+
+      // 4. Désactiver l'ancienne configuration globale
+      await this.supabaseService.client
+        .from('commission_config')
+        .update({ actif: false, updated_at: new Date().toISOString() })
+        .eq('type_config', 'global_default')
+        .eq('actif', true);
+
+      // 5. Créer nouvelle configuration globale
+      const nouvelleConfig = {
+        type_config: 'global_default',
+        entreprise_id: null,
+        taux_commission: nouveauTaux,
+        actif: true,
+        description: description || `Mise à jour taux global : ${ancienTaux}% → ${nouveauTaux}%`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { error: insertError } = await this.supabaseService.client
+        .from('commission_config')
+        .insert(nouvelleConfig);
+
+      if (insertError) throw insertError;
+
+      // 6. Invalider le cache
+      this.commissionCache.clear();
+
+      // 7. Log de l'audit
+      await this.logCommissionChange(
+        'UPDATE_GLOBAL_RATE',
+        'global_default',
+        null,
+        { taux: ancienTaux },
+        { taux: nouveauTaux },
+        'HIGH',
+        0
+      );
+
+      console.log(`✅ Taux global mis à jour: ${ancienTaux}% → ${nouveauTaux}%`);
+
+    } catch (error) {
+      console.error('❌ Erreur mise à jour taux global:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Définit un taux de commission spécifique pour une entreprise
+   */
+  async setSpecificCommissionRate(
+    entrepriseId: string, 
+    nouveauTaux: number, 
+    description?: string
+  ): Promise<void> {
+    try {
+      // 1. Valider les paramètres
+      if (!entrepriseId) throw new Error('ID entreprise requis');
+      if (nouveauTaux < 0 || nouveauTaux > 50) {
+        throw new Error('Le taux de commission doit être entre 0% et 50%');
+      }
+
+      // 2. Vérifier que l'entreprise existe
+      const { data: entreprise, error: entrepriseError } = await this.supabaseService.client
+        .from('entreprises')
+        .select('nom')
+        .eq('id', entrepriseId)
+        .single();
+
+      if (entrepriseError || !entreprise) {
+        throw new Error('Entreprise non trouvée');
+      }
+
+      // 3. Récupérer le taux actuel
+      const ancienTaux = await this.getCommissionRateIsolated(entrepriseId);
+
+      // 4. Créer backup
+      await this.createCommissionBackup('specific_rate_update', {
+        entreprise_id: entrepriseId,
+        entreprise_nom: entreprise.nom,
+        ancien_taux: ancienTaux,
+        nouveau_taux: nouveauTaux,
+        description
+      });
+
+      // 5. Désactiver l'ancienne configuration spécifique s'il y en a une
+      await this.supabaseService.client
+        .from('commission_config')
+        .update({ actif: false, updated_at: new Date().toISOString() })
+        .eq('type_config', 'enterprise_specific')
+        .eq('entreprise_id', entrepriseId)
+        .eq('actif', true);
+
+      // 6. Créer nouvelle configuration spécifique
+      const nouvelleConfig = {
+        type_config: 'enterprise_specific',
+        entreprise_id: entrepriseId,
+        taux_commission: nouveauTaux,
+        actif: true,
+        description: description || `Taux spécifique ${entreprise.nom}: ${ancienTaux}% → ${nouveauTaux}%`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { error: insertError } = await this.supabaseService.client
+        .from('commission_config')
+        .insert(nouvelleConfig);
+
+      if (insertError) throw insertError;
+
+      // 7. Invalider le cache pour cette entreprise
+      this.commissionCache.delete(entrepriseId);
+
+      // 8. Log de l'audit
+      await this.logCommissionChange(
+        'SET_SPECIFIC_RATE',
+        'enterprise_specific',
+        entrepriseId,
+        { taux: ancienTaux },
+        { taux: nouveauTaux },
+        'MEDIUM',
+        0
+      );
+
+      console.log(`✅ Taux spécifique défini pour ${entreprise.nom}: ${nouveauTaux}%`);
+
+    } catch (error) {
+      console.error('❌ Erreur définition taux spécifique:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Supprime un taux de commission spécifique (retour au taux global)
+   */
+  async removeSpecificCommissionRate(entrepriseId: string): Promise<void> {
+    try {
+      // 1. Valider l'ID entreprise
+      if (!entrepriseId) throw new Error('ID entreprise requis');
+
+      // 2. Vérifier que l'entreprise a un taux spécifique
+      const { data: configActuelle, error: configError } = await this.supabaseService.client
+        .from('commission_config')
+        .select('taux_commission')
+        .eq('type_config', 'enterprise_specific')
+        .eq('entreprise_id', entrepriseId)
+        .eq('actif', true)
+        .maybeSingle();
+
+      if (configError) throw configError;
+      if (!configActuelle) {
+        throw new Error('Cette entreprise n\'a pas de taux spécifique configuré');
+      }
+
+      // 3. Récupérer info entreprise
+      const { data: entreprise, error: entrepriseError } = await this.supabaseService.client
+        .from('entreprises')
+        .select('nom')
+        .eq('id', entrepriseId)
+        .single();
+
+      if (entrepriseError || !entreprise) {
+        throw new Error('Entreprise non trouvée');
+      }
+
+      // 4. Créer backup
+      const tauxGlobal = await this.getCurrentGlobalRate();
+      await this.createCommissionBackup('specific_rate_removal', {
+        entreprise_id: entrepriseId,
+        entreprise_nom: entreprise.nom,
+        ancien_taux: configActuelle.taux_commission,
+        nouveau_taux: tauxGlobal
+      });
+
+      // 5. Désactiver la configuration spécifique
+      const { error: updateError } = await this.supabaseService.client
+        .from('commission_config')
+        .update({ actif: false, updated_at: new Date().toISOString() })
+        .eq('type_config', 'enterprise_specific')
+        .eq('entreprise_id', entrepriseId)
+        .eq('actif', true);
+
+      if (updateError) throw updateError;
+
+      // 6. Invalider le cache
+      this.commissionCache.delete(entrepriseId);
+
+      // 7. Log de l'audit
+      await this.logCommissionChange(
+        'REMOVE_SPECIFIC_RATE',
+        'enterprise_specific',
+        entrepriseId,
+        { taux: configActuelle.taux_commission },
+        { taux: tauxGlobal },
+        'LOW',
+        0
+      );
+
+      console.log(`✅ Taux spécifique supprimé pour ${entreprise.nom}, retour au taux global (${tauxGlobal}%)`);
+
+    } catch (error) {
+      console.error('❌ Erreur suppression taux spécifique:', error);
+      throw error;
     }
   }
 }

@@ -291,16 +291,8 @@ export class SuperAdminDashboardPage implements OnInit {
   }
 
   async onManageCommissions() {
-    const toast = await this.toastController.create({
-      message: '💼 Gestion Commissions - Fonctionnalité en développement',
-      duration: 3000,
-      color: 'secondary',
-      position: 'top'
-    });
-    await toast.present();
-    
-    // TODO: Naviguer vers la page de gestion des commissions
-    // await this.router.navigate(['/super-admin/commissions']);
+    console.log('🚀 Navigation vers Gestion Commissions');
+    await this.router.navigate(['/super-admin/commissions']);
   }
 
   async onRefreshSession() {
