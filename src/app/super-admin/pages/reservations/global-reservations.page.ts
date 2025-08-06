@@ -585,6 +585,7 @@ export class GlobalReservationsPage implements OnInit {
 
   // Events handlers
   async onFilterChange() {
+    console.log('🔍 Filtre changé:', this.filters);
     await this.loadReservations(true);
     await this.loadStats();
   }

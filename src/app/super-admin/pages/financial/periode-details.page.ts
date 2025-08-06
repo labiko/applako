@@ -58,7 +58,10 @@ import {
   checkmarkCircleOutline,
   checkmarkDoneOutline,
   warningOutline,
-  informationCircleOutline
+  informationCircleOutline,
+  walletOutline,
+  alertCircleOutline,
+  hourglassOutline
 } from 'ionicons/icons';
 
 import { 
@@ -206,7 +209,28 @@ interface ReservationDetail {
               
               <div class="entreprise-header">
                 <h3>{{ commission.entreprise_nom || 'Entreprise Inconnue' }}</h3>
-                <div class="commission-amount">{{ formatPrice(commission.montant_commission) }}</div>
+                <div class="commission-amount">
+                  {{ formatPrice(commission.montant_commission) }}
+                  <div class="payment-status">
+                    <ion-button 
+                      fill="clear" 
+                      size="small"
+                      class="payment-status-btn"
+                      [color]="getPaymentStatusColor(commission.statut_paiement)"
+                      (click)="togglePaymentStatus($event, commission)"
+                      [title]="getPaymentStatusTooltip(commission)">
+                      <ion-icon 
+                        [name]="getPaymentStatusIcon(commission.statut_paiement)" 
+                        slot="icon-only">
+                      </ion-icon>
+                    </ion-button>
+                    <span 
+                      *ngIf="commission.statut_paiement === 'paye' && commission.date_versement_commission" 
+                      class="payment-date">
+                      {{ formatPaymentDateTime(commission.date_versement_commission) }}
+                    </span>
+                  </div>
+                </div>
               </div>
               
               <div class="entreprise-stats">
@@ -510,7 +534,10 @@ export class PeriodeDetailsPage implements OnInit {
       checkmarkCircleOutline,
       checkmarkDoneOutline,
       warningOutline,
-      informationCircleOutline
+      informationCircleOutline,
+      walletOutline,
+      alertCircleOutline,
+      hourglassOutline
     });
   }
 
@@ -643,6 +670,92 @@ export class PeriodeDetailsPage implements OnInit {
     this.filterReservations();
   }
 
+  // ===============================================
+  // GESTION STATUT PAIEMENT
+  // ===============================================
+
+  getPaymentStatusIcon(statutPaiement: string): string {
+    switch (statutPaiement) {
+      case 'paye': return 'wallet-outline';
+      case 'en_attente': return 'hourglass-outline';
+      case 'non_paye':
+      default: return 'alert-circle-outline';
+    }
+  }
+
+  getPaymentStatusColor(statutPaiement: string): string {
+    switch (statutPaiement) {
+      case 'paye': return 'success';
+      case 'en_attente': return 'warning';
+      case 'non_paye':
+      default: return 'danger';
+    }
+  }
+
+  getPaymentStatusTooltip(commission: CommissionDetail): string {
+    switch (commission.statut_paiement) {
+      case 'paye': 
+        return commission.date_versement_commission 
+          ? `Payé le ${this.formatDate(commission.date_versement_commission)}` 
+          : 'Payé';
+      case 'en_attente': return 'Paiement en attente';
+      case 'non_paye':
+      default: return 'Non payé - Cliquer pour marquer comme payé';
+    }
+  }
+
+  async togglePaymentStatus(event: Event, commission: CommissionDetail) {
+    event.stopPropagation(); // Empêcher le filtrage par entreprise
+
+    try {
+      const loading = await this.loadingController.create({
+        message: 'Mise à jour du statut de paiement...',
+      });
+      await loading.present();
+
+      let result;
+      if (commission.statut_paiement === 'paye') {
+        // Marquer comme non payé
+        result = await this.financialService.marquerCommissionNonPayee(commission.id);
+      } else {
+        // Marquer comme payé avec la date actuelle
+        const dateVersement = new Date().toISOString();
+        result = await this.financialService.marquerCommissionPayee(commission.id, dateVersement);
+      }
+
+      await loading.dismiss();
+
+      if (result.success) {
+        const newStatus = commission.statut_paiement === 'paye' ? 'non_paye' : 'paye';
+        const message = newStatus === 'paye' 
+          ? `✅ Commission marquée comme payée`
+          : `⚠️ Commission marquée comme non payée`;
+
+        // Mettre à jour localement
+        commission.statut_paiement = newStatus;
+        if (newStatus === 'paye') {
+          commission.date_versement_commission = new Date().toISOString();
+        } else {
+          commission.date_versement_commission = undefined;
+        }
+
+        const toast = await this.toastController.create({
+          message,
+          duration: 3000,
+          color: newStatus === 'paye' ? 'success' : 'warning',
+          position: 'top'
+        });
+        await toast.present();
+
+      } else {
+        this.showError('Erreur lors de la mise à jour du statut');
+      }
+    } catch (error) {
+      console.error('❌ Erreur togglePaymentStatus:', error);
+      this.showError('Erreur lors de la mise à jour');
+    }
+  }
+
   // Event handlers
   async onRefresh(event?: RefresherCustomEvent) {
     await this.loadPeriodeDetails();
@@ -711,6 +824,17 @@ export class PeriodeDetailsPage implements OnInit {
       month: 'short',
       hour: '2-digit',
       minute: '2-digit'
+    });
+  }
+
+  formatPaymentDateTime(dateString: string): string {
+    return new Date(dateString).toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Africa/Conakry' // GMT+0
     });
   }
 

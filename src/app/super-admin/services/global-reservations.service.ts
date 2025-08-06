@@ -78,20 +78,25 @@ export class GlobalReservationsService {
   ): Promise<{ data: GlobalReservation[]; count: number }> {
     try {
       console.log('🔍 Récupération réservations globales avec filtres:', filters);
+      
+      // Debug: afficher les IDs d'entreprises disponibles
+      if (filters.entrepriseId) {
+        console.log('🏢 Filtre par entreprise ID:', filters.entrepriseId);
+      }
 
       // Construire la requête avec jointures
       let query = this.supabaseService.client
         .from('reservations')
         .select(`
           *,
-          conducteurs!inner (
+          conducteurs (
             id,
             nom,
             prenom,
             telephone,
             vehicle_type,
             entreprise_id,
-            entreprises!inner (
+            entreprises (
               id,
               nom,
               email
@@ -109,7 +114,19 @@ export class GlobalReservationsService {
       }
 
       if (filters.entrepriseId) {
-        query = query.eq('conducteurs.entreprise_id', filters.entrepriseId);
+        // D'abord, récupérer les IDs des conducteurs de cette entreprise
+        const { data: conducteursData } = await this.supabaseService.client
+          .from('conducteurs')
+          .select('id')
+          .eq('entreprise_id', filters.entrepriseId);
+        
+        if (conducteursData && conducteursData.length > 0) {
+          const conducteurIds = conducteursData.map(c => c.id);
+          query = query.in('conducteur_id', conducteurIds);
+        } else {
+          // Aucun conducteur trouvé pour cette entreprise, retourner vide
+          return { data: [], count: 0 };
+        }
       }
 
       if (filters.statut) {
@@ -157,15 +174,15 @@ export class GlobalReservationsService {
           date_code_validation: reservation.date_code_validation,
           
           // Données conducteur
-          conducteur_id: reservation.conducteur_id,
-          conducteur_nom: conducteur?.nom || 'N/A',
-          conducteur_prenom: conducteur?.prenom || 'N/A',
+          conducteur_id: reservation.conducteur_id || '',
+          conducteur_nom: conducteur?.nom || 'Non assigné',
+          conducteur_prenom: conducteur?.prenom || '',
           conducteur_telephone: conducteur?.telephone || 'N/A',
           vehicle_type: conducteur?.vehicle_type || 'N/A',
           
           // Données entreprise
-          entreprise_id: entreprise?.id || 'N/A',
-          entreprise_nom: entreprise?.nom || 'N/A',
+          entreprise_id: entreprise?.id || '',
+          entreprise_nom: entreprise?.nom || 'Non assignée',
           entreprise_email: entreprise?.email || 'N/A',
           
           // Commission calculée (15% par défaut pour l'instant)

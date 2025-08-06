@@ -35,6 +35,8 @@ export interface CommissionDetail {
   date_calcul: string;
   date_facturation?: string;
   date_paiement?: string;
+  date_versement_commission?: string;
+  statut_paiement: 'non_paye' | 'paye' | 'en_attente';
   metadata: any;
 }
 
@@ -111,7 +113,7 @@ export class FinancialManagementService {
       let query = this.supabase.client
         .from('facturation_periodes')
         .select('*')
-        .order('periode_debut', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (statut) {
         query = query.eq('statut', statut);
@@ -650,6 +652,71 @@ export class FinancialManagementService {
     } catch (error) {
       console.error('❌ Erreur getStatistiquesFinancieres:', error);
       return { data: null, error };
+    }
+  }
+
+  // ===============================================
+  // GESTION DES PAIEMENTS DE COMMISSION
+  // ===============================================
+
+  /**
+   * Marque une commission comme payée
+   */
+  async marquerCommissionPayee(
+    commissionId: string, 
+    dateVersement: string
+  ): Promise<{ success: boolean, error?: any }> {
+    try {
+      console.log(`💰 Marquage commission ${commissionId} comme payée...`);
+
+      const { error } = await this.supabase.client
+        .from('commissions_detail')
+        .update({
+          statut_paiement: 'paye',
+          date_versement_commission: dateVersement,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', commissionId);
+
+      if (error) {
+        throw error;
+      }
+
+      console.log(`✅ Commission ${commissionId} marquée comme payée`);
+      return { success: true };
+
+    } catch (error) {
+      console.error('❌ Erreur marquerCommissionPayee:', error);
+      return { success: false, error };
+    }
+  }
+
+  /**
+   * Marque une commission comme non payée
+   */
+  async marquerCommissionNonPayee(commissionId: string): Promise<{ success: boolean, error?: any }> {
+    try {
+      console.log(`💰 Marquage commission ${commissionId} comme non payée...`);
+
+      const { error } = await this.supabase.client
+        .from('commissions_detail')
+        .update({
+          statut_paiement: 'non_paye',
+          date_versement_commission: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', commissionId);
+
+      if (error) {
+        throw error;
+      }
+
+      console.log(`✅ Commission ${commissionId} marquée comme non payée`);
+      return { success: true };
+
+    } catch (error) {
+      console.error('❌ Erreur marquerCommissionNonPayee:', error);
+      return { success: false, error };
     }
   }
 

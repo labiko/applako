@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { 
   IonContent, 
   IonHeader, 
@@ -87,7 +88,8 @@ export class DashboardPage implements OnInit, OnDestroy {
     private entrepriseService: EntrepriseService,
     private entrepriseAuthService: EntrepriseAuthService,
     private notificationsService: NotificationsService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private router: Router
   ) {
     addIcons({ 
       statsChart, 
@@ -198,5 +200,21 @@ export class DashboardPage implements OnInit, OnDestroy {
       case 'month': return 'ce mois';
       default: return '';
     }
+  }
+
+  // ===============================================
+  // MÉTHODES DE NAVIGATION
+  // ===============================================
+
+  navigateToMesCommissions() {
+    this.router.navigate(['/entreprise/mes-commissions']);
+  }
+
+  navigateToCommissionsFactures() {
+    this.router.navigate(['/entreprise/commissions-factures']);
+  }
+
+  navigateToFinances() {
+    this.router.navigate(['/entreprise/finances']);
   }
 }

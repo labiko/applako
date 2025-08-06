@@ -219,8 +219,18 @@
               <ion-button 
                 expand="block" 
                 fill="outline" 
+                color="success"
+                (click)="navigateToMesCommissions()">
+                <ion-icon name="wallet-outline" slot="start"></ion-icon>
+                Mes Commissions
+              </ion-button>
+            </ion-col>
+            <ion-col size="6" size-md="4">
+              <ion-button 
+                expand="block" 
+                fill="outline" 
                 color="warning"
-                routerLink="/entreprise/commissions-factures">
+                (click)="navigateToCommissionsFactures()">
                 <ion-icon name="receipt-outline" slot="start"></ion-icon>
                 Factures Commission
               </ion-button>
@@ -230,7 +240,7 @@
                 expand="block" 
                 fill="outline" 
                 color="secondary"
-                routerLink="/entreprise/finances">
+                (click)="navigateToFinances()">
                 <ion-icon name="wallet" slot="start"></ion-icon>
                 Finances
               </ion-button>

@@ -344,6 +344,157 @@
   }
 }
 
+// Modal Détails de la Facture
+.details-modal {
+  --border-radius: 16px 16px 0 0;
+  --max-width: 90%;
+  --max-height: 70%;
+  
+  ion-header {
+    ion-toolbar {
+      --background: var(--lako-green);
+      --color: var(--lako-dark);
+      
+      ion-title {
+        font-weight: 600;
+      }
+      
+      ion-button {
+        --color: var(--lako-dark);
+      }
+    }
+  }
+  
+  .modal-content {
+    padding: 16px;
+  }
+  
+  .modal-section {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    line-height: 1.6;
+    
+    strong {
+      color: var(--lako-dark);
+      font-weight: 600;
+    }
+    
+    br {
+      margin-bottom: 8px;
+    }
+  }
+  
+  .reservations-section {
+    margin-bottom: 24px;
+    
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 16px 0;
+      color: var(--lako-dark);
+      font-size: 1rem;
+      font-weight: 600;
+      
+      ion-icon {
+        color: var(--lako-green);
+        font-size: 1.2rem;
+      }
+    }
+    
+    .reservations-list {
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      overflow: hidden;
+    }
+    
+    .reservation-item {
+      padding: 16px;
+      border-bottom: 1px solid #f0f0f0;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      .reservation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        
+        .reservation-info {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          
+          h5 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--lako-dark);
+            font-size: 0.9rem;
+          }
+          
+          .reservation-id {
+            font-size: 0.7rem;
+            color: var(--ion-color-medium);
+            font-weight: 500;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            align-self: flex-start;
+          }
+        }
+        
+        .prix {
+          font-weight: 700;
+          color: var(--ion-color-success);
+          font-size: 1rem;
+        }
+      }
+      
+      .reservation-details {
+        p {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin: 4px 0;
+          font-size: 0.8rem;
+          color: var(--ion-color-medium);
+          
+          ion-icon {
+            font-size: 0.9rem;
+            flex-shrink: 0;
+          }
+        }
+        
+        .trajet {
+          color: var(--lako-dark);
+          font-weight: 500;
+        }
+        
+        .validation {
+          color: var(--ion-color-success);
+          font-weight: 500;
+        }
+      }
+    }
+  }
+
+  .modal-actions {
+    margin-top: 24px;
+    
+    ion-button {
+      --background: var(--lako-green);
+      --color: var(--lako-dark);
+      font-weight: 600;
+      height: 48px;
+    }
+  }
+}
+
 // Responsive design
 @media (max-width: 768px) {
   .status-content {
@@ -378,5 +529,10 @@
         font-size: 0.8rem;
       }
     }
+  }
+  
+  .details-modal {
+    --max-width: 95%;
+    --max-height: 80%;
   }
 }

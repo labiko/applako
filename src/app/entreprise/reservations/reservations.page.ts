@@ -118,7 +118,7 @@ export class EntrepriseReservationsPage implements OnInit {
   filteredReservations: any[] = [];
   conducteurGroups: ConducteurGroup[] = [];
   isLoading = true;
-  selectedFilter = 'all';
+  selectedFilter = 'validees';
   searchTerm = '';
   
   // Filtres de date
@@ -165,6 +165,15 @@ export class EntrepriseReservationsPage implements OnInit {
 
   ngOnInit() {
     this.loadReservations();
+  }
+
+  // Compteurs pour les tabs
+  get validatedCount(): number {
+    return this.reservations.filter(r => r.date_code_validation != null).length;
+  }
+
+  get pendingCount(): number {
+    return this.reservations.filter(r => r.date_code_validation == null).length;
   }
 
   async loadReservations(showLoading = true) {
@@ -328,20 +337,24 @@ export class EntrepriseReservationsPage implements OnInit {
   }
 
   groupByConducteur() {
-    // Filtrer d'abord par statut
+    // Filtrer d'abord par validation
     let filteredReservations;
     
-    if (this.selectedFilter === 'all') {
-      // Afficher toutes les réservations peu importe leur statut
-      filteredReservations = this.reservations;
-    } else if (this.selectedFilter === 'completed') {
-      // Section TERMINÉES : filtrer avec date_code_validation
+    if (this.selectedFilter === 'validees') {
+      // VALIDÉES : réservations avec date_code_validation
       filteredReservations = this.reservations.filter(r => 
-        r.statut === 'completed' && r.date_code_validation != null
+        r.date_code_validation != null
+      );
+    } else if (this.selectedFilter === 'en_attente') {
+      // EN ATTENTE : réservations sans date_code_validation
+      filteredReservations = this.reservations.filter(r => 
+        r.date_code_validation == null
       );
     } else {
-      // Autres filtres
-      filteredReservations = this.reservations.filter(r => r.statut === this.selectedFilter);
+      // Fallback vers toutes les validées par défaut
+      filteredReservations = this.reservations.filter(r => 
+        r.date_code_validation != null
+      );
     }
 
     // Filtrer par date

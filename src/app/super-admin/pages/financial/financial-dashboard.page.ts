@@ -429,17 +429,24 @@ export class FinancialDashboardPage implements OnInit {
 
   async onCreatePeriode() {
     const alert = await this.alertController.create({
-      header: 'Créer une nouvelle période',
+      header: '📅 Créer une Nouvelle Période',
+      subHeader: 'Sélectionnez le mois et l\'année pour la période de facturation',
       inputs: [
         {
-          name: 'debut',
-          type: 'date',
-          placeholder: 'Date de début'
+          name: 'mois',
+          type: 'number',
+          placeholder: 'Mois (1-12)',
+          min: 1,
+          max: 12,
+          value: new Date().getMonth() + 1
         },
         {
-          name: 'fin',
-          type: 'date', 
-          placeholder: 'Date de fin'
+          name: 'annee',
+          type: 'number',
+          placeholder: 'Année (ex: 2025)',
+          min: 2020,
+          max: 2030,
+          value: new Date().getFullYear()
         }
       ],
       buttons: [
@@ -448,10 +455,14 @@ export class FinancialDashboardPage implements OnInit {
           role: 'cancel'
         },
         {
-          text: 'Créer',
+          text: 'Créer Période',
           handler: async (data) => {
-            if (data.debut && data.fin) {
-              await this.createPeriode(data.debut, data.fin);
+            if (data.mois && data.annee) {
+              await this.createPeriodeFromMonth(parseInt(data.mois), parseInt(data.annee));
+              return true;
+            } else {
+              this.showError('Veuillez saisir un mois et une année valides');
+              return false;
             }
           }
         }
@@ -461,16 +472,53 @@ export class FinancialDashboardPage implements OnInit {
     await alert.present();
   }
 
-  private async createPeriode(debut: string, fin: string) {
+  private async createPeriodeFromMonth(mois: number, annee: number) {
+    // Validation des entrées
+    if (mois < 1 || mois > 12) {
+      this.showError('Le mois doit être entre 1 et 12');
+      return;
+    }
+    
+    if (annee < 2020 || annee > 2030) {
+      this.showError('L\'année doit être entre 2020 et 2030');
+      return;
+    }
+
+    // Calculer les dates de début et fin du mois
+    const debut = new Date(annee, mois - 1, 1, 0, 0, 0); // 1er du mois à 00:00:00
+    const fin = new Date(annee, mois, 0, 23, 59, 59); // Dernier jour du mois à 23:59:59
+
+    const debutISO = debut.toISOString();
+    const finISO = fin.toISOString();
+
+    console.log(`🗓️ Création période: ${this.formatMonth(mois)} ${annee}`);
+    console.log(`📅 Du ${debutISO} au ${finISO}`);
+
+    // Vérifier si une période identique existe déjà
+    const periodeExistante = this.periodes.find(p => {
+      const existantDebut = new Date(p.periode_debut);
+      const existantFin = new Date(p.periode_fin);
+      
+      return existantDebut.getFullYear() === annee && 
+             existantDebut.getMonth() === mois - 1 &&
+             existantFin.getFullYear() === annee && 
+             existantFin.getMonth() === mois - 1;
+    });
+
+    if (periodeExistante) {
+      this.showError(`Une période existe déjà pour ${this.formatMonth(mois)} ${annee}!\n\nStatut: ${this.getStatutText(periodeExistante.statut)}`);
+      return;
+    }
+
     const loading = await this.loadingController.create({
-      message: 'Création de la période...'
+      message: `Création de la période ${this.formatMonth(mois)} ${annee}...`
     });
     await loading.present();
 
     try {
       const { data, error } = await this.financialService.createPeriode({
-        periode_debut: debut,
-        periode_fin: fin,
+        periode_debut: debutISO,
+        periode_fin: finISO,
         statut: 'en_cours'
       });
 
@@ -478,7 +526,7 @@ export class FinancialDashboardPage implements OnInit {
         throw error;
       }
 
-      this.showSuccess('Période créée avec succès');
+      this.showSuccess(`✅ Période créée avec succès !\\n${this.formatMonth(mois)} ${annee}\\nDu ${debut.toLocaleDateString('fr-FR')} au ${fin.toLocaleDateString('fr-FR')}`);
       await this.loadPeriodes();
 
     } catch (error) {
@@ -486,6 +534,21 @@ export class FinancialDashboardPage implements OnInit {
       this.showError('Erreur lors de la création de la période');
     } finally {
       await loading.dismiss();
+    }
+  }
+
+  private formatMonth(mois: number): string {
+    const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                   'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+    return months[mois - 1] || 'Mois invalide';
+  }
+
+  private getStatutText(statut: string): string {
+    switch (statut) {
+      case 'en_cours': return 'En Cours';
+      case 'cloturee': return 'Clôturée';
+      case 'facturee': return 'Facturée';
+      default: return statut;
     }
   }
 

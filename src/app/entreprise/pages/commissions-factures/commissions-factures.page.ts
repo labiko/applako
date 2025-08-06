@@ -32,6 +32,8 @@ import {
   IonSegment,
   IonSegmentButton,
   IonNote,
+  IonModal,
+  IonButtons,
   LoadingController,
   ToastController,
   AlertController,
@@ -50,8 +52,14 @@ import {
   cashOutline,
   warningOutline,
   checkmarkCircleOutline,
-  businessOutline
+  businessOutline,
+  closeOutline,
+  carOutline,
+  locationOutline,
+  personOutline
 } from 'ionicons/icons';
+
+import { EntrepriseCommissionService } from '../../services/entreprise-commission.service';
 
 interface FactureCommission {
   id: string;
@@ -66,6 +74,19 @@ interface FactureCommission {
   date_facturation?: string;
   date_paiement?: string;
   metadata: any;
+  reservations?: ReservationFacture[];
+}
+
+interface ReservationFacture {
+  id: string;
+  client_phone: string;
+  depart_nom: string;
+  destination_nom: string;
+  prix_total: number;
+  distance_km?: number;
+  created_at: string;
+  date_code_validation: string;
+  conducteur_nom: string;
 }
 
 interface StatutPaiement {
@@ -164,16 +185,16 @@ interface StatutPaiement {
           (ionChange)="onPeriodChange()"
           class="period-selector">
           <ion-segment-button value="all">
-            <ion-label>Toutes</ion-label>
+            <ion-label>TOUTES</ion-label>
           </ion-segment-button>
           <ion-segment-button value="pending">
-            <ion-label>En attente</ion-label>
+            <ion-label>EN ATTENTE</ion-label>
           </ion-segment-button>
           <ion-segment-button value="paid">
-            <ion-label>Payées</ion-label>
+            <ion-label>PAYÉES</ion-label>
           </ion-segment-button>
           <ion-segment-button value="overdue">
-            <ion-label>En retard</ion-label>
+            <ion-label>EN RETARD</ion-label>
           </ion-segment-button>
         </ion-segment>
       </ion-card-content>
@@ -306,6 +327,96 @@ interface StatutPaiement {
     </ion-card>
 
   </div>
+
+  <!-- Modal Détails de la Facture -->
+  <ion-modal [isOpen]="isDetailsModalOpen" (didDismiss)="closeDetailsModal()" class="details-modal">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>Détails de la Facture</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeDetailsModal()">
+              <ion-icon name="close-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding" *ngIf="selectedFacture">
+        <div class="modal-content">
+          
+          <!-- Informations de période -->
+          <div class="modal-section">
+            <strong>Période:</strong> {{ formatDate(selectedFacture.periode_debut) }} - {{ formatDate(selectedFacture.periode_fin) }}<br>
+            <strong>Réservations:</strong> {{ selectedFacture.nombre_reservations }}<br>
+            <strong>Chiffre d'affaires:</strong> {{ formatPrice(selectedFacture.chiffre_affaire_brut) }}<br>
+            <strong>Taux appliqué:</strong> {{ selectedFacture.taux_commission_moyen.toFixed(1) }}%<br>
+            <strong>Commission:</strong> {{ formatPrice(selectedFacture.montant_commission) }}<br>
+            <strong>Statut:</strong> {{ getFactureStatusText(selectedFacture.statut) }}<br>
+            <div *ngIf="selectedFacture.date_paiement">
+              <strong>Payé le:</strong> {{ formatDate(selectedFacture.date_paiement) }}
+            </div>
+          </div>
+
+          <!-- Liste des réservations -->
+          <div class="reservations-section" *ngIf="selectedFacture.reservations && selectedFacture.reservations.length > 0">
+            <h4 class="section-title">
+              <ion-icon name="car-outline"></ion-icon>
+              Réservations Facturables ({{ selectedFacture.reservations.length }})
+            </h4>
+            
+            <div class="reservations-list">
+              <div 
+                *ngFor="let reservation of selectedFacture.reservations; trackBy: trackByReservation"
+                class="reservation-item">
+                
+                <div class="reservation-header">
+                  <div class="reservation-info">
+                    <h5>{{ reservation.client_phone }}</h5>
+                    <span class="reservation-id">ID: {{ reservation.id }}</span>
+                  </div>
+                  <div class="prix">{{ formatPrice(reservation.prix_total) }}</div>
+                </div>
+                
+                <div class="reservation-details">
+                  <p class="trajet">
+                    <ion-icon name="location-outline"></ion-icon>
+                    {{ reservation.depart_nom }} → {{ reservation.destination_nom }}
+                  </p>
+                  <p class="distance" *ngIf="reservation.distance_km">
+                    <ion-icon name="car-outline"></ion-icon>
+                    {{ reservation.distance_km }} km
+                  </p>
+                  <p class="datetime">
+                    <ion-icon name="calendar-outline"></ion-icon>
+                    Créée: {{ formatDate(reservation.created_at) }}
+                  </p>
+                  <p class="conducteur">
+                    <ion-icon name="person-outline"></ion-icon>
+                    {{ reservation.conducteur_nom }}
+                  </p>
+                  <p class="validation">
+                    <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+                    Validée le {{ formatDateWithTime(reservation.date_code_validation) }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="modal-actions">
+            <ion-button 
+              expand="block" 
+              (click)="closeDetailsModal()"
+              color="primary">
+              FERMER
+            </ion-button>
+          </div>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
 </ion-content>
   `,
   styleUrls: ['./commissions-factures.page.scss'],
@@ -336,7 +447,9 @@ interface StatutPaiement {
     IonRefresherContent,
     IonSegment,
     IonSegmentButton,
-    IonNote
+    IonNote,
+    IonModal,
+    IonButtons
   ]
 })
 export class CommissionsFacturesPage implements OnInit {
@@ -351,57 +464,18 @@ export class CommissionsFacturesPage implements OnInit {
 
   // État de l'interface
   isLoading = true;
+  
+  // Modal de détails
+  isDetailsModalOpen = false;
+  selectedFacture: FactureCommission | null = null;
 
-  // Données de test (à remplacer par les vraies données)
-  private readonly MOCK_FACTURES: FactureCommission[] = [
-    {
-      id: '1',
-      periode_debut: '2025-01-01',
-      periode_fin: '2025-01-31',
-      nombre_reservations: 45,
-      chiffre_affaire_brut: 2250000,
-      taux_commission_moyen: 9,
-      montant_commission: 202500,
-      statut: 'paye',
-      date_calcul: '2025-02-01T10:00:00Z',
-      date_facturation: '2025-02-02T14:00:00Z',
-      date_paiement: '2025-02-05T16:30:00Z',
-      metadata: {}
-    },
-    {
-      id: '2',
-      periode_debut: '2024-12-01',
-      periode_fin: '2024-12-31',
-      nombre_reservations: 38,
-      chiffre_affaire_brut: 1900000,
-      taux_commission_moyen: 11,
-      montant_commission: 209000,
-      statut: 'facture',
-      date_calcul: '2025-01-01T10:00:00Z',
-      date_facturation: '2025-01-02T14:00:00Z',
-      metadata: {}
-    },
-    {
-      id: '3',
-      periode_debut: '2024-11-01',
-      periode_fin: '2024-11-30',
-      nombre_reservations: 52,
-      chiffre_affaire_brut: 2600000,
-      taux_commission_moyen: 15,
-      montant_commission: 390000,
-      statut: 'paye',
-      date_calcul: '2024-12-01T10:00:00Z',
-      date_facturation: '2024-12-02T14:00:00Z',
-      date_paiement: '2024-12-10T11:15:00Z',
-      metadata: {}
-    }
-  ];
 
   constructor(
     private router: Router,
     private loadingController: LoadingController,
     private toastController: ToastController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private commissionService: EntrepriseCommissionService
   ) {
     // Ajouter les icônes
     addIcons({
@@ -416,7 +490,11 @@ export class CommissionsFacturesPage implements OnInit {
       cashOutline,
       warningOutline,
       checkmarkCircleOutline,
-      businessOutline
+      businessOutline,
+      closeOutline,
+      carOutline,
+      locationOutline,
+      personOutline
     });
   }
 
@@ -428,11 +506,43 @@ export class CommissionsFacturesPage implements OnInit {
     try {
       this.isLoading = true;
       
-      // Simuler un chargement
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('📊 Chargement des factures de commission entreprise...');
       
-      // Charger les données de test
-      this.factures = [...this.MOCK_FACTURES];
+      // Récupérer les commissions via le service
+      const { data, error } = await this.commissionService.getMesCommissions();
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Transformer les données de commissions en factures
+      this.factures = (data || []).map(commission => ({
+        id: commission.id,
+        periode_debut: commission.periode_debut,
+        periode_fin: commission.periode_fin,
+        nombre_reservations: commission.nombre_reservations,
+        chiffre_affaire_brut: commission.chiffre_affaire_brut,
+        taux_commission_moyen: commission.taux_commission_moyen,
+        montant_commission: commission.montant_commission,
+        statut: this.mapStatutPaiementToFacture(commission.statut_paiement),
+        date_calcul: commission.periode_fin,
+        date_facturation: commission.statut_paiement !== 'non_paye' ? commission.periode_fin : undefined,
+        date_paiement: commission.date_versement_commission,
+        metadata: {},
+        reservations: (commission.reservations || []).map(res => ({
+          id: res.id,
+          client_phone: res.client_phone,
+          depart_nom: res.depart_nom,
+          destination_nom: res.destination_nom,
+          prix_total: res.prix_total,
+          distance_km: res.distance_km,
+          created_at: res.created_at,
+          date_code_validation: res.date_code_validation,
+          conducteur_nom: res.conducteur_nom
+        }))
+      }));
+      
+      console.log(`✅ ${this.factures.length} factures chargées`);
       this.calculateStatutPaiement();
       this.applyFilters();
       
@@ -441,6 +551,15 @@ export class CommissionsFacturesPage implements OnInit {
       this.showError('Erreur lors du chargement des factures');
     } finally {
       this.isLoading = false;
+    }
+  }
+
+  private mapStatutPaiementToFacture(statutPaiement: string): 'calcule' | 'facture' | 'paye' | 'conteste' {
+    switch (statutPaiement) {
+      case 'paye': return 'paye';
+      case 'en_attente': return 'facture';
+      case 'non_paye': 
+      default: return 'calcule';
     }
   }
 
@@ -498,22 +617,14 @@ export class CommissionsFacturesPage implements OnInit {
     );
   }
 
-  async onViewDetails(facture: FactureCommission) {
-    const alert = await this.alertController.create({
-      header: 'Détails de la Facture',
-      message: `
-        <strong>Période:</strong> ${this.formatDate(facture.periode_debut)} - ${this.formatDate(facture.periode_fin)}<br>
-        <strong>Réservations:</strong> ${facture.nombre_reservations}<br>
-        <strong>Chiffre d'affaires:</strong> ${this.formatPrice(facture.chiffre_affaire_brut)}<br>
-        <strong>Taux appliqué:</strong> ${facture.taux_commission_moyen.toFixed(1)}%<br>
-        <strong>Commission:</strong> ${this.formatPrice(facture.montant_commission)}<br>
-        <strong>Statut:</strong> ${this.getFactureStatusText(facture.statut)}<br>
-        ${facture.date_paiement ? `<strong>Payé le:</strong> ${this.formatDate(facture.date_paiement)}` : ''}
-      `,
-      buttons: ['Fermer']
-    });
+  onViewDetails(facture: FactureCommission) {
+    this.selectedFacture = facture;
+    this.isDetailsModalOpen = true;
+  }
 
-    await alert.present();
+  closeDetailsModal() {
+    this.isDetailsModalOpen = false;
+    this.selectedFacture = null;
   }
 
   async onDownloadPDF(facture: FactureCommission) {
@@ -627,8 +738,23 @@ export class CommissionsFacturesPage implements OnInit {
     });
   }
 
+  formatDateWithTime(dateString: string): string {
+    return new Date(dateString).toLocaleString('fr-FR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Africa/Conakry' // GMT+0
+    });
+  }
+
   trackByFacture(index: number, facture: FactureCommission): string {
     return facture.id;
+  }
+
+  trackByReservation(index: number, reservation: ReservationFacture): string {
+    return reservation.id;
   }
 
   private async showError(message: string) {

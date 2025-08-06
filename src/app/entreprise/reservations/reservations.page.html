@@ -8,101 +8,45 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="modern-content">
-  <!-- En-tête avec gradient -->
+  <!-- En-tête simplifié -->
   <div class="header-section">
     <div class="header-content">
-      <h1 class="main-title">Suivi des Réservations</h1>
-      <p class="subtitle">Gérez vos courses par conducteur</p>
+      <h1 class="main-title">Réservations</h1>
     </div>
   </div>
 
-  <!-- Barre de recherche moderne -->
-  <div class="search-section">
-    <ion-searchbar
-      [(ngModel)]="searchTerm"
-      (ionInput)="onSearchChange($event)"
-      placeholder="Rechercher par conducteur, adresse, client..."
-      class="modern-searchbar"
-      show-clear-button="focus">
-    </ion-searchbar>
-  </div>
 
-  <!-- Filtres par statut -->
+  <!-- Tabs Validées/En Attente -->
   <div class="filters-section">
     <ion-segment 
       [(ngModel)]="selectedFilter" 
       (ionChange)="onFilterChange($event)"
-      class="modern-segment">
-      <ion-segment-button value="all">
-        <ion-label>Toutes</ion-label>
+      class="validation-segment">
+      <ion-segment-button value="validees" class="validated-tab">
+        <ion-label>
+          <span class="tab-text">VALIDÉES</span>
+          <span class="tab-count">({{ validatedCount }})</span>
+        </ion-label>
+        <ion-icon name="checkmark-circle" class="tab-icon"></ion-icon>
       </ion-segment-button>
-      <ion-segment-button value="completed">
-        <ion-label>Terminées</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="accepted">
-        <ion-label>Acceptées</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="pending">
-        <ion-label>En attente</ion-label>
+      <ion-segment-button value="en_attente" class="pending-tab">
+        <ion-label>
+          <span class="tab-text">EN ATTENTE</span>
+          <span class="tab-count">({{ pendingCount }})</span>
+        </ion-label>
+        <ion-icon name="time" class="tab-icon"></ion-icon>
       </ion-segment-button>
     </ion-segment>
   </div>
 
-  <!-- Filtres par date -->
-  <div class="date-filters-section">
-    <div class="date-filter-header">
-      <ion-icon name="calendar-outline" class="filter-icon"></ion-icon>
-      <span class="filter-title">Filtrer par date</span>
-    </div>
-    
-    <div class="date-filter-controls">
-      <!-- Sélecteur de type de filtre -->
-      <ion-segment 
-        [(ngModel)]="dateFilter" 
-        (ionChange)="onDateFilterChange($event)"
-        class="date-segment">
-        <ion-segment-button value="all">
-          <ion-label>Toutes</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="today">
-          <ion-icon name="today-outline"></ion-icon>
-          <ion-label>Aujourd'hui</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="custom">
-          <ion-icon name="calendar-outline"></ion-icon>
-          <ion-label>Personnalisé</ion-label>
-        </ion-segment-button>
-      </ion-segment>
-
-      <!-- Sélecteur de plage de dates (visible seulement en mode personnalisé) -->
-      <div *ngIf="dateFilter === 'custom'" class="custom-date-range">
-        <div class="date-range-inputs">
-          <div class="date-input-group">
-            <ion-label class="date-label">Du</ion-label>
-            <ion-button 
-              fill="outline" 
-              size="small" 
-              (click)="openDatePicker()"
-              class="date-picker-button">
-              <ion-icon name="calendar-outline" slot="start"></ion-icon>
-              {{ formatDateForDisplay(startDate) }}
-            </ion-button>
-          </div>
-          <div class="date-input-group">
-            <ion-label class="date-label">Au</ion-label>
-            <ion-button 
-              fill="outline" 
-              size="small" 
-              (click)="openDatePicker()"
-              class="date-picker-button">
-              <ion-icon name="calendar-outline" slot="start"></ion-icon>
-              {{ formatDateForDisplay(endDate) }}
-            </ion-button>
-          </div>
-        </div>
-      </div>
+  <!-- Message informatif pour les validées -->
+  <div class="info-message" *ngIf="selectedFilter === 'validees'">
+    <div class="info-content">
+      <ion-icon name="information-circle" class="info-icon"></ion-icon>
+      <span class="info-text">Ces réservations sont comptées dans les commissions</span>
     </div>
   </div>
+
 
   <!-- Pull to refresh -->
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
