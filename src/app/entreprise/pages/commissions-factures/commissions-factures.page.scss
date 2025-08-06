@@ -1,0 +1,382 @@
+.page-container {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// Statut des paiements
+.status-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid var(--ion-color-medium);
+  
+  &.status-success {
+    border-left-color: var(--ion-color-success);
+  }
+  
+  &.status-warning {
+    border-left-color: var(--ion-color-warning);
+  }
+  
+  &.status-danger {
+    border-left-color: var(--ion-color-danger);
+  }
+  
+  ion-card-header {
+    padding-bottom: 8px;
+    
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--lako-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+      
+      ion-icon {
+        color: var(--lako-green);
+        font-size: 1.3rem;
+      }
+    }
+  }
+}
+
+.status-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  
+  .status-main {
+    flex: 1;
+    
+    .status-badge {
+      margin-bottom: 12px;
+      
+      ion-badge {
+        font-size: 0.9rem;
+        font-weight: 600;
+        padding: 8px 16px;
+      }
+    }
+    
+    .status-details {
+      .detail-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+        font-size: 0.9rem;
+        
+        .label {
+          color: var(--lako-gray);
+          font-weight: 500;
+        }
+        
+        .value {
+          color: var(--lako-dark);
+          font-weight: 600;
+          
+          &.success {
+            color: var(--ion-color-success);
+          }
+        }
+        
+        &.warning {
+          .label, .value {
+            color: var(--ion-color-warning);
+          }
+        }
+      }
+    }
+  }
+  
+  .status-actions {
+    flex-shrink: 0;
+  }
+}
+
+// Filtres
+.filters-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.period-selector {
+  --background: var(--lako-cream);
+  --indicator-color: var(--lako-green);
+  border-radius: 12px;
+  
+  ion-segment-button {
+    --color: var(--lako-gray);
+    --color-checked: var(--lako-dark);
+    --indicator-color: var(--lako-green);
+    
+    ion-label {
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// Loading
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  
+  ion-spinner {
+    margin-bottom: 16px;
+  }
+  
+  p {
+    color: var(--lako-gray);
+    font-size: 0.9rem;
+  }
+}
+
+// Liste des factures
+.factures-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  
+  ion-card-header {
+    padding-bottom: 8px;
+    
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--lako-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+      
+      ion-icon {
+        color: var(--lako-green);
+        font-size: 1.3rem;
+      }
+    }
+  }
+}
+
+.facture-item {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+  
+  .facture-content {
+    width: 100%;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+  
+  .facture-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    
+    .periode-info {
+      strong {
+        display: block;
+        color: var(--lako-dark);
+        font-size: 1rem;
+        margin-bottom: 4px;
+      }
+      
+      ion-note {
+        font-size: 0.8rem;
+        color: var(--lako-gray);
+      }
+    }
+    
+    .status-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+  }
+  
+  .facture-details {
+    margin-bottom: 12px;
+    
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      font-size: 0.85rem;
+      
+      .detail-label {
+        color: var(--lako-gray);
+        font-weight: 500;
+        
+        &.commission {
+          color: var(--ion-color-warning);
+          font-weight: 600;
+        }
+      }
+      
+      .detail-value {
+        color: var(--lako-dark);
+        font-weight: 600;
+        
+        &.commission {
+          color: var(--ion-color-warning);
+          font-weight: 700;
+        }
+      }
+    }
+  }
+  
+  .facture-dates {
+    margin-bottom: 12px;
+    
+    .date-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+      font-size: 0.8rem;
+      color: var(--lako-gray);
+      
+      ion-icon {
+        font-size: 0.9rem;
+        color: var(--lako-green);
+      }
+      
+      &.success {
+        color: var(--ion-color-success);
+        
+        ion-icon {
+          color: var(--ion-color-success);
+        }
+      }
+    }
+  }
+  
+  .facture-actions {
+    display: flex;
+    gap: 8px;
+    
+    ion-button {
+      --padding-start: 12px;
+      --padding-end: 12px;
+      height: 32px;
+      
+      ion-icon {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+// État vide
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  text-align: center;
+  
+  ion-icon {
+    color: var(--lako-gray);
+    opacity: 0.5;
+    margin-bottom: 16px;
+  }
+  
+  h3 {
+    color: var(--lako-dark);
+    font-size: 1.3rem;
+    margin: 0 0 8px 0;
+  }
+  
+  p {
+    color: var(--lako-gray);
+    font-size: 0.9rem;
+    max-width: 300px;
+    line-height: 1.4;
+    margin: 0;
+  }
+}
+
+// Informations importantes
+.info-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  
+  .info-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    ion-icon {
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+    
+    .info-text {
+      flex: 1;
+      
+      strong {
+        display: block;
+        color: var(--lako-dark);
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      
+      p {
+        color: var(--lako-gray);
+        font-size: 0.85rem;
+        margin: 0;
+        line-height: 1.3;
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .status-content {
+    flex-direction: column;
+    gap: 12px;
+    
+    .status-actions {
+      align-self: stretch;
+      
+      ion-button {
+        width: 100%;
+      }
+    }
+  }
+  
+  .facture-header {
+    flex-direction: column;
+    gap: 8px;
+    
+    .periode-info strong {
+      font-size: 0.9rem;
+    }
+  }
+  
+  .detail-row {
+    font-size: 0.8rem !important;
+  }
+  
+  .period-selector {
+    ion-segment-button {
+      ion-label {
+        font-size: 0.8rem;
+      }
+    }
+  }
+}

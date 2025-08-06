@@ -66,7 +66,7 @@ BEGIN
     RAISE EXCEPTION 'ERREUR: Le taux global doit être 15.0 (trouvé: %)', taux_global;
   END IF;
   
-  RAISE NOTICE '✅ Système de commission dynamique initialisé avec succès';
+  RAISE NOTICE 'Système de commission dynamique initialisé avec succès';
 END $$;
 
 -- ============================================================================
@@ -96,7 +96,7 @@ BEGIN
   FROM entreprises 
   WHERE actif = TRUE;
   
-  RAISE NOTICE 'Nombre d\'entreprises actives: %', total_entreprises;
-  RAISE NOTICE 'Toutes utilisent le taux global par défaut (15.0%)';
+  RAISE NOTICE 'Nombre d''entreprises actives: %', total_entreprises;
+  RAISE NOTICE 'Toutes utilisent le taux global par défaut (15.0%%)';
   RAISE NOTICE 'Le système est prêt pour la configuration de taux spécifiques';
 END $$;

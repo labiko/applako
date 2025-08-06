@@ -161,25 +161,38 @@ interface EntrepriseCommission {
       </ion-card-header>
       <ion-card-content>
         <ion-grid>
-          <ion-row>
-            <ion-col size="12" size-md="8">
+          <ion-row class="commission-row">
+            <ion-col size="12" size-md="3">
               <ion-item>
-                <ion-label position="stacked">Taux de Commission Global (%)</ion-label>
+                <ion-label position="stacked">Nouveau Taux (%)</ion-label>
                 <ion-input
                   type="number"
                   [(ngModel)]="nouveauTauxGlobal"
-                  placeholder="15"
+                  placeholder="{{ tauxGlobal }}"
                   min="0"
                   max="50"
                   step="0.1">
                 </ion-input>
               </ion-item>
             </ion-col>
-            <ion-col size="12" size-md="4">
+            <ion-col size="12" size-md="6">
+              <ion-item>
+                <ion-label position="stacked">Motif du changement</ion-label>
+                <ion-input
+                  type="text"
+                  [(ngModel)]="motifChangement"
+                  placeholder="Raison de la modification..."
+                  maxlength="200">
+                </ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" size-md="3">
               <ion-button 
                 expand="block" 
+                fill="solid"
+                color="primary"
                 (click)="onUpdateTauxGlobal()"
-                [disabled]="isSaving || nouveauTauxGlobal === tauxGlobal">
+                [disabled]="isSaving || nouveauTauxGlobal === tauxGlobal || !motifChangement.trim()">
                 <ion-icon name="save-outline" slot="start"></ion-icon>
                 {{ isSaving ? 'Sauvegarde...' : 'Mettre à jour' }}
               </ion-button>
@@ -189,8 +202,10 @@ interface EntrepriseCommission {
             <ion-col size="12">
               <ion-text color="medium">
                 <p class="global-info">
-                  ℹ️ Ce taux s'applique à toutes les entreprises n'ayant pas de taux spécifique configuré.<br>
-                  📊 Actuellement utilisé par {{ stats.entreprises_avec_taux_global }} entreprises.
+                  ℹ️ Ce taux s'applique à {{ stats.entreprises_avec_taux_global }} entreprises sans taux spécifique.<br>
+                  <span *ngIf="nouveauTauxGlobal !== tauxGlobal">
+                    📊 Changement: {{ tauxGlobal }}% → {{ nouveauTauxGlobal }}% ({{ (nouveauTauxGlobal - tauxGlobal > 0 ? '+' : '') + (nouveauTauxGlobal - tauxGlobal).toFixed(1) }}%)
+                  </span>
                 </p>
               </ion-text>
             </ion-col>
@@ -362,6 +377,7 @@ export class CommissionManagementPage implements OnInit {
   // Configuration globale
   tauxGlobal: number = 15;
   nouveauTauxGlobal: number = 15;
+  motifChangement: string = '';
 
   // État de l'interface
   isLoading = true;
@@ -461,11 +477,11 @@ export class CommissionManagementPage implements OnInit {
   }
 
   async onUpdateTauxGlobal() {
-    if (this.nouveauTauxGlobal === this.tauxGlobal) return;
+    if (this.nouveauTauxGlobal === this.tauxGlobal || !this.motifChangement.trim()) return;
     
     const alert = await this.alertController.create({
-      header: 'Confirmation',
-      message: `Voulez-vous vraiment modifier le taux global de ${this.tauxGlobal}% à ${this.nouveauTauxGlobal}% ?`,
+      header: 'Confirmation du changement',
+      message: `Modification du taux global de ${this.tauxGlobal}% à ${this.nouveauTauxGlobal}%.\n\nMotif: ${this.motifChangement}\n\nImpact: ${this.stats.entreprises_avec_taux_global} entreprises seront notifiées automatiquement.`,
       buttons: [
         {
           text: 'Annuler',
@@ -487,7 +503,8 @@ export class CommissionManagementPage implements OnInit {
     try {
       this.isSaving = true;
       
-      await this.commissionService.updateGlobalCommissionRate(this.nouveauTauxGlobal);
+      // Utiliser le motif dans la mise à jour
+      await this.commissionService.updateGlobalCommissionRate(this.nouveauTauxGlobal, this.motifChangement);
       
       this.tauxGlobal = this.nouveauTauxGlobal;
       
@@ -495,9 +512,12 @@ export class CommissionManagementPage implements OnInit {
       await this.loadEntreprises();
       await this.loadStats();
       
+      // Réinitialiser le motif après succès
+      this.motifChangement = '';
+      
       const toast = await this.toastController.create({
-        message: `✅ Taux global mis à jour : ${this.tauxGlobal}%`,
-        duration: 3000,
+        message: `✅ Taux global mis à jour : ${this.tauxGlobal}% - ${this.stats.entreprises_avec_taux_global} entreprises notifiées`,
+        duration: 4000,
         color: 'success',
         position: 'top'
       });

@@ -8,6 +8,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is an Ionic + Angular + Capacitor application for a chauffeur service (AppLakoChauffeur).
 
+**IMPORTANT - Timezone Configuration**: 
+- The application operates in **GMT+0 (Conakry, Guinea timezone)**
+- All timestamps in database are stored in UTC
+- All date/time displays must be converted to GMT+0 for correct local time
+- When calculating time differences (e.g., "Il y a 2h"), always use GMT+0 timezone
+
 ## Development Commands
 
 - `npm install` - Install dependencies
@@ -118,3 +124,26 @@ git push -u origin main
 - Build command: `npm run build`
 - Output directory: `dist/`
 - Node.js version: Use latest LTS (18.x or 20.x)
+
+## ⚠️ IMPORTANT: Git Workflow Instructions
+
+### Commit Policy
+**NEVER commit automatically without explicit user request.**
+
+- ✅ **DO**: Work on code, create files, make modifications
+- ✅ **DO**: Build, test, and verify functionality
+- ❌ **DON'T**: Run `git add`, `git commit`, or `git push` unless specifically asked
+- ❌ **DON'T**: Auto-commit after completing tasks
+
+### When to Commit
+Only commit when the user explicitly requests it with commands like:
+- "commit"
+- "commit and push" 
+- "git commit"
+- "save changes to git"
+- "push to repository"
+
+### Exception
+The only exception is when the user provides a specific instruction in their initial request that clearly indicates they want commits (e.g., "implement feature X and commit it").
+
+This ensures the user maintains full control over their git history and can review changes before they are committed.

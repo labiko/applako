@@ -1,0 +1,573 @@
+// STYLES POUR LA PAGE DÉTAILS PÉRIODE
+// Interface moderne et responsive
+
+.page-container {
+  padding: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// ===============================================
+// EN-TÊTE DE LA PÉRIODE
+// ===============================================
+
+.periode-header-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, var(--lako-green) 0%, #a8e01d 100%);
+  color: white;
+
+  ion-card-header {
+    padding-bottom: 8px;
+    
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      
+      ion-icon {
+        font-size: 1.5rem;
+      }
+    }
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: 12px 8px;
+    
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 4px;
+      color: white;
+    }
+    
+    .stat-label {
+      font-size: 0.85rem;
+      opacity: 0.9;
+      font-weight: 500;
+    }
+  }
+  
+  .cloture-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    
+    ion-icon {
+      font-size: 1rem;
+    }
+  }
+}
+
+// ===============================================
+// COMMISSIONS PAR ENTREPRISE
+// ===============================================
+
+.commissions-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+
+  ion-card-header ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--lako-dark);
+    font-size: 1.1rem;
+    font-weight: 600;
+    
+    ion-icon {
+      color: var(--lako-green);
+      font-size: 1.3rem;
+    }
+  }
+}
+
+.entreprise-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.entreprise-item {
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #f0f0f0;
+  background: #fafafa;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: var(--lako-green);
+    background: var(--lako-cream);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(193, 241, 29, 0.2);
+  }
+
+  &.selected {
+    border-color: var(--lako-green);
+    background: var(--lako-cream);
+    box-shadow: 0 4px 16px rgba(193, 241, 29, 0.3);
+  }
+
+  .entreprise-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+
+    h3 {
+      margin: 0;
+      color: var(--lako-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .commission-amount {
+      color: var(--lako-green);
+      font-weight: 800;
+      font-size: 1.2rem;
+    }
+  }
+
+  .entreprise-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    ion-chip {
+      font-size: 0.8rem;
+      height: 28px;
+      
+      ion-icon {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+// ===============================================
+// FILTRES ET RECHERCHE
+// ===============================================
+
+.filters-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+
+  ion-searchbar {
+    --background: #f8f9fa;
+    --border-radius: 12px;
+    --box-shadow: none;
+    --color: var(--lako-dark);
+  }
+
+  ion-segment {
+    --background: #f0f0f0;
+    border-radius: 12px;
+    
+    ion-segment-button {
+      --color: var(--lako-gray);
+      --color-checked: var(--lako-green);
+      --background-checked: white;
+      --border-radius: 8px;
+      font-weight: 600;
+      
+      ion-icon {
+        font-size: 1rem;
+      }
+    }
+  }
+
+  .quick-filters {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    ion-chip {
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+  }
+}
+
+// ===============================================
+// LISTE DES RÉSERVATIONS
+// ===============================================
+
+.reservations-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+
+  // Onglets de réservations
+  ion-segment {
+    margin-bottom: 16px;
+    --background: #f0f0f0;
+    border-radius: 12px;
+    
+    ion-segment-button {
+      --color: var(--lako-gray);
+      --color-checked: white;
+      --background-checked: var(--lako-green);
+      --border-radius: 8px;
+      font-weight: 600;
+      min-height: 44px;
+      
+      ion-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        
+        ion-icon {
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+
+  // Info badges sous les onglets
+  .tab-info {
+    margin: 12px 0;
+    
+    ion-chip {
+      width: 100%;
+      justify-content: center;
+      padding: 8px;
+      font-size: 0.85rem;
+      
+      ion-icon {
+        margin-right: 8px;
+        font-size: 1.1rem;
+      }
+    }
+  }
+
+  ion-card-header ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--lako-dark);
+    font-size: 1.1rem;
+    font-weight: 600;
+    
+    ion-icon {
+      color: var(--lako-green);
+      font-size: 1.3rem;
+    }
+  }
+}
+
+// Vue Liste
+.reservation-item {
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --inner-padding-top: 16px;
+  --inner-padding-bottom: 16px;
+  --border-width: 0 0 1px 0;
+  --border-color: #f0f0f0;
+
+  &:last-child {
+    --border-width: 0;
+  }
+
+  .reservation-content {
+    width: 100%;
+    
+    .reservation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+
+      h3 {
+        margin: 0;
+        color: var(--lako-dark);
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      .prix {
+        color: var(--lako-green);
+        font-weight: 700;
+        font-size: 1.1rem;
+      }
+    }
+
+    .reservation-details {
+      margin-bottom: 12px;
+
+      p {
+        margin: 4px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        color: var(--lako-gray);
+
+        ion-icon {
+          font-size: 1rem;
+          color: var(--lako-green);
+          flex-shrink: 0;
+        }
+      }
+
+      .reservation-id {
+        font-family: 'Courier New', monospace;
+        font-size: 0.8rem;
+        color: #666;
+        font-weight: 500;
+      }
+
+      .trajet {
+        font-weight: 500;
+        color: var(--lako-dark);
+      }
+      
+      .price-distance {
+        font-weight: 600;
+        color: var(--lako-green);
+        font-size: 0.95rem;
+      }
+
+      .validation-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        
+        ion-icon[color="success"] {
+          color: #10dc60;
+        }
+        
+        ion-icon[color="warning"] {
+          color: #ffce00;
+        }
+      }
+    }
+
+    .reservation-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .created-date {
+        font-size: 0.8rem;
+        color: var(--lako-gray);
+      }
+    }
+  }
+}
+
+// Vue Cartes
+.reservations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.reservation-card {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: var(--lako-green);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+
+    h4 {
+      margin: 0;
+      color: var(--lako-dark);
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .prix {
+      color: var(--lako-green);
+      font-weight: 700;
+      font-size: 1rem;
+    }
+  }
+
+  .card-body {
+    margin-bottom: 12px;
+
+    p {
+      margin: 6px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--lako-gray);
+
+      ion-icon {
+        font-size: 0.9rem;
+        color: var(--lako-green);
+        flex-shrink: 0;
+      }
+    }
+
+    .reservation-id {
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      color: #666;
+      font-weight: 500;
+    }
+
+    .trajet {
+      font-weight: 500;
+      color: var(--lako-dark);
+    }
+    
+    .price-distance {
+      font-weight: 600;
+      color: var(--lako-green);
+      font-size: 0.9rem;
+    }
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: flex-start;
+  }
+}
+
+// ===============================================
+// ÉTATS ET UTILITAIRES
+// ===============================================
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  
+  ion-spinner {
+    margin-bottom: 16px;
+  }
+  
+  p {
+    color: var(--lako-gray);
+    font-size: 0.9rem;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  text-align: center;
+  
+  ion-icon {
+    color: var(--lako-gray);
+    opacity: 0.5;
+    margin-bottom: 16px;
+  }
+  
+  h3 {
+    color: var(--lako-dark);
+    font-size: 1.3rem;
+    margin: 0 0 8px 0;
+  }
+  
+  p {
+    color: var(--lako-gray);
+    font-size: 0.9rem;
+    max-width: 300px;
+    line-height: 1.4;
+    margin: 0 0 24px 0;
+  }
+  
+  ion-button {
+    --border-radius: 12px;
+  }
+}
+
+// ===============================================
+// RESPONSIVE DESIGN
+// ===============================================
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 12px;
+  }
+
+  .periode-header-card .stat-item {
+    padding: 8px 4px;
+    
+    .stat-value {
+      font-size: 1.2rem;
+    }
+    
+    .stat-label {
+      font-size: 0.8rem;
+    }
+  }
+
+  .entreprise-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reservations-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reservation-content {
+    .reservation-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+
+    .reservation-footer {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .entreprise-stats {
+    flex-direction: column;
+    
+    ion-chip {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}

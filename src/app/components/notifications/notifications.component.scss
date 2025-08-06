@@ -1,0 +1,251 @@
+/**
+ * STYLES POUR LE COMPOSANT NOTIFICATIONS
+ */
+
+.notifications-card {
+  margin: 0;
+  
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.2rem;
+    
+    .notification-badge {
+      font-size: 0.75rem;
+      min-width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+// Contrôles
+.notification-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ion-color-light);
+}
+
+// Loading
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px;
+  color: var(--ion-color-medium);
+  
+  ion-spinner {
+    margin-bottom: 12px;
+  }
+}
+
+// État vide
+.empty-notifications {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ion-color-medium);
+  
+  ion-icon {
+    margin-bottom: 16px;
+    opacity: 0.6;
+  }
+  
+  h4 {
+    margin: 0 0 8px 0;
+    font-weight: 500;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+}
+
+// Items de notification
+ion-item {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-start: 16px;
+  --inner-padding-end: 16px;
+  --min-height: auto;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--ion-color-light);
+  
+  &.unread {
+    --background: var(--ion-color-primary-tint);
+    border-left: 4px solid var(--ion-color-primary);
+    
+    .notification-title {
+      font-weight: 600;
+    }
+  }
+  
+  &.urgent {
+    border-left-color: var(--ion-color-danger);
+    --background: var(--ion-color-danger-tint);
+  }
+  
+  &.high-priority {
+    border-left-color: var(--ion-color-warning);
+    --background: var(--ion-color-warning-tint);
+  }
+}
+
+.notification-content {
+  width: 100%;
+  padding: 16px 0;
+}
+
+// Header
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  
+  .notification-type {
+    display: flex;
+    gap: 6px;
+  }
+  
+  .notification-time {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0.7;
+    
+    ion-icon {
+      font-size: 14px;
+    }
+    
+    ion-note {
+      font-size: 0.8rem;
+    }
+  }
+}
+
+// Contenu
+.notification-title {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  line-height: 1.3;
+  color: var(--ion-color-dark);
+}
+
+.notification-message {
+  margin: 0 0 12px 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--ion-color-medium-shade);
+}
+
+// Détails commission
+.commission-details {
+  background: var(--ion-color-light);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+  
+  .rate-change {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    
+    .old-rate {
+      color: var(--ion-color-medium);
+      text-decoration: line-through;
+    }
+    
+    .new-rate {
+      color: var(--ion-color-primary);
+      font-weight: 600;
+    }
+    
+    ion-icon {
+      font-size: 18px;
+    }
+  }
+  
+  .difference {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+// Actions
+.notification-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ion-color-light-shade);
+}
+
+// Statistiques
+.notification-stats {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ion-color-light);
+  text-align: center;
+  
+  ion-note {
+    font-size: 0.8rem;
+    opacity: 0.8;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .notification-controls {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+  
+  .notification-header {
+    flex-direction: column;
+    gap: 8px;
+    
+    .notification-time {
+      align-self: flex-end;
+    }
+  }
+  
+  .notification-actions {
+    justify-content: center;
+    
+    ion-button {
+      flex: 1;
+      max-width: 150px;
+    }
+  }
+}
+
+// Animations
+.notification-content {
+  transition: all 0.2s ease-in-out;
+}
+
+ion-item:hover .notification-content {
+  transform: translateY(-1px);
+}
+
+// Badges et chips
+ion-badge {
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+ion-chip {
+  font-size: 0.8rem;
+  font-weight: 500;
+}

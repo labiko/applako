@@ -30,6 +30,10 @@ export const routes: Routes = [
         loadComponent: () => import('./profile/profile.page').then(m => m.EntrepriseProfilePage)
       },
       {
+        path: 'commissions-factures',
+        loadComponent: () => import('./pages/commissions-factures/commissions-factures.page').then(m => m.CommissionsFacturesPage)
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'

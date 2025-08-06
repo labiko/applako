@@ -30,7 +30,8 @@ import {
   statsChartOutline, 
   businessOutline,
   settingsOutline,
-  peopleOutline
+  peopleOutline,
+  cashOutline
 } from 'ionicons/icons';
 
 import { SuperAdminAuthService } from '../../services/super-admin-auth.service';
@@ -149,6 +150,28 @@ import { SuperAdminUser } from '../../models/super-admin.model';
             <ion-col size="12" size-md="6">
               <ion-button 
                 expand="block" 
+                fill="outline" 
+                color="success"
+                (click)="onFinancialManagement()">
+                <ion-icon name="cash-outline" slot="start"></ion-icon>
+                Gestion Financière
+              </ion-button>
+            </ion-col>
+            <ion-col size="12" size-md="6">
+              <ion-button 
+                expand="block" 
+                fill="outline" 
+                color="tertiary"
+                (click)="onViewAuditLogs()">
+                <ion-icon name="shield-checkmark-outline" slot="start"></ion-icon>
+                Audit Commissions
+              </ion-button>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <ion-button 
+                expand="block" 
                 fill="clear" 
                 color="medium"
                 (click)="onRefreshSession()">
@@ -161,9 +184,9 @@ import { SuperAdminUser } from '../../models/super-admin.model';
                 expand="block" 
                 fill="clear" 
                 color="medium"
-                (click)="onViewAuditLogs()">
-                <ion-icon name="shield-checkmark-outline" slot="start"></ion-icon>
-                Logs d'Audit
+                disabled>
+                <ion-icon name="settings-outline" slot="start"></ion-icon>
+                Paramètres Système
               </ion-button>
             </ion-col>
           </ion-row>
@@ -235,7 +258,8 @@ export class SuperAdminDashboardPage implements OnInit {
       statsChartOutline,
       businessOutline,
       settingsOutline,
-      peopleOutline
+      peopleOutline,
+      cashOutline
     });
   }
 
@@ -320,16 +344,13 @@ export class SuperAdminDashboardPage implements OnInit {
   }
 
   async onViewAuditLogs() {
-    const toast = await this.toastController.create({
-      message: '🛡️ Logs d\'Audit - Fonctionnalité en développement',
-      duration: 3000,
-      color: 'tertiary',
-      position: 'top'
-    });
-    await toast.present();
-    
-    // TODO: Naviguer vers la page des logs d'audit
-    // await this.router.navigate(['/super-admin/audit-logs']);
+    console.log('🚀 Navigation vers Logs d\'Audit');
+    await this.router.navigate(['/super-admin/audit']);
+  }
+
+  async onFinancialManagement() {
+    console.log('🚀 Navigation vers Gestion Financière');
+    await this.router.navigate(['/super-admin/financial']);
   }
 
   private async redirectToLogin() {

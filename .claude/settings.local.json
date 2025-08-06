@@ -23,7 +23,9 @@
       "Bash(git config:*)",
       "Bash(git checkout:*)",
       "WebFetch(domain:github.com)",
-      "Bash(ng build:*)"
+      "Bash(ng build:*)",
+      "Bash(psql:*)",
+      "Bash(node:*)"
     ],
     "deny": []
   }

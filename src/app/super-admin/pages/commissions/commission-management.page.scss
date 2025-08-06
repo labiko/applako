@@ -69,7 +69,7 @@ ion-header ion-toolbar {
   }
 }
 
-// Configuration globale
+// Configuration globale - Design moderne
 .global-config-card {
   margin-bottom: 1rem;
   background: linear-gradient(135deg, rgba(var(--ion-color-primary-rgb), 0.05) 0%, rgba(var(--ion-color-primary-rgb), 0.02) 100%);
@@ -91,17 +91,39 @@ ion-header ion-toolbar {
       font-weight: 700;
     }
   }
+}
+
+// Ligne de commission simple et alignée
+.commission-row {
+  align-items: flex-end;
   
-  .global-info {
-    font-size: 0.9rem;
-    line-height: 1.4;
-    margin: 0;
-    padding: 0.5rem 0;
-    background: rgba(var(--ion-color-primary-rgb), 0.05);
-    border-radius: 8px;
-    padding: 0.75rem;
-    border-left: 4px solid var(--ion-color-primary);
+  ion-col {
+    display: flex;
+    flex-direction: column;
   }
+  
+  ion-item {
+    --padding-start: 0;
+    --padding-end: 0;
+    --inner-padding-start: 0;
+    --inner-padding-end: 0;
+  }
+  
+  ion-button {
+    margin-top: 24px;
+    height: 44px;
+  }
+}
+
+// Information globale simple
+.global-info {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 0.5rem 0 0 0;
+  padding: 0.75rem;
+  background: rgba(var(--ion-color-primary-rgb), 0.05);
+  border-radius: 8px;
+  border-left: 3px solid var(--ion-color-primary);
 }
 
 // Recherche

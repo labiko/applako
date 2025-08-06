@@ -48,6 +48,14 @@
   background: var(--lako-white);
 }
 
+/* Styles pour la modale notifications */
+.notifications-modal {
+  --width: 90%;
+  --max-width: 500px;
+  --height: 70%;
+  --border-radius: 12px;
+}
+
 .reservation-actions {
   display: flex;
   gap: 8px;

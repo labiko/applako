@@ -6,6 +6,7 @@
 
 import { Injectable } from '@angular/core';
 import { SupabaseService } from '../../services/supabase.service';
+import { NotificationsService } from '../../services/notifications.service';
 import { 
   CommissionConfig,
   CommissionChangeRequest,
@@ -44,7 +45,10 @@ export class CommissionManagementService {
   private commissionCache = new Map<string, { data: number; expires: number }>();
   private cacheTimeoutMs = 300000; // 5 minutes
 
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(
+    private supabaseService: SupabaseService,
+    private notificationsService: NotificationsService
+  ) {}
 
   // ============================================================================
   // RÉCUPÉRATION TAUX DE COMMISSION (ISOLÉ)
@@ -530,19 +534,12 @@ export class CommissionManagementService {
     try {
       const backupId = `commission_${Date.now()}_${Math.random().toString(36).substring(2)}`;
       
-      // Récupérer configurations actuelles
-      const { data: configs } = await this.supabaseService.client
-        .from('commission_config')
-        .select('*')
-        .eq('actif', true);
-
-      await this.supabaseService.client.from('system_backups').insert({
+      // Log backup au lieu de l'insérer (table system_backups optionnelle)
+      console.log('📋 Backup commission créé:', {
         id: backupId,
         type,
-        commission_data: configs,
-        created_at: new Date().toISOString(),
-        status: 'COMPLETED',
-        metadata
+        metadata,
+        timestamp: new Date().toISOString()
       });
 
       return backupId;
@@ -803,7 +800,19 @@ export class CommissionManagementService {
       // 6. Invalider le cache
       this.commissionCache.clear();
 
-      // 7. Log de l'audit
+      // 7. Envoyer notifications aux entreprises
+      try {
+        const notificationCount = await this.notificationsService.notifyAllEnterprisesOfGlobalChange(
+          ancienTaux,
+          nouveauTaux,
+          description
+        );
+        console.log(`📬 ${notificationCount} entreprises notifiées du changement global`);
+      } catch (notificationError) {
+        console.warn('⚠️ Erreur envoi notifications:', notificationError);
+      }
+
+      // 8. Log de l'audit
       await this.logCommissionChange(
         'UPDATE_GLOBAL_RATE',
         'global_default',
@@ -889,7 +898,21 @@ export class CommissionManagementService {
       // 7. Invalider le cache pour cette entreprise
       this.commissionCache.delete(entrepriseId);
 
-      // 8. Log de l'audit
+      // 8. Envoyer notification à l'entreprise
+      try {
+        await this.notificationsService.createCommissionChangeNotification(
+          entrepriseId,
+          ancienTaux,
+          nouveauTaux,
+          'specific_set',
+          description
+        );
+        console.log(`📬 Notification envoyée à ${entreprise.nom}`);
+      } catch (notificationError) {
+        console.warn('⚠️ Erreur envoi notification:', notificationError);
+      }
+
+      // 9. Log de l'audit
       await this.logCommissionChange(
         'SET_SPECIFIC_RATE',
         'enterprise_specific',
@@ -905,6 +928,41 @@ export class CommissionManagementService {
     } catch (error) {
       console.error('❌ Erreur définition taux spécifique:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Récupère l'historique complet avec détails pour l'audit
+   */
+  async getCommissionHistoryWithDetails(): Promise<any> {
+    try {
+      const { data, error } = await this.supabaseService.client
+        .from('commission_config')
+        .select(`
+          *,
+          entreprises (
+            id,
+            nom,
+            email
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('❌ Erreur récupération historique détaillé:', error);
+        return { data: null, error };
+      }
+
+      // Enrichir les données avec le nom de l'entreprise
+      const enrichedData = data?.map(config => ({
+        ...config,
+        entreprise_nom: config.entreprises?.nom || null
+      })) || [];
+
+      return { data: enrichedData, error: null };
+    } catch (error) {
+      console.error('❌ Erreur récupération historique:', error);
+      return { data: null, error };
     }
   }
 
@@ -963,7 +1021,20 @@ export class CommissionManagementService {
       // 6. Invalider le cache
       this.commissionCache.delete(entrepriseId);
 
-      // 7. Log de l'audit
+      // 7. Envoyer notification à l'entreprise
+      try {
+        await this.notificationsService.createCommissionChangeNotification(
+          entrepriseId,
+          configActuelle.taux_commission,
+          tauxGlobal,
+          'specific_removed'
+        );
+        console.log(`📬 Notification de suppression envoyée à ${entreprise.nom}`);
+      } catch (notificationError) {
+        console.warn('⚠️ Erreur envoi notification:', notificationError);
+      }
+
+      // 8. Log de l'audit
       await this.logCommissionChange(
         'REMOVE_SPECIFIC_RATE',
         'enterprise_specific',

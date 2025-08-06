@@ -34,5 +34,23 @@ export const SUPER_ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./pages/commissions/commission-management.page').then(m => m.CommissionManagementPage),
     canActivate: [SuperAdminGuard],
     title: 'Super Admin - Gestion Commissions'
+  },
+  {
+    path: 'audit',
+    loadComponent: () => import('./pages/audit/commission-audit.page').then(m => m.CommissionAuditPage),
+    canActivate: [SuperAdminGuard],
+    title: 'Super Admin - Audit Commissions'
+  },
+  {
+    path: 'financial',
+    loadComponent: () => import('./pages/financial/financial-dashboard.page').then(m => m.FinancialDashboardPage),
+    canActivate: [SuperAdminGuard],
+    title: 'Super Admin - Gestion Financière'
+  },
+  {
+    path: 'financial/periode/:id',
+    loadComponent: () => import('./pages/financial/periode-details.page').then(m => m.PeriodeDetailsPage),
+    canActivate: [SuperAdminGuard],
+    title: 'Super Admin - Détails Période'
   }
 ];

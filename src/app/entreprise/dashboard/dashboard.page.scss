@@ -1,3 +1,20 @@
+// Badge de notification dans le header
+ion-header ion-toolbar {
+  ion-button {
+    position: relative;
+    
+    .notification-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      min-width: 18px;
+      height: 18px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+  }
+}
+
 .welcome-section {
   margin-bottom: 24px;
   text-align: center;
@@ -32,6 +49,7 @@
     }
   }
 }
+
 
 .period-selector {
   margin-bottom: 24px;
@@ -260,7 +278,34 @@
       }
     }
   }
+}
+
+.actions-card {
+  margin: 24px 0 0 0;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   
+  ion-card-header {
+    padding-bottom: 8px;
+    
+    ion-card-title {
+      color: var(--lako-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+  }
+  
+  ion-button {
+    --border-radius: 12px;
+    height: 48px;
+    
+    ion-icon {
+      font-size: 1.1rem;
+    }
+  }
+}
+
+.performance-card {
   .performance-item {
     display: flex;
     align-items: center;

@@ -1,0 +1,372 @@
+.page-container {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// Statistiques générales
+.stats-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  
+  ion-card-header {
+    padding-bottom: 8px;
+    
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--lako-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+      
+      ion-icon {
+        color: var(--lako-green);
+        font-size: 1.3rem;
+      }
+    }
+  }
+}
+
+.stat-item {
+  text-align: center;
+  padding: 8px 0;
+  
+  .stat-number {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--lako-dark);
+    margin-bottom: 4px;
+    
+    &.warning {
+      color: #eb445a;
+    }
+  }
+  
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--lako-gray);
+    font-weight: 500;
+  }
+}
+
+// Actions rapides
+.actions-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  
+  ion-card-header {
+    padding-bottom: 8px;
+    
+    ion-card-title {
+      color: var(--lako-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+  }
+  
+  ion-button {
+    --border-radius: 12px;
+    height: 48px;
+    
+    ion-icon {
+      font-size: 1.1rem;
+    }
+  }
+}
+
+// Loading
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  
+  ion-spinner {
+    margin-bottom: 16px;
+  }
+  
+  p {
+    color: var(--lako-gray);
+    font-size: 0.9rem;
+  }
+}
+
+// Périodes de facturation
+.periodes-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  
+  ion-card-header {
+    padding-bottom: 8px;
+    
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--lako-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+      
+      ion-icon {
+        color: var(--lako-green);
+        font-size: 1.3rem;
+      }
+    }
+  }
+}
+
+.periode-item {
+  width: 100%;
+  padding: 8px 0;
+  
+  .periode-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    
+    .periode-dates {
+      font-size: 1rem;
+      color: var(--lako-dark);
+    }
+    
+    .status-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+  }
+  
+  .periode-details {
+    margin-bottom: 8px;
+    
+    .detail-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      font-size: 0.85rem;
+      
+      .detail-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--lako-gray);
+        font-weight: 500;
+        
+        ion-icon {
+          font-size: 0.9rem;
+          color: var(--lako-green);
+        }
+      }
+      
+      .detail-value {
+        color: var(--lako-dark);
+        font-weight: 600;
+      }
+    }
+  }
+  
+  .periode-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    
+    ion-button {
+      --padding-start: 8px;
+      --padding-end: 8px;
+      
+      ion-icon {
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
+// État vide
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  text-align: center;
+  
+  ion-icon {
+    color: var(--lako-gray);
+    opacity: 0.5;
+    margin-bottom: 16px;
+  }
+  
+  h3 {
+    color: var(--lako-dark);
+    font-size: 1.3rem;
+    margin: 0 0 8px 0;
+  }
+  
+  p {
+    color: var(--lako-gray);
+    font-size: 0.9rem;
+    max-width: 300px;
+    line-height: 1.4;
+    margin: 0 0 24px 0;
+  }
+  
+  ion-button {
+    --border-radius: 12px;
+  }
+}
+
+// Informations système
+.system-info-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  
+  .system-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    ion-icon {
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+    
+    .info-text {
+      flex: 1;
+      
+      strong {
+        display: block;
+        color: var(--lako-dark);
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      
+      p {
+        color: var(--lako-gray);
+        font-size: 0.85rem;
+        margin: 0;
+        line-height: 1.3;
+      }
+    }
+  }
+}
+
+// Modal pour détails période
+:host ::ng-deep .wide-alert {
+  .alert-wrapper {
+    max-width: 90vw;
+    width: 600px;
+    max-height: 80vh;
+  }
+  
+  .alert-message {
+    max-height: 60vh;
+    overflow-y: auto;
+    text-align: left;
+    
+    .periode-details-modal {
+      h3 {
+        color: var(--lako-dark);
+        margin-bottom: 16px;
+        font-size: 1.1rem;
+      }
+      
+      h4 {
+        color: var(--lako-green);
+        margin: 16px 0 8px 0;
+        font-size: 1rem;
+      }
+      
+      .periode-summary {
+        background: #f8f9fa;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        
+        p {
+          margin: 4px 0;
+          font-size: 0.9rem;
+        }
+      }
+      
+      .entreprises-list {
+        .entreprise-item {
+          margin-bottom: 12px;
+          
+          .entreprise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            
+            strong {
+              color: var(--lako-dark);
+              font-size: 1rem;
+            }
+            
+            .commission-amount {
+              color: var(--lako-green);
+              font-weight: 700;
+              font-size: 1.1rem;
+            }
+          }
+          
+          .entreprise-details {
+            p {
+              margin: 4px 0;
+              font-size: 0.85rem;
+              color: #666;
+            }
+          }
+        }
+      }
+      
+      .no-data {
+        text-align: center;
+        color: var(--lako-gray);
+        font-style: italic;
+        padding: 20px;
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .stat-item {
+    .stat-number {
+      font-size: 1.1rem;
+    }
+    
+    .stat-label {
+      font-size: 0.75rem;
+    }
+  }
+  
+  .periode-header {
+    .periode-dates {
+      font-size: 0.9rem;
+    }
+  }
+  
+  .detail-row {
+    font-size: 0.8rem !important;
+  }
+  
+  .actions-card {
+    ion-button {
+      height: 44px;
+      
+      ion-icon {
+        font-size: 1rem;
+      }
+    }
+  }
+}
