@@ -4,6 +4,7 @@ import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { SplashScreenComponent } from './shared/components/splash-screen/splash-screen.component';
 import { GeolocationService } from './services/geolocation.service';
 import { AuthService } from './services/auth.service';
+import { AppInitBlocageService } from './services/app-init-blocage.service';
 
 @Component({
   selector: 'app-root',
@@ -16,10 +17,15 @@ export class AppComponent implements OnInit, OnDestroy {
 
   constructor(
     private geolocationService: GeolocationService,
-    private authService: AuthService
+    private authService: AuthService,
+    private blocageInitService: AppInitBlocageService
   ) {}
 
   ngOnInit() {
+    // Initialiser le système de blocage
+    console.log('🚀 Initialisation du système de blocage...');
+    this.blocageInitService.initialize();
+    
     // Démarrer le tracking de position si un conducteur est connecté
     this.authService.currentConducteur$.subscribe(conducteur => {
       if (conducteur) {

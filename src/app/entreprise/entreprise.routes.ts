@@ -2,6 +2,10 @@ import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
+    path: 'blocked',
+    loadComponent: () => import('./pages/blocked/blocked.page').then(m => m.BlockedPage)
+  },
+  {
     path: '',
     loadComponent: () => import('./tabs/entreprise-tabs.page').then(m => m.EntrepriseTabsPage),
     children: [

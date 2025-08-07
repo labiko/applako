@@ -18,6 +18,12 @@ export interface Conducteur {
   statut?: string;
   position_actuelle?: string; // Position GPS du conducteur
   date_update_position?: string; // Date de dernière mise à jour position
+  
+  // Champs de blocage (système de blocage)
+  actif?: boolean;
+  motif_blocage?: string;
+  date_blocage?: string;
+  bloque_par?: 'entreprise' | 'super-admin' | 'super-admin-entreprise';
   derniere_activite?: string; // Dernière activité (timezone)
   hors_ligne?: boolean; // Statut en ligne/hors ligne
   accuracy?: number; // Précision GPS en mètres
@@ -54,11 +60,25 @@ export class AuthService {
     }
   }
 
-  async login(telephone: string, password: string): Promise<boolean> {
+  async login(telephone: string, password: string): Promise<boolean | { blocked: true, motif: string, bloque_par: string }> {
     try {
       const conducteur = await this.supabaseService.authenticateConducteur(telephone, password);
       
       if (conducteur) {
+        // Vérifier si le conducteur est bloqué AVANT de l'authentifier
+        if (!conducteur.actif) {
+          console.log('🚫 Tentative de connexion conducteur bloqué:', conducteur);
+          console.log('🔍 Motif de blocage:', conducteur.motif_blocage);
+          console.log('🔍 Bloqué par:', conducteur.bloque_par);
+          
+          // Retourner les informations de blocage pour affichage
+          return {
+            blocked: true,
+            motif: conducteur.motif_blocage || 'Non spécifié',
+            bloque_par: conducteur.bloque_par || 'Administration'
+          };
+        }
+        
         this.currentConducteurSubject.next(conducteur);
         
         try {

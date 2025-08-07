@@ -71,7 +71,12 @@ import {
   star,
   chevronDownOutline,
   flag,
-  speedometerOutline
+  speedometerOutline,
+  lockClosedOutline,
+  lockOpenOutline,
+  warningOutline,
+  banOutline,
+  shieldOutline
 } from 'ionicons/icons';
 
 import { 
@@ -80,6 +85,9 @@ import {
   CreateEntrepriseData, 
   EntrepriseStats 
 } from '../../services/entreprise-management.service';
+import { BlocageUtils } from '../../../utils/blocage.utils';
+import { BlockageService } from '../../../services/blocage.service';
+import { Injector } from '@angular/core';
 
 @Component({
   selector: 'app-entreprises-management',
@@ -316,6 +324,25 @@ import {
                   (click)="onResetPasswordSpecific(entreprise)">
                   <ion-icon name="key-outline" slot="icon-only"></ion-icon>
                 </ion-button>
+
+                <!-- Boutons blocage/déblocage -->
+                <ion-button 
+                  *ngIf="entreprise.actif"
+                  size="small" 
+                  fill="clear" 
+                  color="danger"
+                  (click)="onDesactiverEntreprise(entreprise)">
+                  <ion-icon name="lock-closed-outline" slot="icon-only"></ion-icon>
+                </ion-button>
+
+                <ion-button 
+                  *ngIf="!entreprise.actif"
+                  size="small" 
+                  fill="clear" 
+                  color="success"
+                  (click)="onReactiverEntreprise(entreprise)">
+                  <ion-icon name="lock-open-outline" slot="icon-only"></ion-icon>
+                </ion-button>
                 
                 <ion-toggle
                   [checked]="entreprise.actif"
@@ -512,12 +539,34 @@ import {
                 <div class="conducteur-actions">
                   <div class="status-badges">
                     <ion-badge [color]="conducteur.actif ? 'success' : 'danger'">
-                      {{ conducteur.actif ? 'Actif' : 'Inactif' }}
+                      {{ getMotifBlocage(conducteur) }}
                     </ion-badge>
                     <ion-badge [color]="!conducteur.hors_ligne ? 'primary' : 'medium'" *ngIf="conducteur.actif">
                       {{ !conducteur.hors_ligne ? 'En ligne' : 'Hors ligne' }}
                     </ion-badge>
                   </div>
+
+                  <!-- Boutons d'action conducteur -->
+                  <div class="conducteur-action-buttons">
+                    <ion-button 
+                      *ngIf="conducteur.actif"
+                      size="small" 
+                      fill="clear" 
+                      color="danger"
+                      (click)="onBloquerConducteur(conducteur); $event.stopPropagation()">
+                      <ion-icon name="ban-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+
+                    <ion-button 
+                      *ngIf="canDebloquerConducteur(conducteur)"
+                      size="small" 
+                      fill="clear" 
+                      color="success"
+                      (click)="onDebloquerConducteur(conducteur); $event.stopPropagation()">
+                      <ion-icon name="shield-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </div>
+
                   <ion-icon name="chevron-down-outline" 
                            class="expand-icon" 
                            [class.rotated]="isExpanded(conducteur.id)"></ion-icon>
@@ -699,7 +748,8 @@ export class EntreprisesManagementPage implements OnInit {
     private router: Router,
     private loadingController: LoadingController,
     private toastController: ToastController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private blocageService: BlockageService
   ) {
     // Ajouter les icônes
     addIcons({
@@ -729,7 +779,12 @@ export class EntreprisesManagementPage implements OnInit {
       star,
       chevronDownOutline,
       flag,
-      speedometerOutline
+      speedometerOutline,
+      lockClosedOutline,
+      lockOpenOutline,
+      warningOutline,
+      banOutline,
+      shieldOutline
     });
   }
 
@@ -958,21 +1013,14 @@ export class EntreprisesManagementPage implements OnInit {
 
   private async confirmResetPassword(entreprise: Entreprise) {
     const confirmAlert = await this.alertController.create({
-      header: '⚠️ Confirmation Réinitialisation',
-      message: `
-        <div style="text-align: left;">
-          <p><strong>Entreprise:</strong> ${entreprise.nom}</p>
-          <p><strong>Email:</strong> ${entreprise.email}</p>
-          <p><strong>Statut actuel:</strong> ${entreprise.password_hash ? 'Mot de passe défini' : 'Aucun mot de passe'}</p>
-          <br>
-          <p>⚠️ <strong>Cette action va:</strong></p>
-          <ul style="margin-left: 20px;">
-            <li>Supprimer le mot de passe actuel</li>
-            <li>Marquer le compte comme "première connexion"</li>
-            <li>L'entreprise devra créer un nouveau mot de passe</li>
-          </ul>
-        </div>
-      `,
+      header: 'Confirmation Réinitialisation',
+      subHeader: `${entreprise.nom} (${entreprise.email})`,
+      message: `Statut: ${entreprise.password_hash ? 'Mot de passe défini' : 'Aucun mot de passe'}
+
+Cette action va:
+• Supprimer le mot de passe actuel
+• Marquer le compte comme "première connexion" 
+• L'entreprise devra créer un nouveau mot de passe`,
       buttons: [
         {
           text: 'Annuler',
@@ -1295,6 +1343,318 @@ export class EntreprisesManagementPage implements OnInit {
       duration: 3000,
       color: 'primary',
       position: 'top'
+    });
+    await toast.present();
+  }
+
+  // ==================== SYSTÈME DE BLOCAGE ====================
+
+  async onDesactiverEntreprise(entreprise: Entreprise) {
+    const alert = await this.alertController.create({
+      cssClass: 'custom-alert-large',
+      header: 'Désactivation Entreprise',
+      subHeader: `Entreprise: ${entreprise.nom}`,
+      message: `Conséquences de la désactivation:
+      
+• Tous les conducteurs seront automatiquement bloqués
+• L'entreprise ne pourra plus se connecter  
+• L'action peut être annulée en réactivant l'entreprise
+
+Veuillez indiquer le motif de désactivation:`,
+      inputs: [
+        {
+          name: 'motif',
+          type: 'textarea',
+          placeholder: 'Motif obligatoire (ex: non-paiement, comportement...)',
+          attributes: {
+            maxlength: 500,
+            rows: 3
+          }
+        }
+      ],
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel',
+          cssClass: 'secondary'
+        },
+        {
+          text: 'Désactiver',
+          cssClass: 'danger',
+          handler: (data) => {
+            if (!data.motif || data.motif.trim().length < 5) {
+              this.showError('Le motif doit contenir au moins 5 caractères');
+              return false;
+            }
+            this.confirmerDesactivationEntreprise(entreprise, data.motif.trim());
+            return true;
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  private async confirmerDesactivationEntreprise(entreprise: Entreprise, motif: string) {
+    const loading = await this.loadingController.create({
+      message: 'Désactivation en cours...'
+    });
+    await loading.present();
+
+    try {
+      const { success, error } = await this.entrepriseService.desactiverEntrepriseAvecMotif(
+        entreprise.id,
+        motif,
+        'super-admin'
+      );
+
+      if (!success) {
+        throw error;
+      }
+
+      // Mettre à jour localement
+      entreprise.actif = false;
+      this.showSuccess(`Entreprise "${entreprise.nom}" désactivée avec succès`);
+      await this.loadStats();
+
+    } catch (error: any) {
+      console.error('❌ Erreur désactivation entreprise:', error);
+      this.showError('Erreur lors de la désactivation de l\'entreprise');
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
+  async onReactiverEntreprise(entreprise: Entreprise) {
+    const alert = await this.alertController.create({
+      header: 'Réactivation Entreprise',
+      subHeader: `Entreprise: ${entreprise.nom}`,
+      message: `Les conducteurs bloqués lors de la désactivation seront automatiquement débloqués.`,
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+        {
+          text: 'Réactiver',
+          cssClass: 'primary',
+          handler: () => {
+            this.confirmerReactivationEntreprise(entreprise);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  private async confirmerReactivationEntreprise(entreprise: Entreprise) {
+    const loading = await this.loadingController.create({
+      message: 'Réactivation en cours...'
+    });
+    await loading.present();
+
+    try {
+      const { success, error } = await this.entrepriseService.reactiverEntreprise(
+        entreprise.id,
+        'super-admin'
+      );
+
+      if (!success) {
+        throw error;
+      }
+
+      // Mettre à jour localement
+      entreprise.actif = true;
+      this.showSuccess(`Entreprise "${entreprise.nom}" réactivée avec succès`);
+      await this.loadStats();
+
+    } catch (error: any) {
+      console.error('❌ Erreur réactivation entreprise:', error);
+      this.showError('Erreur lors de la réactivation de l\'entreprise');
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
+  async onBloquerConducteur(conducteur: any) {
+    const raisonsOptions = BlocageUtils.getRaisonBlocageOptions();
+    
+    const alert = await this.alertController.create({
+      cssClass: 'custom-alert-blocage-conducteur-moderne',
+      header: 'Blocage Conducteur',
+      subHeader: `${conducteur.nom} ${conducteur.prenom}`,
+      message: `Cette action va suspendre définitivement l'accès de ce conducteur à l'application.
+
+Sélectionnez la raison du blocage:`,
+      inputs: raisonsOptions.map((option, index) => ({
+        type: 'radio',
+        label: `${this.getRaisonIcon(option.value)} ${option.label}`,
+        value: option.value,
+        checked: index === 0
+      })),
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel',
+          cssClass: 'button-cancel'
+        },
+        {
+          text: 'Bloquer le Conducteur',
+          cssClass: 'button-danger',
+          handler: (selectedValue) => {
+            console.log('🔍 Valeur sélectionnée directement:', selectedValue);
+            
+            const raisonOption = BlocageUtils.getRaisonBlocageOptions().find(r => r.value === selectedValue);
+            const raisonLabel = raisonOption?.label || 'Autre raison';
+            const motif = `${this.getRaisonIcon(selectedValue)} ${raisonLabel}`;
+            
+            console.log('🔍 Debug blocage:', { selectedValue, raisonOption, raisonLabel, motif });
+            
+            // Procéder directement au blocage avec la raison comme motif
+            this.confirmerBlocageConducteur(conducteur, motif, selectedValue);
+            return true;
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  private getRaisonIcon(raison: string): string {
+    const icons: { [key: string]: string } = {
+      'comportement': '⚠️',
+      'documents': '📋',
+      'demande_entreprise': '🏢',
+      'absence': '⏰',
+      'temporaire': '🔄',
+      'autre': '📝'
+    };
+    return icons[raison] || '📝';
+  }
+
+  private async confirmerBlocageConducteur(conducteur: any, motif: string, raison: string) {
+    const loading = await this.loadingController.create({
+      message: 'Blocage en cours...'
+    });
+    await loading.present();
+
+    try {
+      const { success, error } = await this.blocageService.bloquerConducteurParSuperAdmin({
+        conducteurId: conducteur.id,
+        motif: motif,
+        raison: raison as any,
+        bloquePar: 'super-admin',
+        dateBlocage: new Date()
+      });
+
+      if (!success) {
+        throw error;
+      }
+
+      // Mettre à jour localement
+      conducteur.actif = false;
+      this.showSuccess(`Conducteur "${conducteur.nom} ${conducteur.prenom}" bloqué avec succès`);
+      
+      // Recharger les données du conducteur si on est dans le détail
+      if (this.expandedConducteurs.has(conducteur.id)) {
+        await this.loadConducteurReservations(conducteur);
+      }
+
+    } catch (error: any) {
+      console.error('❌ Erreur blocage conducteur:', error);
+      this.showError('Erreur lors du blocage du conducteur');
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
+  async onDebloquerConducteur(conducteur: any) {
+    let message = `Confirmez-vous le déblocage ?`;
+    
+    if (conducteur.bloque_par === 'super-admin-entreprise') {
+      message += '\n\nNote: Ce conducteur a été bloqué suite à la désactivation de son entreprise.';
+    }
+
+    const alert = await this.alertController.create({
+      header: 'Déblocage Conducteur',
+      subHeader: `${conducteur.nom} ${conducteur.prenom}`,
+      message,
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+        {
+          text: 'Débloquer',
+          cssClass: 'primary',
+          handler: () => {
+            this.confirmerDeblocageConducteur(conducteur);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  private async confirmerDeblocageConducteur(conducteur: any) {
+    const loading = await this.loadingController.create({
+      message: 'Déblocage en cours...'
+    });
+    await loading.present();
+
+    try {
+      const { success, error } = await this.blocageService.debloquerConducteur(conducteur.id, 'super-admin');
+
+      if (!success) {
+        throw error;
+      }
+
+      // Mettre à jour localement
+      conducteur.actif = true;
+      this.showSuccess(`Conducteur "${conducteur.nom} ${conducteur.prenom}" débloqué avec succès`);
+      
+      // Recharger les données du conducteur si on est dans le détail
+      if (this.expandedConducteurs.has(conducteur.id)) {
+        await this.loadConducteurReservations(conducteur);
+      }
+
+    } catch (error: any) {
+      console.error('❌ Erreur déblocage conducteur:', error);
+      this.showError('Erreur lors du déblocage du conducteur');
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
+  getMotifBlocage(conducteur: any): string {
+    return BlocageUtils.getMotifBlocage(conducteur);
+  }
+
+  canDebloquerConducteur(conducteur: any): boolean {
+    // Super-admin peut débloquer tous les conducteurs inactifs
+    return !conducteur.actif;
+  }
+
+  // ==================== VALIDATION ET MESSAGES ====================
+
+  private async showValidationError(titre: string, message: string) {
+    const toast = await this.toastController.create({
+      header: titre,
+      message: message,
+      duration: 4000,
+      color: 'warning',
+      position: 'top',
+      buttons: [
+        {
+          text: 'OK',
+          role: 'cancel'
+        }
+      ],
+      cssClass: 'validation-toast'
     });
     await toast.present();
   }

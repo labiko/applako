@@ -26,7 +26,9 @@
       "Bash(ng build:*)",
       "Bash(psql:*)",
       "Bash(node:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(del \"src\\app\\services\\support.service.ts\")"
     ],
     "deny": []
   }

@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { carSport, call, eye, eyeOff, logIn, alertCircle, business, mail, arrowBack } from 'ionicons/icons';
+import { carSport, call, eye, eyeOff, logIn, alertCircle, business, mail, arrowBack, ban } from 'ionicons/icons';
 import { AuthService } from '../services/auth.service';
 import { EntrepriseAuthService } from '../services/entreprise-auth.service';
 
@@ -27,6 +27,7 @@ export class LoginPage implements OnInit {
   isLoading = false;
   errorMessage = '';
   showPassword = false;
+  blockedInfo: any = null;
 
   constructor(
     private authService: AuthService,
@@ -34,7 +35,7 @@ export class LoginPage implements OnInit {
     private router: Router,
     private route: ActivatedRoute
   ) {
-    addIcons({ carSport, call, eye, eyeOff, logIn, alertCircle, business, mail, arrowBack });
+    addIcons({ carSport, call, eye, eyeOff, logIn, alertCircle, business, mail, arrowBack, ban });
   }
 
   ngOnInit() {
@@ -42,8 +43,30 @@ export class LoginPage implements OnInit {
     this.route.queryParams.subscribe(params => {
       if (params['type']) {
         this.userType = params['type'];
+        // Effacer le message de blocage si on change de type d'utilisateur
+        if (this.userType !== 'conducteur') {
+          this.blockedInfo = null;
+        }
       }
     });
+    
+    // Vérifier si un conducteur a été bloqué (seulement si conducteur)
+    if (this.userType === 'conducteur') {
+      this.checkBlockedInfo();
+    }
+  }
+  
+  private checkBlockedInfo() {
+    const blockedInfoStr = localStorage.getItem('conducteur_bloque_info');
+    if (blockedInfoStr) {
+      try {
+        this.blockedInfo = JSON.parse(blockedInfoStr);
+        // Supprimer l'info après l'avoir récupérée pour ne l'afficher qu'une fois
+        localStorage.removeItem('conducteur_bloque_info');
+      } catch (error) {
+        console.error('Erreur parsing blocked info:', error);
+      }
+    }
   }
 
   togglePassword() {
@@ -67,12 +90,26 @@ export class LoginPage implements OnInit {
 
     this.isLoading = true;
     this.errorMessage = '';
+    // Effacer le message de blocage précédent
+    this.blockedInfo = null;
 
     try {
       if (this.userType === 'conducteur') {
-        const success = await this.authService.login(this.credentials.phone, this.credentials.password);
-        if (success) {
+        const result = await this.authService.login(this.credentials.phone, this.credentials.password);
+        
+        if (result === true) {
+          // Connexion réussie
           this.router.navigate(['/tabs']);
+        } else if (typeof result === 'object' && result.blocked) {
+          // Conducteur bloqué - afficher le message
+          console.log('🚫 Données de blocage reçues:', result);
+          this.blockedInfo = {
+            motif: result.motif || 'Motif non spécifié',
+            bloque_par: result.bloque_par || 'Administration',
+            date_blocage: new Date().toISOString()
+          };
+          this.errorMessage = '';
+          console.log('🚫 BlockedInfo assigné:', this.blockedInfo);
         } else {
           this.errorMessage = 'Numéro de téléphone ou mot de passe incorrect';
         }

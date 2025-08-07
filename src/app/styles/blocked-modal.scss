@@ -1,0 +1,316 @@
+/**
+ * STYLES POUR MODAL CONDUCTEUR BLOQUÉ
+ * Styles CSS globaux pour la modal non-fermable
+ */
+
+// ===============================================
+// MODAL CONDUCTEUR BLOQUÉ
+// ===============================================
+ion-alert.blocked-conducteur-alert {
+  --width: 95%;
+  --max-width: 500px;
+  --border-radius: 16px;
+  --background: white;
+  --backdrop-opacity: 0.8;
+  
+  .alert-wrapper {
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    
+    .alert-head {
+      background: linear-gradient(135deg, 
+        var(--ion-color-danger) 0%, 
+        var(--ion-color-danger-shade) 100%);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      
+      .alert-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+    }
+    
+    .alert-message {
+      padding: 0;
+      margin: 0;
+      
+      .blocked-modal-content {
+        padding: 24px;
+        
+        .blocked-icon {
+          text-align: center;
+          font-size: 3rem;
+          margin-bottom: 16px;
+          animation: pulse 2s infinite;
+        }
+        
+        .blocked-title {
+          font-size: 1.2rem;
+          font-weight: 600;
+          color: var(--ion-color-danger);
+          text-align: center;
+          margin-bottom: 20px;
+          line-height: 1.4;
+        }
+        
+        .blocked-details {
+          margin-bottom: 20px;
+          
+          .detail-item {
+            background: var(--ion-color-light);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--ion-color-danger);
+            
+            &:last-child {
+              margin-bottom: 0;
+            }
+            
+            strong {
+              color: var(--ion-color-dark);
+              font-size: 0.9rem;
+            }
+            
+            .motif-text {
+              display: block;
+              margin-top: 4px;
+              font-style: italic;
+              color: var(--ion-color-dark);
+              line-height: 1.4;
+              background: white;
+              padding: 8px;
+              border-radius: 4px;
+              border: 1px dashed var(--ion-color-medium);
+            }
+          }
+        }
+        
+        .blocked-consequences {
+          background: var(--ion-color-warning-tint);
+          border-radius: 8px;
+          padding: 16px;
+          margin-bottom: 20px;
+          
+          p {
+            margin: 0 0 8px 0;
+            font-weight: 600;
+            color: var(--ion-color-warning-shade);
+          }
+          
+          ul {
+            margin: 0;
+            padding-left: 20px;
+            
+            li {
+              font-size: 0.9rem;
+              color: var(--ion-color-dark);
+              margin-bottom: 4px;
+              line-height: 1.3;
+              
+              &:last-child {
+                margin-bottom: 0;
+              }
+            }
+          }
+        }
+        
+        .blocked-warning {
+          background: var(--ion-color-danger-tint);
+          color: var(--ion-color-danger-shade);
+          border-radius: 8px;
+          padding: 12px;
+          text-align: center;
+          font-size: 0.9rem;
+          font-weight: 500;
+          border: 1px solid var(--ion-color-danger);
+        }
+      }
+    }
+    
+    .alert-button-group {
+      padding: 16px 24px 24px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      
+      .alert-button {
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 12px 20px;
+        margin: 0;
+        min-height: 44px;
+        
+        &[role="support"] {
+          background: var(--ion-color-primary);
+          color: white;
+          
+          &:hover {
+            background: var(--ion-color-primary-shade);
+            transform: translateY(-1px);
+          }
+        }
+        
+        &.danger-button {
+          background: var(--ion-color-danger);
+          color: white;
+          
+          &:hover {
+            background: var(--ion-color-danger-shade);
+            transform: translateY(-1px);
+          }
+        }
+        
+        &:active {
+          transform: translateY(0);
+        }
+      }
+    }
+  }
+}
+
+// ===============================================
+// SUPPORT INFO MODAL
+// ===============================================
+.support-info {
+  text-align: left;
+  
+  p {
+    margin: 0 0 8px 0;
+    font-size: 0.95rem;
+    color: var(--ion-color-dark);
+    
+    &:first-child {
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--ion-color-primary);
+    }
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// ===============================================
+// ANIMATIONS
+// ===============================================
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// ===============================================
+// RESPONSIVE
+// ===============================================
+@media (max-width: 768px) {
+  ion-alert.blocked-conducteur-alert {
+    --width: 100%;
+    --max-width: none;
+    --border-radius: 0;
+    
+    .alert-wrapper {
+      border-radius: 0;
+      min-height: 100vh;
+      
+      .alert-head {
+        padding: 24px 20px;
+      }
+      
+      .blocked-modal-content {
+        padding: 20px;
+        
+        .blocked-icon {
+          font-size: 2.5rem;
+        }
+        
+        .blocked-title {
+          font-size: 1.1rem;
+        }
+      }
+      
+      .alert-button-group {
+        padding: 16px 20px 20px 20px;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  ion-alert.blocked-conducteur-alert {
+    .alert-wrapper {
+      .alert-head {
+        padding: 20px 16px;
+        
+        .alert-title {
+          font-size: 1.1rem;
+        }
+      }
+      
+      .blocked-modal-content {
+        padding: 16px;
+        
+        .blocked-icon {
+          font-size: 2rem;
+        }
+        
+        .blocked-details .detail-item {
+          padding: 10px;
+        }
+        
+        .blocked-consequences {
+          padding: 12px;
+        }
+      }
+      
+      .alert-button-group {
+        padding: 12px 16px 16px 16px;
+        
+        .alert-button {
+          font-size: 0.9rem;
+          min-height: 40px;
+        }
+      }
+    }
+  }
+}
+
+// ===============================================
+// DARKMODE SUPPORT
+// ===============================================
+@media (prefers-color-scheme: dark) {
+  ion-alert.blocked-conducteur-alert .alert-wrapper {
+    --background: var(--ion-color-dark);
+    
+    .alert-message .blocked-modal-content {
+      .blocked-details .detail-item {
+        background: var(--ion-color-dark-tint);
+        
+        .motif-text {
+          background: var(--ion-color-dark-shade);
+          color: var(--ion-color-light);
+        }
+      }
+      
+      .blocked-consequences {
+        background: var(--ion-color-warning-tint);
+        color: var(--ion-color-light);
+      }
+    }
+  }
+}

@@ -43,8 +43,15 @@
         </div>
       </div>
 
+
       <!-- Login Form -->
       <div class="form-section">
+      
+        <!-- Message simple de blocage -->
+        <div *ngIf="blockedInfo && userType === 'conducteur'" class="simple-blocked-alert">
+          <ion-icon name="ban"></ion-icon>
+          <span>Accès bloqué: {{ blockedInfo.motif || 'Motif non spécifié' }}</span>
+        </div>
       
         <form (ngSubmit)="onLogin()" #loginForm="ngForm" class="modern-form">
           <!-- Dynamic input field -->

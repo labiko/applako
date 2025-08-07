@@ -459,6 +459,29 @@
   }
 }
 
+// Simple blocked alert
+.simple-blocked-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  
+  ion-icon {
+    color: #dc2626;
+    font-size: 1rem;
+  }
+  
+  span {
+    color: #dc2626;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+}
+
 // Animations
 @keyframes float-shapes {
   0%, 100% {

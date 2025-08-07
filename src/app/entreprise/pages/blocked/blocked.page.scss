@@ -1,0 +1,327 @@
+/**
+ * STYLES PAGE ENTREPRISE BLOQUÉE
+ */
+
+.blocked-content {
+  --background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.blocked-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+// ===============================================
+// CARTE PRINCIPALE
+// ===============================================
+.blocked-card {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  border-radius: 16px;
+  border: 1px solid var(--ion-color-danger-tint);
+  overflow: hidden;
+  animation: slideInUp 0.6s ease-out;
+}
+
+.blocked-header {
+  background: linear-gradient(135deg, 
+    var(--ion-color-danger-tint) 0%, 
+    var(--ion-color-danger-shade) 100%);
+  color: white;
+  text-align: center;
+  padding: 32px 24px;
+  
+  .lock-icon {
+    margin-bottom: 16px;
+    
+    ion-icon {
+      font-size: 4rem;
+      animation: pulse 2s infinite;
+    }
+  }
+  
+  ion-card-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}
+
+ion-card-content {
+  padding: 32px 24px;
+}
+
+// ===============================================
+// SECTIONS DE CONTENU
+// ===============================================
+.warning-section {
+  text-align: center;
+  margin-bottom: 32px;
+  
+  ion-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+  }
+  
+  h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--ion-color-danger);
+    margin: 0 0 12px 0;
+  }
+  
+  p {
+    font-size: 1.1rem;
+    color: var(--ion-color-medium);
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+.motif-section {
+  margin-bottom: 24px;
+  
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+    margin: 0 0 12px 0;
+  }
+  
+  .motif-box {
+    background: var(--ion-color-light);
+    border: 1px solid var(--ion-color-light-shade);
+    border-radius: 12px;
+    padding: 16px;
+    border-left: 4px solid var(--ion-color-danger);
+    
+    p {
+      font-size: 1rem;
+      color: var(--ion-color-dark);
+      margin: 0;
+      line-height: 1.5;
+      font-style: italic;
+    }
+  }
+}
+
+.info-section {
+  margin-bottom: 24px;
+  
+  .date {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+    margin: 0;
+    
+    ion-icon {
+      font-size: 1rem;
+      color: var(--ion-color-primary);
+    }
+    
+    span {
+      font-weight: 500;
+    }
+  }
+}
+
+.consequences-section {
+  margin-bottom: 32px;
+  
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+    margin: 0 0 12px 0;
+  }
+  
+  ul {
+    margin: 0;
+    padding-left: 20px;
+    
+    li {
+      font-size: 0.95rem;
+      color: var(--ion-color-dark);
+      margin-bottom: 8px;
+      line-height: 1.4;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+.actions-section {
+  text-align: center;
+  
+  ion-button {
+    height: 48px;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    
+    --box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.3);
+    
+    &:hover {
+      transform: translateY(-2px);
+      --box-shadow: 0 6px 16px rgba(var(--ion-color-primary-rgb), 0.4);
+    }
+  }
+  
+  .support-info {
+    background: var(--ion-color-primary-tint);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: left;
+    
+    p {
+      margin: 0 0 8px 0;
+      font-size: 0.9rem;
+      color: var(--ion-color-dark);
+      
+      &:first-child {
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: var(--ion-color-primary);
+      }
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+// ===============================================
+// FOOTER
+// ===============================================
+.footer-info {
+  text-align: center;
+  margin-top: 20px;
+  padding: 16px;
+  
+  ion-text p {
+    font-size: 0.85rem;
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+// ===============================================
+// ANIMATIONS
+// ===============================================
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// ===============================================
+// RESPONSIVE
+// ===============================================
+@media (max-width: 768px) {
+  .blocked-content {
+    padding: 16px;
+  }
+  
+  .blocked-card {
+    border-radius: 12px;
+  }
+  
+  .blocked-header {
+    padding: 24px 20px;
+    
+    .lock-icon ion-icon {
+      font-size: 3rem;
+    }
+    
+    ion-card-title {
+      font-size: 1.3rem;
+    }
+  }
+  
+  ion-card-content {
+    padding: 24px 20px;
+  }
+  
+  .warning-section {
+    margin-bottom: 24px;
+    
+    ion-icon {
+      font-size: 2.5rem;
+    }
+    
+    h3 {
+      font-size: 1.2rem;
+    }
+    
+    p {
+      font-size: 1rem;
+    }
+  }
+  
+  .support-info {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .blocked-content {
+    padding: 12px;
+  }
+  
+  .blocked-header {
+    padding: 20px 16px;
+    
+    .lock-icon ion-icon {
+      font-size: 2.5rem;
+    }
+    
+    ion-card-title {
+      font-size: 1.1rem;
+    }
+  }
+  
+  ion-card-content {
+    padding: 20px 16px;
+  }
+  
+  .warning-section {
+    margin-bottom: 20px;
+    
+    ion-icon {
+      font-size: 2rem;
+    }
+  }
+}

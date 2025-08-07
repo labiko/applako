@@ -152,7 +152,7 @@ export class EntrepriseManagementService {
   }
 
   /**
-   * Activer/désactiver une entreprise
+   * Activer/désactiver une entreprise (méthode simple pour compatibilité)
    */
   async toggleEntrepriseStatus(entrepriseId: string, actif: boolean): Promise<{ success: boolean, error?: any }> {
     try {
@@ -175,6 +175,128 @@ export class EntrepriseManagementService {
 
     } catch (error) {
       console.error('❌ Erreur modification statut entreprise:', error);
+      return { success: false, error };
+    }
+  }
+
+  /**
+   * Désactiver une entreprise avec motif (nouveau système de blocage)
+   */
+  async desactiverEntrepriseAvecMotif(entrepriseId: string, motif: string, desactivePar: string): Promise<{ success: boolean, error?: any }> {
+    try {
+      console.log('🔒 Désactivation entreprise avec motif:', entrepriseId);
+
+      const { error } = await this.supabase.client
+        .from('entreprises')
+        .update({
+          actif: false,
+          motif_desactivation: motif,
+          date_desactivation: new Date().toISOString(),
+          desactive_par: desactivePar,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', entrepriseId);
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('✅ Entreprise désactivée avec motif avec succès');
+      return { success: true };
+
+    } catch (error) {
+      console.error('❌ Erreur désactivation entreprise avec motif:', error);
+      return { success: false, error };
+    }
+  }
+
+  /**
+   * Réactiver une entreprise
+   */
+  async reactiverEntreprise(entrepriseId: string, reactivePar: string): Promise<{ success: boolean, error?: any }> {
+    try {
+      console.log('🔓 Réactivation entreprise:', entrepriseId);
+
+      const { error } = await this.supabase.client
+        .from('entreprises')
+        .update({
+          actif: true,
+          motif_desactivation: null,
+          date_desactivation: null,
+          desactive_par: reactivePar,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', entrepriseId);
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('✅ Entreprise réactivée avec succès');
+      return { success: true };
+
+    } catch (error) {
+      console.error('❌ Erreur réactivation entreprise:', error);
+      return { success: false, error };
+    }
+  }
+
+  /**
+   * Bloquer un conducteur par super-admin
+   */
+  async bloquerConducteur(conducteurId: string, motif: string, raison: string, bloquePar: string): Promise<{ success: boolean, error?: any }> {
+    try {
+      console.log('🔒 Blocage conducteur par super-admin:', conducteurId);
+
+      const { error } = await this.supabase.client
+        .from('conducteurs')
+        .update({
+          actif: false,
+          motif_blocage: motif,
+          bloque_par: 'super-admin',
+          date_blocage: new Date().toISOString()
+        })
+        .eq('id', conducteurId);
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('✅ Conducteur bloqué avec succès par super-admin');
+      return { success: true };
+
+    } catch (error) {
+      console.error('❌ Erreur blocage conducteur:', error);
+      return { success: false, error };
+    }
+  }
+
+  /**
+   * Débloquer un conducteur
+   */
+  async debloquerConducteur(conducteurId: string): Promise<{ success: boolean, error?: any }> {
+    try {
+      console.log('🔓 Déblocage conducteur:', conducteurId);
+
+      const { error } = await this.supabase.client
+        .from('conducteurs')
+        .update({
+          actif: true,
+          motif_blocage: null,
+          bloque_par: null,
+          date_blocage: null
+        })
+        .eq('id', conducteurId);
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('✅ Conducteur débloqué avec succès');
+      return { success: true };
+
+    } catch (error) {
+      console.error('❌ Erreur déblocage conducteur:', error);
       return { success: false, error };
     }
   }

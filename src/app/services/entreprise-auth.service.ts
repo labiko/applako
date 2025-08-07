@@ -152,4 +152,13 @@ export class EntrepriseAuthService {
     const entreprise = this.getCurrentEntreprise();
     return entreprise ? entreprise.id : null;
   }
+
+  /**
+   * Écouter les changements d'état d'authentification
+   */
+  onAuthStateChanged(callback: (isAuthenticated: boolean) => void): void {
+    this.currentEntreprise$.subscribe(entreprise => {
+      callback(entreprise !== null);
+    });
+  }
 }
