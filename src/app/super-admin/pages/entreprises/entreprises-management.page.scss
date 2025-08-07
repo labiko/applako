@@ -1,0 +1,811 @@
+/**
+ * STYLES PAGE GESTION ENTREPRISES SUPER-ADMIN
+ */
+
+.page-container {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// ===============================================
+// CARTE STATISTIQUES
+// ===============================================
+.stats-card {
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+
+  ion-card-header {
+    padding-bottom: 8px;
+    
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--ion-color-primary);
+
+      ion-icon {
+        font-size: 1.4rem;
+      }
+    }
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: 16px 8px;
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 4px;
+      color: var(--ion-color-dark);
+
+      &.success { color: var(--ion-color-success); }
+      &.warning { color: var(--ion-color-warning); }
+      &.primary { color: var(--ion-color-primary); }
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--ion-color-medium);
+      font-weight: 500;
+    }
+  }
+}
+
+// ===============================================
+// CARTE ACTIONS
+// ===============================================
+.actions-card {
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+
+  ion-button {
+    height: 48px;
+    font-weight: 500;
+    
+    ion-icon {
+      font-size: 1.2rem;
+    }
+  }
+}
+
+// ===============================================
+// CARTE RECHERCHE
+// ===============================================
+.search-card {
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+
+  ion-searchbar {
+    --background: transparent;
+    --border-radius: 8px;
+    --box-shadow: none;
+  }
+}
+
+// ===============================================
+// LOADING
+// ===============================================
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 16px;
+  color: var(--ion-color-medium);
+
+  ion-spinner {
+    margin-bottom: 16px;
+    --color: var(--ion-color-primary);
+  }
+
+  p {
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+// ===============================================
+// CARTE ENTREPRISES
+// ===============================================
+.entreprises-card {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+
+  ion-card-header {
+    padding-bottom: 8px;
+    
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--ion-color-primary);
+
+      ion-icon {
+        font-size: 1.4rem;
+      }
+    }
+  }
+}
+
+// ===============================================
+// ÉTAT VIDE
+// ===============================================
+.empty-state {
+  text-align: center;
+  padding: 64px 24px;
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  h3 {
+    font-size: 1.3rem;
+    margin-bottom: 8px;
+    color: var(--ion-color-dark);
+  }
+
+  p {
+    font-size: 1rem;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+}
+
+// ===============================================
+// ITEMS ENTREPRISES
+// ===============================================
+.entreprise-item {
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-start: 0;
+  --inner-padding-end: 0;
+  margin-bottom: 12px;
+
+  .entreprise-content {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid var(--ion-color-light);
+    border-radius: 12px;
+    background: var(--ion-color-light-tint);
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.entreprise-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+
+  .entreprise-info {
+    flex: 1;
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0 0 4px 0;
+      color: var(--ion-color-dark);
+    }
+
+    .entreprise-email {
+      font-size: 0.9rem;
+      color: var(--ion-color-medium);
+      margin: 0;
+    }
+  }
+
+  .status-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+
+    .status-badge {
+      font-size: 0.8rem;
+      padding: 4px 8px;
+      border-radius: 12px;
+    }
+
+    .password-badge {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+    }
+  }
+}
+
+.entreprise-details {
+  margin-bottom: 16px;
+
+  .detail-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+
+    ion-icon {
+      font-size: 1rem;
+      color: var(--ion-color-medium-shade);
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.entreprise-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--ion-color-light-shade);
+
+  ion-button {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    margin: 0 2px;
+
+    ion-icon {
+      font-size: 1.2rem;
+    }
+  }
+
+  ion-toggle {
+    --handle-width: 20px;
+    --handle-height: 20px;
+    --track-width: 40px;
+    --track-height: 24px;
+  }
+}
+
+// ===============================================
+// MODAL FORMULAIRE
+// ===============================================
+.modal-content {
+  padding: 0;
+
+  ion-item {
+    --padding-start: 0;
+    --inner-padding-start: 16px;
+    --inner-padding-end: 16px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--ion-color-light);
+
+    ion-label {
+      font-weight: 500;
+      color: var(--ion-color-dark);
+    }
+  }
+
+  .modal-actions {
+    padding: 24px 0 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    ion-button {
+      height: 48px;
+      font-weight: 500;
+      border-radius: 8px;
+    }
+  }
+}
+
+// ===============================================
+// RESPONSIVE
+// ===============================================
+@media (max-width: 768px) {
+  .page-container {
+    padding: 12px;
+  }
+
+  .entreprise-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+
+    .status-section {
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  .entreprise-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+
+    ion-toggle {
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+
+  .stat-item {
+    .stat-number {
+      font-size: 1.8rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .entreprise-actions {
+    justify-content: center;
+    
+    ion-button {
+      flex: 1;
+      min-width: 44px;
+    }
+  }
+
+  .modal-actions {
+    ion-button {
+      height: 44px;
+    }
+  }
+}
+
+// ===============================================
+// STYLES ALERTES PERSONNALISÉES
+// ===============================================
+:host ::ng-deep {
+  .custom-alert-large {
+    --width: 90%;
+    --max-width: 500px;
+    
+    .alert-wrapper {
+      .alert-message {
+        text-align: left;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        color: var(--ion-color-dark);
+        
+        ul {
+          margin: 8px 0;
+          padding-left: 16px;
+        }
+        
+        li {
+          margin-bottom: 4px;
+        }
+      }
+      
+      .alert-radio-group {
+        .alert-radio-label {
+          white-space: pre-line;
+          font-size: 0.85rem;
+          line-height: 1.3;
+          padding: 8px 0;
+        }
+      }
+      
+      .alert-button-group {
+        .alert-button {
+          font-weight: 500;
+          
+          &.secondary {
+            color: var(--ion-color-medium);
+          }
+          
+          &.danger {
+            color: var(--ion-color-danger);
+            font-weight: 600;
+          }
+        }
+      }
+    }
+  }
+}
+
+// ===============================================
+// MODAL CONDUCTEURS - STYLE SIMPLE AVEC THEME
+// ===============================================
+
+// Modal agrandie
+ion-modal.conducteurs-modal {
+  --width: 95%;
+  --max-width: 1400px;
+  --height: 90%;
+  --border-radius: 12px;
+  --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  
+  @media (max-width: 768px) {
+    --width: 100%;
+    --height: 100%;
+    --border-radius: 0;
+  }
+}
+
+// Stats card
+.conducteurs-stats-card {
+  margin-bottom: 20px;
+  background: var(--ion-color-primary-tint);
+  border-radius: 12px;
+  
+  .stat-mini {
+    text-align: center;
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--ion-color-dark);
+      
+      &.success { color: var(--ion-color-success); }
+      &.warning { color: var(--ion-color-warning); }
+    }
+    
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--ion-color-medium);
+      text-transform: uppercase;
+    }
+  }
+}
+
+// Item conducteur avec collapse
+.conducteur-item {
+  margin-bottom: 12px;
+  border: 1px solid var(--ion-color-light);
+  border-radius: 8px;
+  overflow: hidden;
+  
+  .conducteur-header {
+    padding: 12px 16px;
+    background: var(--ion-color-light-tint);
+    cursor: pointer;
+    transition: background 0.3s;
+    
+    &:hover {
+      background: var(--ion-color-light-shade);
+    }
+    
+    &.expanded {
+      background: var(--ion-color-primary-tint);
+      border-bottom: 1px solid var(--ion-color-light);
+    }
+  }
+  
+  .conducteur-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    
+    .conducteur-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      
+      ion-avatar {
+        width: 48px;
+        height: 48px;
+        
+        .avatar-placeholder {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--ion-color-primary);
+          color: white;
+          font-weight: bold;
+          font-size: 1.2rem;
+          border-radius: 50%;
+        }
+      }
+      
+      .info-text {
+        h3 {
+          font-size: 1rem;
+          font-weight: 600;
+          margin: 0 0 4px 0;
+          color: var(--ion-color-dark);
+        }
+        
+        .info-line {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 0.85rem;
+          color: var(--ion-color-medium);
+          margin: 2px 0;
+          
+          ion-icon {
+            font-size: 0.9rem;
+            color: var(--ion-color-primary);
+          }
+        }
+      }
+    }
+    
+    .conducteur-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      
+      .status-badges {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        align-items: flex-end;
+        
+        ion-badge {
+          font-size: 0.75rem;
+          padding: 4px 8px;
+        }
+      }
+      
+      .expand-icon {
+        font-size: 1.5rem;
+        color: var(--ion-color-medium);
+        transition: transform 0.3s;
+        
+        &.rotated {
+          transform: rotate(180deg);
+        }
+      }
+    }
+  }
+  
+  // Section collapse réservations
+  .conducteur-reservations {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    background: white;
+    
+    &.expanded {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    
+    .reservations-content {
+      padding: 16px;
+      
+      .reservations-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--ion-color-light);
+        
+        h4 {
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: var(--ion-color-dark);
+        }
+        
+        .reservation-count {
+          font-size: 0.85rem;
+          color: var(--ion-color-medium);
+        }
+      }
+      
+      .reservation-item {
+        padding: 16px;
+        margin-bottom: 12px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 1px solid var(--ion-color-light);
+        transition: all 0.3s ease;
+        
+        &:hover {
+          transform: translateX(4px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+          border-left: 3px solid var(--ion-color-primary);
+        }
+        
+        // Header avec statut et prix
+        .reservation-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 12px;
+          padding-bottom: 10px;
+          border-bottom: 1px dashed var(--ion-color-light);
+          
+          .reservation-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            
+            .status-badge {
+              padding: 4px 10px;
+              border-radius: 20px;
+              font-size: 0.75rem;
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              
+              &.pending {
+                background: var(--ion-color-warning-tint);
+                color: var(--ion-color-warning-shade);
+              }
+              
+              &.accepted {
+                background: var(--ion-color-primary-tint);
+                color: var(--ion-color-primary-shade);
+              }
+              
+              &.completed {
+                background: var(--ion-color-success-tint);
+                color: var(--ion-color-success-shade);
+              }
+              
+              &.refused, &.canceled {
+                background: var(--ion-color-danger-tint);
+                color: var(--ion-color-danger-shade);
+              }
+            }
+            
+            .reservation-date {
+              font-size: 0.8rem;
+              color: var(--ion-color-medium);
+            }
+          }
+          
+          .reservation-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--ion-color-success);
+            
+            &::before {
+              content: '💰';
+              margin-right: 4px;
+            }
+          }
+        }
+        
+        // Timeline mini pour départ/destination
+        .reservation-timeline {
+          position: relative;
+          padding-left: 24px;
+          
+          &::before {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: linear-gradient(to bottom, 
+              var(--ion-color-primary) 0%, 
+              var(--ion-color-primary-tint) 50%, 
+              var(--ion-color-success) 100%);
+            opacity: 0.6;
+          }
+          
+          .timeline-point {
+            position: relative;
+            padding: 8px 0;
+            
+            &::before {
+              content: '';
+              position: absolute;
+              left: -20px;
+              top: 50%;
+              transform: translateY(-50%);
+              width: 10px;
+              height: 10px;
+              border-radius: 50%;
+              background: white;
+              border: 2px solid var(--ion-color-primary);
+              z-index: 1;
+            }
+            
+            &.departure::before {
+              background: var(--ion-color-primary);
+            }
+            
+            &.destination::before {
+              background: var(--ion-color-success);
+              border-color: var(--ion-color-success);
+            }
+            
+            .point-label {
+              font-size: 0.75rem;
+              font-weight: 600;
+              text-transform: uppercase;
+              color: var(--ion-color-medium);
+              margin-bottom: 2px;
+              letter-spacing: 0.5px;
+            }
+            
+            .point-value {
+              font-size: 0.9rem;
+              color: var(--ion-color-dark);
+              font-weight: 500;
+              
+              ion-icon {
+                margin-right: 4px;
+                font-size: 0.85rem;
+                vertical-align: middle;
+                color: var(--ion-color-primary);
+              }
+            }
+            
+            .point-distance {
+              font-size: 0.75rem;
+              color: var(--ion-color-medium);
+              margin-top: 2px;
+              
+              ion-icon {
+                font-size: 0.8rem;
+                margin-right: 2px;
+              }
+            }
+          }
+        }
+        
+        // Footer avec infos client
+        .reservation-footer {
+          margin-top: 12px;
+          padding-top: 10px;
+          border-top: 1px dashed var(--ion-color-light);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          
+          .client-info {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.85rem;
+            color: var(--ion-color-medium);
+            
+            ion-icon {
+              font-size: 0.9rem;
+              color: var(--ion-color-primary);
+            }
+          }
+          
+          .reservation-note {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            
+            ion-icon {
+              color: #ffc107;
+              font-size: 0.9rem;
+            }
+            
+            span {
+              font-size: 0.85rem;
+              font-weight: 600;
+              color: var(--ion-color-dark);
+            }
+          }
+        }
+      }
+      
+      .no-reservations {
+        text-align: center;
+        padding: 20px;
+        color: var(--ion-color-medium);
+        font-size: 0.9rem;
+      }
+    }
+  }
+}

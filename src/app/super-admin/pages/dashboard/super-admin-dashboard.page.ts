@@ -172,11 +172,11 @@ import { SuperAdminUser } from '../../models/super-admin.model';
             <ion-col size="12" size-md="6">
               <ion-button 
                 expand="block" 
-                fill="clear" 
-                color="medium"
-                (click)="onRefreshSession()">
-                <ion-icon name="settings-outline" slot="start"></ion-icon>
-                Rafraîchir Session
+                fill="outline" 
+                color="warning"
+                (click)="onManageEntreprises()">
+                <ion-icon name="business-outline" slot="start"></ion-icon>
+                Gestion Entreprises
               </ion-button>
             </ion-col>
             <ion-col size="12" size-md="6">
@@ -184,9 +184,9 @@ import { SuperAdminUser } from '../../models/super-admin.model';
                 expand="block" 
                 fill="clear" 
                 color="medium"
-                disabled>
+                (click)="onRefreshSession()">
                 <ion-icon name="settings-outline" slot="start"></ion-icon>
-                Paramètres Système
+                Rafraîchir Session
               </ion-button>
             </ion-col>
           </ion-row>
@@ -346,6 +346,11 @@ export class SuperAdminDashboardPage implements OnInit {
   async onViewAuditLogs() {
     console.log('🚀 Navigation vers Logs d\'Audit');
     await this.router.navigate(['/super-admin/audit']);
+  }
+
+  async onManageEntreprises() {
+    console.log('🚀 Navigation vers Gestion Entreprises');
+    await this.router.navigate(['/super-admin/entreprises']);
   }
 
   async onFinancialManagement() {

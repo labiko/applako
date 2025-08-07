@@ -52,5 +52,11 @@ export const SUPER_ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./pages/financial/periode-details.page').then(m => m.PeriodeDetailsPage),
     canActivate: [SuperAdminGuard],
     title: 'Super Admin - Détails Période'
+  },
+  {
+    path: 'entreprises',
+    loadComponent: () => import('./pages/entreprises/entreprises-management.page').then(m => m.EntreprisesManagementPage),
+    canActivate: [SuperAdminGuard],
+    title: 'Super Admin - Gestion Entreprises'
   }
 ];

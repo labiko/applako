@@ -165,9 +165,33 @@ export class VersementService {
   async getMontantsAVerser(): Promise<ConducteurVersement[]> {
     try {
       const entrepriseId = this.entrepriseAuthService.getCurrentEntrepriseId();
-      if (!entrepriseId) return [];
+      if (!entrepriseId) {
+        console.log('⚠️ Aucune entreprise connectée');
+        return [];
+      }
 
-      // Récupérer les conducteurs avec des réservations à verser
+      console.log(`🔍 Recherche des montants à verser pour l'entreprise: ${entrepriseId}`);
+
+      // D'abord, récupérer les conducteurs de l'entreprise
+      const { data: conducteurs, error: conducteursError } = await this.supabaseService.client
+        .from('conducteurs')
+        .select('id')
+        .eq('entreprise_id', entrepriseId);
+
+      if (conducteursError) {
+        console.error('❌ Erreur récupération conducteurs:', conducteursError);
+        throw conducteursError;
+      }
+
+      if (!conducteurs || conducteurs.length === 0) {
+        console.log(`📊 Aucun conducteur trouvé pour l'entreprise ${entrepriseId}`);
+        return [];
+      }
+
+      const conducteurIds = conducteurs.map(c => c.id);
+      console.log(`👥 ${conducteurIds.length} conducteur(s) de l'entreprise`);
+
+      // Récupérer les réservations à verser uniquement pour les conducteurs de l'entreprise
       const { data: reservations, error } = await this.supabaseService.client
         .from('reservations')
         .select(`
@@ -193,14 +217,28 @@ export class VersementService {
           date_add_commentaire,
           versement_id,
           depart_nom,
-          conducteurs (*)
+          conducteurs!inner (
+            id,
+            nom,
+            prenom,
+            telephone,
+            entreprise_id,
+            created_at
+          )
         `)
+        .in('conducteur_id', conducteurIds)
+        .eq('conducteurs.entreprise_id', entrepriseId)
         .eq('statut', 'completed')
         .not('date_code_validation', 'is', null)
         .is('versement_id', null); // Pas encore versées
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erreur récupération réservations:', error);
+        throw error;
+      }
 
+
+      console.log(`📊 ${reservations?.length || 0} réservation(s) à verser trouvée(s)`);
 
       // Grouper par conducteur
       const groupedByConducteur = this.groupReservationsByConducteur(reservations || []);
@@ -209,7 +247,8 @@ export class VersementService {
 
       for (const [conducteurId, reservationsList] of groupedByConducteur.entries()) {
         const conducteur = reservationsList[0].conducteurs;
-        if (!conducteur || conducteur.entreprise_id !== entrepriseId) continue;
+        // Pas besoin de vérifier entreprise_id car déjà filtré dans la requête
+        if (!conducteur) continue;
 
         const montantTotal = reservationsList.reduce((sum, r) => sum + (r.prix_total || 0), 0);
         const anomalies = await this.detecterAnomalies(conducteurId);
@@ -518,8 +557,35 @@ export class VersementService {
   async getReservationsEnAttente(): Promise<any[]> {
     try {
       const entrepriseId = this.entrepriseAuthService.getCurrentEntrepriseId();
-      if (!entrepriseId) return [];
+      if (!entrepriseId) {
+        console.log('⚠️ Aucune entreprise connectée');
+        return [];
+      }
 
+      console.log(`🔍 Recherche des réservations en attente pour l'entreprise: ${entrepriseId}`);
+
+      // D'abord, récupérer les conducteurs de l'entreprise connectée
+      const { data: conducteurs, error: conducteursError } = await this.supabaseService.client
+        .from('conducteurs')
+        .select('id')
+        .eq('entreprise_id', entrepriseId);
+
+      if (conducteursError) {
+        console.error('❌ Erreur récupération conducteurs:', conducteursError);
+        throw conducteursError;
+      }
+
+      if (!conducteurs || conducteurs.length === 0) {
+        console.log(`📊 Aucun conducteur trouvé pour l'entreprise ${entrepriseId}`);
+        return [];
+      }
+
+      console.log(`👥 ${conducteurs.length} conducteur(s) trouvé(s) pour l'entreprise`);
+
+      // Récupérer les IDs des conducteurs
+      const conducteurIds = conducteurs.map(c => c.id);
+
+      // Puis récupérer les réservations de ces conducteurs uniquement
       const { data, error } = await this.supabaseService.client
         .from('reservations')
         .select(`
@@ -545,19 +611,30 @@ export class VersementService {
           date_add_commentaire,
           versement_id,
           depart_nom,
-          conducteurs (*)
+          conducteurs!inner (
+            id,
+            nom,
+            prenom,
+            telephone,
+            entreprise_id
+          )
         `)
+        .in('conducteur_id', conducteurIds)
+        .eq('conducteurs.entreprise_id', entrepriseId)
         .eq('statut', 'completed')
         .is('date_code_validation', null)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erreur récupération réservations:', error);
+        throw error;
+      }
       
-      
+      console.log(`✅ ${data?.length || 0} réservation(s) en attente trouvée(s) pour l'entreprise ${entrepriseId}`);
       return data || [];
 
     } catch (error) {
-      console.error('Erreur réservations en attente:', error);
+      console.error('❌ Erreur globale getReservationsEnAttente:', error);
       return [];
     }
   }
