@@ -5,6 +5,7 @@ import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { AlertController } from '@ionic/angular';
 import { NativeSettings } from 'capacitor-native-settings';
+import { WakeLockService } from './wake-lock.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,8 @@ export class GeolocationService {
   constructor(
     private supabaseService: SupabaseService,
     private authService: AuthService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private wakeLockService: WakeLockService
   ) {}
 
   // Démarrer le tracking de position
@@ -33,13 +35,26 @@ export class GeolocationService {
     }
 
     try {
-      // Demander les permissions
-      const permissions = await Geolocation.requestPermissions();
+      // Vérifier d'abord les permissions existantes
+      let permissions = await Geolocation.checkPermissions();
+      
+      // Demander les permissions seulement si pas encore accordées
       if (permissions.location !== 'granted') {
-        console.error('Location permission denied');
-        await this.showLocationPermissionAlert();
-        return;
+        console.log('🔒 Permissions GPS requises, demande en cours...');
+        permissions = await Geolocation.requestPermissions();
+        
+        if (permissions.location !== 'granted') {
+          console.error('Location permission denied');
+          await this.showLocationPermissionAlert();
+          return;
+        }
+      } else {
+        console.log('✅ Permissions GPS déjà accordées');
       }
+
+      // NOUVEAU : Activer Wake Lock pour maintenir l'écran allumé
+      console.log('🔋 Activation Wake Lock - Écran restera allumé pendant le tracking');
+      await this.wakeLockService.enable();
 
       this.isTracking = true;
       
@@ -68,6 +83,11 @@ export class GeolocationService {
       this.locationInterval = null;
     }
     this.isTracking = false;
+    
+    // NOUVEAU : Désactiver Wake Lock - permettre au téléphone de se verrouiller
+    console.log('🔋 Désactivation Wake Lock - Téléphone peut maintenant se verrouiller');
+    this.wakeLockService.disable();
+    
     console.log('Location tracking stopped');
   }
 
@@ -363,6 +383,21 @@ Vérifiez que :
     this.stopLocationTracking();
     await new Promise(resolve => setTimeout(resolve, 1000)); // Attendre 1s
     await this.startLocationTracking();
+  }
+
+  // Obtenir le statut du Wake Lock
+  getWakeLockStatus(): { active: boolean, supported: boolean } {
+    return this.wakeLockService.getStatus();
+  }
+
+  // Vérifier si le tracking est actif ET l'écran maintenu allumé
+  getFullTrackingStatus(): { tracking: boolean, wakeLockActive: boolean, wakeLockSupported: boolean } {
+    const wakeLockStatus = this.wakeLockService.getStatus();
+    return {
+      tracking: this.isTracking,
+      wakeLockActive: wakeLockStatus.active,
+      wakeLockSupported: wakeLockStatus.supported
+    };
   }
 
   // Nettoyer les ressources

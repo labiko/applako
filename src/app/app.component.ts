@@ -5,6 +5,7 @@ import { SplashScreenComponent } from './shared/components/splash-screen/splash-
 import { GeolocationService } from './services/geolocation.service';
 import { AuthService } from './services/auth.service';
 import { AppInitBlocageService } from './services/app-init-blocage.service';
+import { Capacitor } from '@capacitor/core';
 
 @Component({
   selector: 'app-root',
@@ -26,11 +27,27 @@ export class AppComponent implements OnInit, OnDestroy {
     console.log('🚀 Initialisation du système de blocage...');
     this.blocageInitService.initialize();
     
-    // Démarrer le tracking de position si un conducteur est connecté
-    this.authService.currentConducteur$.subscribe(conducteur => {
+    // Démarrer le tracking de position si un conducteur est connecté ET en ligne
+    this.authService.currentConducteur$.subscribe(async conducteur => {
       if (conducteur) {
-        console.log('Conducteur connecté, démarrage du tracking GPS');
-        this.geolocationService.startLocationTracking();
+        // Vérifier le statut en ligne/hors ligne
+        const isOnline = !conducteur.hors_ligne; // hors_ligne = false signifie en ligne
+        
+        console.log('Conducteur connecté:', {
+          id: conducteur.id,
+          hors_ligne: conducteur.hors_ligne,
+          isOnline: isOnline
+        });
+        
+        if (isOnline) {
+          // Conducteur EN LIGNE : démarrer le tracking
+          console.log('✅ Conducteur en ligne, démarrage du tracking GPS');
+          this.geolocationService.startLocationTracking();
+        } else {
+          // Conducteur HORS LIGNE : ne pas démarrer le tracking
+          console.log('⏸️ Conducteur hors ligne, tracking GPS non démarré');
+          this.geolocationService.stopLocationTracking();
+        }
       } else {
         console.log('Conducteur déconnecté, arrêt du tracking GPS');
         this.geolocationService.stopLocationTracking();

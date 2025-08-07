@@ -50,6 +50,16 @@ The application uses a custom color scheme:
   - `updateReservationStatus()`: Updates reservation status to 'accepted' or 'refused'
   - `getReservationHistory()`: Fetches processed reservations
 
+- **GeolocationService** (`src/app/services/geolocation.service.ts`): GPS tracking with Wake Lock
+  - `startLocationTracking()`: Starts GPS tracking every 5 minutes + activates Wake Lock
+  - `stopLocationTracking()`: Stops GPS tracking + deactivates Wake Lock
+  - `getFullTrackingStatus()`: Returns tracking and Wake Lock status
+
+- **WakeLockService** (`src/app/services/wake-lock.service.ts`): Screen wake management
+  - `enable()`: Keeps screen awake while conductor is ONLINE
+  - `disable()`: Allows phone to lock when conductor goes OFFLINE
+  - `getStatus()`: Returns Wake Lock active/supported status
+
 ### Data Models
 - **Reservation** (`src/app/models/reservation.model.ts`): Main data model with fields like customer_name, pickup_location, destination, status, etc.
 
@@ -78,6 +88,25 @@ For complete database structure analysis and schema details, refer to:
 `C:\Users\diall\Documents\LABICOTAXI\SCRIPT\db_structure.sql`
 
 This file contains the complete database schema including all tables, columns, relationships, and constraints. Always consult this file when analyzing database structure or implementing new features that require database modifications.
+
+## 🔋 GPS Tracking & Wake Lock System
+
+### Overview
+The application implements an intelligent GPS tracking system with Wake Lock management that automatically controls screen wake based on conductor online/offline status.
+
+### How it works
+- **ONLINE Status**: GPS tracking active (every 5 minutes) + Screen stays awake
+- **OFFLINE Status**: GPS tracking stopped + Phone can lock normally
+- **User Control**: Single button controls both GPS and power management
+
+### Key Features
+- ✅ **Smart Wake Lock**: Screen stays awake only when needed
+- ✅ **Battery Management**: Automatic power saving when offline
+- ✅ **GPS Precision**: 5-minute intervals for accurate tracking
+- ✅ **User Friendly**: Simple online/offline toggle
+
+### Documentation
+For complete technical details, see: `SYSTEME_GPS_WAKE_LOCK.md`
 
 ## Git Repository & Deployment
 

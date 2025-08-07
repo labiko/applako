@@ -260,6 +260,21 @@ ion-title {
   }
 }
 
+// Header fixe app ouverte
+.app-open-reminder {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: linear-gradient(135deg, #FFA500, #FF6B6B);
+  color: white;
+  text-align: center;
+  padding: 15px;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
 // Responsive design
 @media (max-width: 576px) {
   .status-toggle {
@@ -276,5 +291,10 @@ ion-title {
   
   .status-switch {
     transform: scale(1.1);
+  }
+  
+  .app-open-reminder {
+    font-size: 14px;
+    padding: 12px;
   }
 }

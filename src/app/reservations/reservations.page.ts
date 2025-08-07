@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
@@ -27,6 +27,9 @@ import { addIcons } from 'ionicons';
 import { location, time, person, call, checkmark, close, car, resize, card, carSportOutline, openOutline, timeOutline, checkmarkCircle, closeCircle, flag } from 'ionicons/icons';
 import { SupabaseService } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
+import { GeolocationService } from '../services/geolocation.service';
+import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
 import { Reservation } from '../models/reservation.model';
 
 @Component({
@@ -57,15 +60,25 @@ import { Reservation } from '../models/reservation.model';
     FormsModule,
   ],
 })
-export class ReservationsPage implements OnInit {
+export class ReservationsPage implements OnInit, OnDestroy {
   reservations: Reservation[] = [];
   isLoading = true;
   conducteurPosition: string = 'Chargement de la position...';
   isOnline: boolean = true; // Statut en ligne par défaut
+  
+  // Système d'actualisation automatique optimisé
+  private refreshInterval: any = null;
+  private readonly REFRESH_INTERVAL_MS = 120000; // 2 minutes (économie batterie)
+  private lastRefreshTime: number = 0;
+  private isRefreshing: boolean = false;
+  
+  // Listener pour événement resume
+  private resumeListener: any = null;
 
   constructor(
     private supabaseService: SupabaseService,
     private authService: AuthService,
+    private geolocationService: GeolocationService,
     private toastController: ToastController,
     private loadingController: LoadingController
   ) {
@@ -103,6 +116,20 @@ export class ReservationsPage implements OnInit {
      
      // Charger les réservations
      this.loadReservations();
+     
+     // Démarrer l'actualisation automatique
+     this.startAutoRefresh();
+     
+     // Configurer le listener resume
+     this.setupResumeListener();
+  }
+
+  ionViewWillLeave() {
+    // Arrêter l'actualisation automatique quand on quitte la page
+    this.stopAutoRefresh();
+    
+    // Supprimer le listener resume
+    this.removeResumeListener();
   }
 
   // Synchroniser l'état du conducteur avec la base de données
@@ -729,6 +756,19 @@ export class ReservationsPage implements OnInit {
       if (success) {
         this.isOnline = isOnline;
         
+        // Gérer le tracking GPS selon le statut
+        if (isOnline) {
+          // Passer en ligne : démarrer le tracking GPS
+          console.log('✅ Passage en ligne - Démarrage du tracking GPS');
+          
+          await this.geolocationService.startLocationTracking();
+        } else {
+          // Passer hors ligne : arrêter le tracking GPS
+          console.log('⏸️ Passage hors ligne - Arrêt du tracking GPS');
+          
+          this.geolocationService.stopLocationTracking();
+        }
+        
         // Mettre à jour les données locales du conducteur
         const conducteur = this.authService.getCurrentConducteur();
         if (conducteur) {
@@ -764,6 +804,254 @@ export class ReservationsPage implements OnInit {
       this.presentToast('Erreur lors de la mise à jour du statut', 'danger');
     } finally {
       await loading.dismiss();
+    }
+  }
+
+  // NOUVEAU : Système d'actualisation automatique optimisé
+  private startAutoRefresh() {
+    // Arrêter l'actualisation existante si elle existe
+    this.stopAutoRefresh();
+    
+    console.log(`🔄 Démarrage actualisation automatique réservations (toutes les ${this.REFRESH_INTERVAL_MS/60000} min)`);
+    
+    this.refreshInterval = setInterval(async () => {
+      await this.performOptimizedRefresh();
+    }, this.REFRESH_INTERVAL_MS);
+  }
+
+  private async performOptimizedRefresh() {
+    // Éviter les fuites mémoire et les appels multiples
+    if (this.isRefreshing) {
+      console.log('⏭️ Actualisation déjà en cours, ignoré');
+      return;
+    }
+
+    // Actualiser seulement si le conducteur est EN LIGNE
+    if (!this.isOnline) {
+      console.log('⏸️ Conducteur HORS LIGNE - Actualisation automatique suspendue');
+      return;
+    }
+
+    // Vérifier si on n'a pas actualisé trop récemment (protection double)
+    const now = Date.now();
+    if (now - this.lastRefreshTime < this.REFRESH_INTERVAL_MS - 5000) {
+      console.log('⏭️ Actualisation trop récente, ignoré');
+      return;
+    }
+
+    this.isRefreshing = true;
+    this.lastRefreshTime = now;
+    
+    try {
+      console.log('🔄 Actualisation automatique des réservations...');
+      
+      // Actualisation silencieuse (sans loader visuel)
+      const originalIsLoading = this.isLoading;
+      this.isLoading = false; // Éviter le spinner lors de l'actualisation auto
+      
+      await this.loadReservations();
+      
+      console.log('✅ Actualisation automatique terminée');
+    } catch (error) {
+      console.error('❌ Erreur actualisation automatique:', error);
+      
+      // En cas d'erreur répétée, réduire la fréquence
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('network') || errorMessage.includes('timeout')) {
+        console.log('🐌 Erreur réseau - Actualisation ralentie temporairement');
+        this.temporarySlowRefresh();
+      }
+    } finally {
+      this.isRefreshing = false;
+    }
+  }
+
+  // Ralentir temporairement en cas d'erreurs réseau
+  private temporarySlowRefresh() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+      
+      // Ralentir à 5 minutes temporairement
+      console.log('🐌 Passage en mode actualisation lente (5 min)');
+      this.refreshInterval = setInterval(async () => {
+        await this.performOptimizedRefresh();
+        
+        // Reprendre le rythme normal après 15 minutes
+        setTimeout(() => {
+          if (this.refreshInterval) {
+            console.log('🚀 Retour au rythme normal (2 min)');
+            this.startAutoRefresh();
+          }
+        }, 15 * 60 * 1000); // 15 minutes
+        
+      }, 5 * 60 * 1000); // 5 minutes
+    }
+  }
+
+  private stopAutoRefresh() {
+    if (this.refreshInterval) {
+      console.log('⏹️ Arrêt actualisation automatique réservations');
+      clearInterval(this.refreshInterval);
+      this.refreshInterval = null;
+    }
+    
+    // Nettoyer les variables de contrôle
+    this.isRefreshing = false;
+    this.lastRefreshTime = 0;
+  }
+
+  // Nettoyer les ressources à la destruction du composant
+  ngOnDestroy() {
+    console.log('🧹 Nettoyage composant réservations...');
+    this.stopAutoRefresh();
+    this.removeResumeListener();
+    
+    // Nettoyer les données pour libérer la mémoire
+    this.reservations = [];
+  }
+
+  // NOUVEAU : Configurer le listener pour l'événement resume (déverrouillage téléphone)
+  private async setupResumeListener() {
+    // Supprimer listener existant si présent
+    this.removeResumeListener();
+    
+    // Désactiver sur web (Vercel) - fonctionne seulement sur mobile
+    if (Capacitor.getPlatform() === 'web') {
+      console.log('📱 Resume listener disabled on web - mobile only feature');
+      return;
+    }
+    
+    try {
+      console.log('📱 Configuration du listener resume (déverrouillage)');
+      this.resumeListener = await App.addListener('appStateChange', async (state) => {
+        console.log('📱 App state change:', state);
+        
+        if (state.isActive) {
+          console.log('📱 App resumed (téléphone déverrouillé)');
+          await this.handleAppResume();
+        }
+      });
+    } catch (error) {
+      console.error('❌ Erreur configuration resume listener:', error);
+    }
+  }
+
+  // Supprimer le listener resume
+  private removeResumeListener() {
+    if (this.resumeListener) {
+      console.log('🧹 Suppression resume listener');
+      this.resumeListener.remove();
+      this.resumeListener = null;
+    }
+  }
+
+  // Gérer le déverrouillage de l'app
+  private async handleAppResume() {
+    console.log('🔄 Traitement déverrouillage app...');
+    
+    try {
+      // D'abord synchroniser le statut depuis la base de données
+      await this.syncConducteurStatus();
+      
+      // Vérifier si le conducteur est en ligne après synchronisation
+      if (!this.isOnline) {
+        console.log('⏸️ Conducteur HORS LIGNE - Actualisation réservations uniquement');
+        
+        // Même hors ligne, actualiser les réservations pour info
+        await this.refreshReservationsOnResume();
+        return;
+      }
+      
+      console.log('📍 Conducteur EN LIGNE - Actualisation complète (position + réservations)');
+      
+      // 1. Mettre à jour la position du conducteur en base (seulement si en ligne)
+      await this.updateConducteurPositionOnResume();
+      
+      // 2. Actualiser la liste des réservations
+      await this.refreshReservationsOnResume();
+      
+      console.log('✅ Actualisation au déverrouillage terminée');
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'actualisation au déverrouillage:', error);
+    }
+  }
+
+  // Mettre à jour la position GPS au déverrouillage (seulement si en ligne)
+  private async updateConducteurPositionOnResume() {
+    try {
+      // Double vérification : conducteur doit être EN LIGNE
+      if (!this.isOnline) {
+        console.log('⏸️ Conducteur HORS LIGNE - Pas de mise à jour position GPS');
+        return;
+      }
+
+      const { Geolocation } = await import('@capacitor/geolocation');
+      const conducteurId = this.authService.getCurrentConducteurId();
+      
+      if (!conducteurId) {
+        console.log('❌ Pas de conducteur connecté pour mise à jour position');
+        return;
+      }
+
+      console.log('📍 Conducteur EN LIGNE - Mise à jour position GPS au déverrouillage...');
+
+      // Vérifier les permissions GPS
+      let permissions = await Geolocation.checkPermissions();
+      if (permissions.location !== 'granted') {
+        console.log('🔒 Permissions GPS requises');
+        permissions = await Geolocation.requestPermissions();
+        if (permissions.location !== 'granted') {
+          console.warn('❌ Permission GPS refusée');
+          return;
+        }
+      }
+
+      // Obtenir position GPS rapide
+      const position = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 30000
+      });
+      
+      const longitude = position.coords.longitude;
+      const latitude = position.coords.latitude;
+      const accuracy = position.coords.accuracy;
+      
+      console.log(`📍 Position déverrouillage: ${latitude}, ${longitude} (${accuracy}m)`);
+
+      // Mettre à jour en base de données
+      const success = await this.supabaseService.updateConducteurPosition(
+        conducteurId,
+        longitude,
+        latitude,
+        accuracy
+      );
+
+      if (success) {
+        console.log('✅ Position mise à jour au déverrouillage');
+      } else {
+        console.warn('⚠️ Échec mise à jour position');
+      }
+    } catch (error) {
+      console.error('❌ Erreur mise à jour position déverrouillage:', error);
+    }
+  }
+
+  // Actualiser les réservations au déverrouillage
+  private async refreshReservationsOnResume() {
+    try {
+      console.log('🔄 Actualisation réservations au déverrouillage...');
+      
+      // Actualisation silencieuse (pas de loader)
+      const originalIsLoading = this.isLoading;
+      this.isLoading = false;
+      
+      await this.loadReservations();
+      
+      this.isLoading = originalIsLoading;
+      console.log('✅ Réservations actualisées au déverrouillage');
+    } catch (error) {
+      console.error('❌ Erreur actualisation réservations déverrouillage:', error);
     }
   }
 
