@@ -3,6 +3,8 @@ import { Geolocation } from '@capacitor/geolocation';
 import { Capacitor } from '@capacitor/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
+import { AlertController } from '@ionic/angular';
+import { NativeSettings } from 'capacitor-native-settings';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +15,8 @@ export class GeolocationService {
 
   constructor(
     private supabaseService: SupabaseService,
-    private authService: AuthService
+    private authService: AuthService,
+    private alertController: AlertController
   ) {}
 
   // Démarrer le tracking de position
@@ -34,6 +37,7 @@ export class GeolocationService {
       const permissions = await Geolocation.requestPermissions();
       if (permissions.location !== 'granted') {
         console.error('Location permission denied');
+        await this.showLocationPermissionAlert();
         return;
       }
 
@@ -52,6 +56,7 @@ export class GeolocationService {
       console.log('Location tracking started');
     } catch (error) {
       console.error('Error starting location tracking:', error);
+      await this.handleLocationError(error);
       this.isTracking = false;
     }
   }
@@ -212,6 +217,152 @@ export class GeolocationService {
     }
     
     return hex;
+  }
+
+  // Afficher alerte moderne pour permissions GPS
+  private async showLocationPermissionAlert() {
+    const alert = await this.alertController.create({
+      cssClass: 'modern-gps-alert',
+      header: '📍 Localisation requise',
+      subHeader: 'Activez votre position pour recevoir des courses',
+      message: 'Pour utiliser l\'application, vous devez activer la géolocalisation. Cela permet de vous connecter avec des clients proches et d\'optimiser vos trajets.',
+      buttons: [
+        {
+          text: 'Plus tard',
+          role: 'cancel',
+          cssClass: 'alert-button-cancel'
+        },
+        {
+          text: '🚀 Activer',
+          cssClass: 'alert-button-primary',
+          handler: () => {
+            this.openLocationSettings();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  // Gérer les erreurs de géolocalisation
+  private async handleLocationError(error: any) {
+    const errorMessage = error?.message || error?.toString() || 'Erreur inconnue';
+    
+    console.log('🔍 Erreur GPS détaillée:', errorMessage);
+
+    // Vérifier si c'est un problème de service désactivé
+    if (errorMessage.includes('Location services are not enabled') || 
+        errorMessage.includes('services are not enabled')) {
+      await this.showLocationServicesAlert();
+    } else {
+      // Autre erreur GPS
+      await this.showGenericLocationAlert(errorMessage);
+    }
+  }
+
+  // Alerte moderne pour services de géolocalisation désactivés
+  private async showLocationServicesAlert() {
+    const alert = await this.alertController.create({
+      cssClass: 'custom-alert-location-services',
+      header: '🌍 GPS désactivé',
+      subHeader: 'Activez la géolocalisation pour continuer',
+      message: 'Le GPS est désactivé sur votre téléphone. Pour activer:\n\n1. Ouvrez les Paramètres\n2. Localisation/Position\n3. Activez la localisation\n4. Mode haute précision',
+      buttons: [
+        {
+          text: 'Ignorer',
+          role: 'cancel',
+          cssClass: 'alert-button-cancel'
+        },
+        {
+          text: '🔧 Ouvrir paramètres',
+          cssClass: 'alert-button-primary',
+          handler: () => {
+            this.openLocationSettings();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  // Alerte générique pour autres erreurs GPS
+  private async showGenericLocationAlert(errorMessage: string) {
+    const alert = await this.alertController.create({
+      header: '⚠️ Problème de géolocalisation',
+      message: `Impossible d'accéder à votre position actuellement.
+      
+Erreur: ${errorMessage}
+
+Vérifiez que :
+• La géolocalisation est activée
+• L'app a les permissions nécessaires
+• Vous n'êtes pas en mode avion`,
+      buttons: [
+        {
+          text: 'OK',
+          role: 'cancel'
+        },
+        {
+          text: 'Paramètres',
+          cssClass: 'primary', 
+          handler: () => {
+            this.openLocationSettings();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  // Ouvrir les paramètres de géolocalisation
+  private async openLocationSettings() {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        console.log('📱 Ouverture des paramètres de localisation...');
+        
+        if (Capacitor.getPlatform() === 'android') {
+          // Pour Android, utiliser openAndroid avec l'enum correct
+          await NativeSettings.openAndroid({
+            option: 'location' as any // Type assertion car l'enum n'est pas importé
+          });
+        } else if (Capacitor.getPlatform() === 'ios') {
+          // Pour iOS, ouvrir les paramètres de l'app
+          await NativeSettings.openIOS({
+            option: 'App' as any
+          });
+        }
+        
+        console.log('✅ Paramètres de localisation ouverts');
+      } catch (error) {
+        console.error('❌ Impossible d\'ouvrir les paramètres:', error);
+        // En cas d'échec, afficher les instructions manuelles
+        this.showManualSettingsInstructions();
+      }
+    } else {
+      // Sur web, instructions manuelles
+      console.log('ℹ️ Sur web: Activez la géolocalisation manuellement');
+    }
+  }
+
+  // Instructions manuelles si ouverture automatique échoue
+  private async showManualSettingsInstructions() {
+    const alert = await this.alertController.create({
+      header: '⚙️ Activer la localisation',
+      message: 'Instructions pour activer le GPS:\n\n1. Ouvrez les Paramètres de votre téléphone\n2. Allez dans Localisation ou Position\n3. Activez la localisation\n4. Sélectionnez Haute précision\n5. Revenez à l\'application',
+      buttons: ['Compris']
+    });
+    await alert.present();
+  }
+
+  // Méthode publique pour réessayer la géolocalisation
+  async retryLocationTracking() {
+    console.log('🔄 Nouvelle tentative de géolocalisation...');
+    this.stopLocationTracking();
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Attendre 1s
+    await this.startLocationTracking();
   }
 
   // Nettoyer les ressources

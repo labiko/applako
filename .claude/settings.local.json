@@ -28,7 +28,8 @@
       "Bash(node:*)",
       "Bash(cat:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(del \"src\\app\\services\\support.service.ts\")"
+      "Bash(del \"src\\app\\services\\support.service.ts\")",
+      "Bash(ionic capacitor run:*)"
     ],
     "deny": []
   }
