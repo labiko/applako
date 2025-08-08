@@ -23,6 +23,7 @@ import { addIcons } from 'ionicons';
 import { person, call, mail, car, star, settings, logOut, personCircleOutline, business, colorPalette, idCard, speedometer } from 'ionicons/icons';
 import { AuthService } from '../services/auth.service';
 import { SupabaseService } from '../services/supabase.service';
+import { OneSignalService } from '../services/onesignal.service';
 
 @Component({
   selector: 'app-profile',
@@ -64,6 +65,7 @@ export class ProfilePage implements OnInit {
   constructor(
     private authService: AuthService,
     private supabaseService: SupabaseService,
+    private oneSignalService: OneSignalService,
     private router: Router
   ) {
     addIcons({ person, call, mail, car, star, settings, logOut, personCircleOutline, business, colorPalette, idCard, speedometer });
@@ -115,7 +117,10 @@ export class ProfilePage implements OnInit {
     }
   }
 
-  onLogout() {
+  async onLogout() {
+    // ✅ NOUVEAU : Désactiver OneSignal avant déconnexion
+    await this.oneSignalService.disableConducteurOneSignal();
+    
     this.authService.logout();
     this.router.navigate(['/login']);
   }

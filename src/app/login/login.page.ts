@@ -7,6 +7,7 @@ import { addIcons } from 'ionicons';
 import { carSport, call, eye, eyeOff, logIn, alertCircle, business, mail, arrowBack, ban } from 'ionicons/icons';
 import { AuthService } from '../services/auth.service';
 import { EntrepriseAuthService } from '../services/entreprise-auth.service';
+import { OneSignalService } from '../services/onesignal.service';
 
 @Component({
   selector: 'app-login',
@@ -32,6 +33,7 @@ export class LoginPage implements OnInit {
   constructor(
     private authService: AuthService,
     private entrepriseAuthService: EntrepriseAuthService,
+    private oneSignalService: OneSignalService,
     private router: Router,
     private route: ActivatedRoute
   ) {
@@ -98,6 +100,9 @@ export class LoginPage implements OnInit {
         const result = await this.authService.login(this.credentials.phone, this.credentials.password);
         
         if (result === true) {
+          // ✅ NOUVEAU : Initialiser OneSignal après connexion conducteur réussie
+          await this.oneSignalService.initializeConducteurOneSignal();
+          
           // Connexion réussie
           this.router.navigate(['/tabs']);
         } else if (typeof result === 'object' && result.blocked) {

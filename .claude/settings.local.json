@@ -30,7 +30,9 @@
       "mcp__ide__getDiagnostics",
       "Bash(del \"src\\app\\services\\support.service.ts\")",
       "Bash(ionic capacitor run:*)",
-      "Bash(npx capacitor run android)"
+      "Bash(npx capacitor run android)",
+      "Bash(powershell:*)",
+      "WebFetch(domain:documentation.onesignal.com)"
     ],
     "deny": []
   }

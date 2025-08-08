@@ -151,6 +151,27 @@ export class SupabaseService {
   }
 
   // Update reservation status and assign conducteur
+  // Mettre à jour le Player ID OneSignal d'un conducteur
+  async updateConducteurPlayerId(conducteurId: string, playerId: string): Promise<boolean> {
+    try {
+      const { error } = await this.supabase
+        .from('conducteurs')
+        .update({ player_id: playerId })
+        .eq('id', conducteurId);
+
+      if (error) {
+        console.error('Erreur mise à jour player_id:', error);
+        return false;
+      }
+
+      console.log(`✅ Player ID mis à jour pour conducteur ${conducteurId}`);
+      return true;
+    } catch (error) {
+      console.error('Erreur updateConducteurPlayerId:', error);
+      return false;
+    }
+  }
+
   async updateReservationStatus(id: string, status: 'accepted' | 'refused', conducteurId?: string) {
     const updateData: any = { statut: status };
     

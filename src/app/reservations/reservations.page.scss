@@ -23,6 +23,28 @@
   padding: 16px;
 }
 
+// ✅ NOUVEAU : Style pour mise en évidence OneSignal
+.reservation-card.highlighted {
+  animation: highlight-pulse 2s ease-in-out;
+  border: 2px solid var(--lako-green);
+  box-shadow: 0 4px 16px rgba(193, 241, 29, 0.4);
+}
+
+@keyframes highlight-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 16px rgba(193, 241, 29, 0.4);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(193, 241, 29, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 16px rgba(193, 241, 29, 0.4);
+  }
+}
+
 .loading-container {
   display: flex;
   flex-direction: column;

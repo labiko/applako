@@ -39,6 +39,7 @@ export class AppComponent implements OnInit, OnDestroy {
           isOnline: isOnline
         });
         
+        
         if (isOnline) {
           // Conducteur EN LIGNE : démarrer le tracking
           console.log('✅ Conducteur en ligne, démarrage du tracking GPS');

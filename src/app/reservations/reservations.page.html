@@ -73,7 +73,7 @@
     </div>
 
     <div *ngIf="!isLoading && reservations.length > 0">
-      <ion-card *ngFor="let reservation of reservations" class="reservation-card">
+      <ion-card *ngFor="let reservation of reservations" class="reservation-card" [attr.data-reservation-id]="reservation.id">
         <ion-card-header class="reservation-header">
           <ion-card-title>
             <ion-icon name="person"></ion-icon>

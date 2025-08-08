@@ -28,6 +28,7 @@ import { location, time, person, call, checkmark, close, car, resize, card, carS
 import { SupabaseService } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
 import { GeolocationService } from '../services/geolocation.service';
+import { OneSignalService } from '../services/onesignal.service';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { Reservation } from '../models/reservation.model';
@@ -79,6 +80,7 @@ export class ReservationsPage implements OnInit, OnDestroy {
     private supabaseService: SupabaseService,
     private authService: AuthService,
     private geolocationService: GeolocationService,
+    private oneSignalService: OneSignalService,
     private toastController: ToastController,
     private loadingController: LoadingController
   ) {
@@ -122,6 +124,10 @@ export class ReservationsPage implements OnInit, OnDestroy {
      
      // Configurer le listener resume
      this.setupResumeListener();
+     
+     // ✅ NOUVEAU : Activer la réception des notifications OneSignal et enregistrer callback
+     this.oneSignalService.enableReservationsNotifications();
+     this.oneSignalService.setReservationsCallback(this.refreshReservationsFromNotification.bind(this));
   }
 
   ionViewWillLeave() {
@@ -130,6 +136,9 @@ export class ReservationsPage implements OnInit, OnDestroy {
     
     // Supprimer le listener resume
     this.removeResumeListener();
+    
+    // ✅ NOUVEAU : Désactiver la réception des notifications OneSignal
+    this.oneSignalService.disableReservationsNotifications();
   }
 
   // Synchroniser l'état du conducteur avec la base de données
@@ -756,6 +765,9 @@ export class ReservationsPage implements OnInit, OnDestroy {
       if (success) {
         this.isOnline = isOnline;
         
+        // ✅ NOUVEAU : Mettre à jour le statut OneSignal (appel simple)
+        this.oneSignalService.updateConducteurOnlineStatus(isOnline);
+        
         // Gérer le tracking GPS selon le statut
         if (isOnline) {
           // Passer en ligne : démarrer le tracking GPS
@@ -1052,6 +1064,28 @@ export class ReservationsPage implements OnInit, OnDestroy {
       console.log('✅ Réservations actualisées au déverrouillage');
     } catch (error) {
       console.error('❌ Erreur actualisation réservations déverrouillage:', error);
+    }
+  }
+
+  // ✅ NOUVEAU : Callback simple pour actualisation déclenché par OneSignal
+  async refreshReservationsFromNotification(): Promise<void> {
+    console.log('🔔 OneSignal : Actualisation réservations demandée');
+    
+    try {
+      // Actualisation silencieuse (pas de loader)
+      const originalIsLoading = this.isLoading;
+      this.isLoading = false;
+      
+      await this.loadReservations();
+      
+      this.isLoading = originalIsLoading;
+      
+      // Afficher toast informatif
+      this.presentToast('🔔 Nouvelles réservations disponibles', 'success');
+      
+      console.log('✅ Actualisation OneSignal terminée');
+    } catch (error) {
+      console.error('❌ Erreur actualisation OneSignal:', error);
     }
   }
 
