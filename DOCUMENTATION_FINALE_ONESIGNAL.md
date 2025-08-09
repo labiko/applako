@@ -60,7 +60,7 @@ Le système de notifications push OneSignal est **entièrement fonctionnel** ave
 
 ### **🎯 Méthodes Principales Utilisées**
 
-#### **1. ProcessPendingReservationNotifications() - MÉTHODE POLLING PRINCIPALE**
+#### **1. ProcessPendingReservationNotifications() - MÉTHODE POLLING NOUVELLES RÉSERVATIONS**
 ```csharp
 public async Task<ActionResult> ProcessPendingReservationNotifications()
 {
@@ -77,7 +77,23 @@ public async Task<ActionResult> ProcessPendingReservationNotifications()
 }
 ```
 
-#### **2. SendNewReservationNotificationToConducteurs() - ENVOI ONESIGNAL**
+#### **2. ProcessCancelledReservationNotifications() - MÉTHODE POLLING ANNULATIONS** ⭐ NOUVEAU
+```csharp
+public async Task<ActionResult> ProcessCancelledReservationNotifications()
+{
+    // URL d'appel: /Taxi/ProcessCancelledReservationNotifications
+    // Fréquence recommandée: Toutes les 2-3 minutes
+    // Fonction: Traite automatiquement toutes les réservations annulées
+    
+    // 1. Récupère réservations: statut='canceled' AND conducteur_id IS NOT NULL AND cancellation_notified_at IS NULL
+    // 2. Pour chaque annulation:
+    //    - Envoie notification OneSignal au conducteur assigné
+    //    - Marque cancellation_notified_at = NOW()
+    // 3. Retourne JSON avec logs détaillés
+}
+```
+
+#### **3. SendNewReservationNotificationToConducteurs() - ENVOI ONESIGNAL NOUVELLES**
 ```csharp
 public bool SendNewReservationNotificationToConducteurs(string ConducteurId, string Message)
 {
@@ -102,7 +118,45 @@ public bool SendNewReservationNotificationToConducteurs(string ConducteurId, str
 }
 ```
 
-#### **3. ProcessNewReservationNotification() - COMPATIBILITÉ TRIGGER (DEPRECATED)**
+#### **4. SendCancellationNotificationToConducteur() - ENVOI ONESIGNAL ANNULATIONS** ⭐ NOUVEAU
+```csharp
+public bool SendCancellationNotificationToConducteur(string conducteurId, string message, string reservationId)
+{
+    // Format OneSignal: External User IDs (conducteur_${ID})
+    // Couleurs spéciales: Rouge pour annulation (FFFF0000)
+    
+    var obj = new
+    {
+        app_id = ConfigurationManager.AppSettings["onesignalAppId"],
+        contents = new { en = message, fr = message },
+        headings = new { en = "Course Annulée", fr = "Course Annulée" },
+        include_external_user_ids = new string[] { "conducteur_" + conducteurId },
+        priority = 10,
+        android_accent_color = "FFFF0000",  // Rouge pour annulation
+        android_led_color = "FFFF0000",     // LED rouge
+        data = new
+        {
+            type = "reservation_cancelled",
+            reservation_id = reservationId,
+            conducteur_id = conducteurId,
+            timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+        }
+    };
+    
+    // Envoi HTTP POST vers OneSignal API
+}
+```
+
+#### **5. TestCancellationNotification() - TEST ANNULATION** ⭐ NOUVEAU
+```csharp
+public JsonResult TestCancellationNotification(string conducteurId = "69e0cde9-14a0-4dde-86c1-1fe9a306f2fa")
+{
+    // URL de test: /Taxi/TestCancellationNotification?conducteurId=xxx
+    // Fonction: Test notification d'annulation directe
+}
+```
+
+#### **6. ProcessNewReservationNotification() - COMPATIBILITÉ TRIGGER (DEPRECATED)**
 ```csharp
 public object ProcessNewReservationNotification(HttpRequestBase request, string conducteurId = null, string message = null)
 {
@@ -115,8 +169,10 @@ public object ProcessNewReservationNotification(HttpRequestBase request, string 
 
 | URL | Fonction | Usage |
 |-----|----------|-------|
-| `/Taxi/ProcessPendingReservationNotifications` | **Polling principal** | **Production - Appel automatique** |
-| `/Taxi/SendNewReservationNotificationToConducteurs?ConducteurId=xxx&Message=yyy` | Test direct | Debug/Test individuel |
+| `/Taxi/ProcessPendingReservationNotifications` | **Polling nouvelles réservations** | **Production - Appel automatique** |
+| `/Taxi/ProcessCancelledReservationNotifications` | **Polling annulations** ⭐ **NOUVEAU** | **Production - Appel automatique** |
+| `/Taxi/SendNewReservationNotificationToConducteurs?ConducteurId=xxx&Message=yyy` | Test direct nouvelles | Debug/Test individuel |
+| `/Taxi/TestCancellationNotification?conducteurId=xxx` | **Test direct annulation** ⭐ **NOUVEAU** | **Debug/Test annulation** |
 
 ### **⚙️ Configuration web.config Requise**
 ```xml
@@ -212,16 +268,25 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-### **🗂️ Colonne Database Ajoutée**
+### **🗂️ Colonnes Database Ajoutées**
 ```sql
--- COLONNE POUR TRACKING NOTIFICATIONS (ÉVITE DOUBLONS)
+-- COLONNE POUR TRACKING NOTIFICATIONS NOUVELLES RÉSERVATIONS (ÉVITE DOUBLONS)
 ALTER TABLE reservations 
 ADD COLUMN notified_at TIMESTAMPTZ NULL;
 
--- Index pour performance
+-- COLONNE POUR TRACKING NOTIFICATIONS ANNULATIONS ⭐ NOUVEAU
+ALTER TABLE reservations 
+ADD COLUMN IF NOT EXISTS cancellation_notified_at TIMESTAMPTZ NULL;
+
+-- Index pour performance nouvelles réservations
 CREATE INDEX idx_reservations_pending_notified 
 ON reservations(statut, notified_at) 
 WHERE statut = 'pending';
+
+-- Index pour performance annulations ⭐ NOUVEAU
+CREATE INDEX IF NOT EXISTS idx_reservations_cancelled_notified 
+ON reservations(statut, cancellation_notified_at) 
+WHERE statut = 'canceled';
 ```
 
 ### **🚫 Trigger PostgreSQL - DÉSACTIVÉ (Remplacé par Polling)**
@@ -242,8 +307,10 @@ WHERE statut = 'pending';
 ### **🌐 Tests Backend**
 | URL | Description | Usage |
 |-----|-------------|--------|
-| `/Taxi/ProcessPendingReservationNotifications` | **Polling automatique** | **Production (à automatiser)** |
-| `/Taxi/SendNewReservationNotificationToConducteurs?ConducteurId=69e0cde9-14a0-4dde-86c1-1fe9a306f2fa&Message=TEST` | Test notification directe | Debug individuel |
+| `/Taxi/ProcessPendingReservationNotifications` | **Polling nouvelles réservations** | **Production (à automatiser)** |
+| `/Taxi/ProcessCancelledReservationNotifications` | **Polling annulations** ⭐ **NOUVEAU** | **Production (à automatiser)** |
+| `/Taxi/SendNewReservationNotificationToConducteurs?ConducteurId=69e0cde9-14a0-4dde-86c1-1fe9a306f2fa&Message=TEST` | Test notification directe nouvelles | Debug individuel |
+| `/Taxi/TestCancellationNotification?conducteurId=69e0cde9-14a0-4dde-86c1-1fe9a306f2fa` | **Test notification annulation** ⭐ **NOUVEAU** | **Debug annulation** |
 
 ### **📱 Test Insertion Réservation (RECOMMANDÉ)**
 ```sql
@@ -319,9 +386,11 @@ curl -X POST https://onesignal.com/api/v1/notifications \
 ### **🔄 Automatisation Recommandée**
 **Configurez un planificateur pour exécuter :**
 ```
-URL: /Taxi/ProcessPendingReservationNotifications
-Fréquence: Toutes les 2-3 minutes
+URL 1: /Taxi/ProcessPendingReservationNotifications (Nouvelles réservations)
+URL 2: /Taxi/ProcessCancelledReservationNotifications (Annulations) ⭐ NOUVEAU
+Fréquence: Toutes les 2-3 minutes chacune
 Méthode: GET/POST
+Décalage: 30 secondes entre les deux pour éviter surcharge
 ```
 
 **Options de planification :**
@@ -340,5 +409,12 @@ Méthode: GET/POST
 
 ## 🎉 **SYSTÈME ONESIGNAL ENTIÈREMENT OPÉRATIONNEL !**
 
-**Architecture Polling + External User IDs + Navigation Automatique**  
-**✅ Prêt pour production avec automatisation planning recommandée**
+**Architecture Polling + External User IDs + Navigation Automatique + Notifications Annulation**  
+**✅ Prêt pour production avec automatisation dual polling recommandée**
+
+### **🚀 NOUVELLES FONCTIONNALITÉS AJOUTÉES :**
+- ✅ **Système d'annulation** : Notifications automatiques au conducteur assigné
+- ✅ **Double polling** : Nouvelles réservations + Annulations 
+- ✅ **Tracking séparé** : Colonnes `notified_at` et `cancellation_notified_at`
+- ✅ **Navigation différenciée** : `new_reservation` → Réservations, `reservation_cancelled` → Historique
+- ✅ **Design spécial** : Notifications rouges pour annulations

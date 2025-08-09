@@ -6,6 +6,15 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     androidScheme: 'https'
+  },
+  android: {
+    // Configuration pour sons personnalisés OneSignal
+    resources: [
+      {
+        src: 'src/assets/sounds/claxon.wav',
+        target: 'app/src/main/res/raw/claxon.wav'
+      }
+    ]
   }
 };
 

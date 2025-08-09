@@ -32,7 +32,9 @@
       "Bash(ionic capacitor run:*)",
       "Bash(npx capacitor run android)",
       "Bash(powershell:*)",
-      "WebFetch(domain:documentation.onesignal.com)"
+      "WebFetch(domain:documentation.onesignal.com)",
+      "WebFetch(domain:stackoverflow.com)",
+      "WebFetch(domain:forum.ionicframework.com)"
     ],
     "deny": []
   }

@@ -24,6 +24,37 @@ export class SupabaseService {
     return this.supabase;
   }
 
+  // Récupérer conducteur connecté directement du localStorage (évite dépendance circulaire)
+  private getCurrentConducteurFromStorage(): Conducteur | null {
+    try {
+      // D'abord essayer localStorage currentConducteur
+      if (typeof Storage !== 'undefined') {
+        const stored = localStorage.getItem('currentConducteur');
+        if (stored) {
+          return JSON.parse(stored);
+        }
+        
+        // Sinon essayer conducteur (sans current)
+        const storedAlt = localStorage.getItem('conducteur');
+        if (storedAlt) {
+          return JSON.parse(storedAlt);
+        }
+      }
+      
+      // Si pas dans localStorage, utiliser AuthService directement
+      // Importer depuis auth.service.ts qui a la méthode getCurrentConducteur()
+      const authConducteur = (window as any).__currentConducteur;
+      if (authConducteur) {
+        return authConducteur;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Erreur lecture conducteur localStorage:', error);
+      return null;
+    }
+  }
+
   // Authenticate conducteur
   async authenticateConducteur(telephone: string, password: string): Promise<Conducteur | null> {
     const { data, error } = await this.supabase
@@ -127,23 +158,61 @@ export class SupabaseService {
     }
   }
 
-  // Get pending reservations for a specific conducteur
+  // Get pending reservations within 5km of current conducteur
   async getPendingReservations(conducteurId?: string) {
-    let query = this.supabase
+    try {
+      // Si conducteurId fourni, utiliser l'ancienne méthode (pour historique assigné)
+      if (conducteurId) {
+        let query = this.supabase
+          .from('reservations')
+          .select('*')
+          .eq('statut', 'pending')
+          .eq('conducteur_id', conducteurId);
+
+        const { data, error } = await query.order('created_at', { ascending: false });
+        if (error) throw error;
+        return data || [];
+      }
+
+      // NOUVEAU: Filtrage 5km pour conducteur connecté
+      const currentConducteur = this.getCurrentConducteurFromStorage();
+      if (!currentConducteur?.id) {
+        console.warn('Aucun conducteur connecté pour filtrage 5km');
+        return [];
+      }
+
+      // Appel fonction PostgreSQL avec filtrage 5km
+      const { data, error } = await this.supabase
+        .rpc('get_reservations_nearby_conducteur', {
+          p_conducteur_id: currentConducteur.id,
+          p_max_distance_km: 5
+        });
+
+      if (error) {
+        console.error('Erreur fonction filtrage 5km:', error);
+        // Fallback vers ancienne méthode si fonction échoue
+        return this.getPendingReservationsLegacy();
+      }
+
+      return data || [];
+
+    } catch (error) {
+      console.error('Erreur getPendingReservations:', error);
+      return [];
+    }
+  }
+
+  // Méthode fallback (ancienne logique)
+  private async getPendingReservationsLegacy() {
+    const { data, error } = await this.supabase
       .from('reservations')
       .select('*')
-      .eq('statut', 'pending');
-
-    if (conducteurId) {
-      query = query.eq('conducteur_id', conducteurId);
-    } else {
-      query = query.is('conducteur_id', null);
-    }
-
-    const { data, error } = await query.order('created_at', { ascending: false });
+      .eq('statut', 'pending')
+      .is('conducteur_id', null)
+      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching reservations:', error);
+      console.error('Error fetching reservations (legacy):', error);
       return [];
     }
 

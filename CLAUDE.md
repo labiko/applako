@@ -69,19 +69,35 @@ The application uses a custom color scheme:
   - `supabaseKey`: Your Supabase anon key
 
 ### Database Requirements
-The application expects a `reservations` table in Supabase with these columns:
-- `id`: Primary key (UUID)
-- `customer_name`: Text
-- `customer_phone`: Text
-- `pickup_location`: Text
-- `destination`: Text
-- `pickup_date`: Date
-- `pickup_time`: Time
-- `status`: Text ('pending', 'accepted', 'refused', 'completed')
-- `price`: Numeric (optional)
-- `notes`: Text (optional)
-- `created_at`: Timestamp
-- `updated_at`: Timestamp
+The application expects a `reservations` table in Supabase with these columns (structure réelle vérifiée):
+- `id`: UUID (Primary key, auto-generated avec uuid_generate_v4())
+- `client_phone`: Text NOT NULL (pas customer_phone)
+- `vehicle_type`: Text ('moto' ou 'voiture')
+- `position_depart`: Text (format WKT pour position GPS)
+- `position_arrivee`: Geography/Geometry (point GPS arrivée)
+- `depart_nom`: Text (nom du lieu de départ)
+- `destination_nom`: Varchar (nom du lieu destination) 
+- `statut`: Text ('pending', 'confirmee', 'accepted', 'refused', 'completed', 'canceled')
+- `conducteur_id`: UUID (FK vers conducteurs)
+- `distance_km`: Numeric
+- `prix_total`: Numeric
+- `date_reservation`: Date
+- `heure_reservation`: Integer (0-23)
+- `minute_reservation`: Integer (0-59)
+- `created_at`: Timestamp (auto)
+- `updated_at`: Timestamp (auto)
+
+**COLONNES QUI N'EXISTENT PAS** (erreurs courantes):
+- ❌ `customer_name` → utiliser `client_phone`
+- ❌ `customer_phone` → utiliser `client_phone`
+- ❌ `pickup_location` → utiliser `depart_nom`
+- ❌ `destination` → utiliser `destination_nom`
+- ❌ `pickup_date` → utiliser `date_reservation`
+- ❌ `pickup_time` → utiliser `heure_reservation` + `minute_reservation`
+- ❌ `price` → utiliser `prix_total`
+- ❌ `notes` → utiliser `commentaire`
+- ❌ `status` → utiliser `statut`
+- ❌ `notified_at` → n'existe pas, ajouter si nécessaire
 
 ### Database Structure Reference
 For complete database structure analysis and schema details, refer to:

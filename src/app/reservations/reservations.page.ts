@@ -299,7 +299,6 @@ export class ReservationsPage implements OnInit, OnDestroy {
     try {
       // Get reservations that are pending and not assigned to any driver
       this.reservations = await this.supabaseService.getPendingReservations();
-      console.log("Réservations chargées:", this.reservations);
       
       // Calculate duration for each reservation and update conducteur position display
       await this.updateConducteurPosition();
@@ -551,7 +550,11 @@ export class ReservationsPage implements OnInit, OnDestroy {
   // Extraire coordonnées depuis format POINT(lng lat) ou WKB
   private extractCoordinates(pointString: string): {lat: number, lng: number} | null {
     try {
-      console.log('Extracting coordinates from:', pointString);
+      
+      // Vérifier si pointString est undefined ou null
+      if (!pointString) {
+        return null;
+      }
       
       // Format texte: POINT(2.5847236 48.6273519) - utilisé par les réservations
       if (pointString.startsWith('POINT(')) {
