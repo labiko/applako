@@ -4,46 +4,144 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #FFFEE9 0%, #F5F5DC 100%);
+  background: linear-gradient(135deg, #FFFEE9 0%, #F5F5DC 50%, #C1F11D 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 4s ease-in-out infinite;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   opacity: 1;
-  transition: opacity 0.5s ease-out;
+  transition: opacity 0.8s ease-out;
+  overflow: hidden;
+  
+  /* Particules flottantes */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(193, 241, 29, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: floatingParticles 15s linear infinite;
+    z-index: 1;
+  }
+  
+  /* Effet de lueur */
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(193, 241, 29, 0.3) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: pulseGlow 3s ease-in-out infinite;
+    z-index: 2;
+  }
   
   &.fade-out {
     opacity: 0;
     pointer-events: none;
     visibility: hidden;
     z-index: -1;
+    transform: scale(1.1);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
   }
 }
 
 .splash-content {
   text-align: center;
-  animation: slideUp 0.8s ease-out;
+  animation: slideUp 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: 10;
+  position: relative;
 }
 
 .logo-container {
   margin-bottom: 1rem;
+  position: relative;
+  
+  /* Cercles décoratifs autour du logo */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    border: 2px solid rgba(193, 241, 29, 0.3);
+    border-radius: 30px;
+    animation: rotateRing 8s linear infinite;
+    z-index: -1;
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: -15px;
+    right: -15px;
+    bottom: -15px;
+    border: 1px solid rgba(193, 241, 29, 0.2);
+    border-radius: 25px;
+    animation: rotateRing 6s linear infinite reverse;
+    z-index: -1;
+  }
   
   .logo {
     width: 200px;
     height: 200px;
     border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    animation: logoAnimate 2s ease-in-out infinite;
+    box-shadow: 
+      0 20px 40px rgba(193, 241, 29, 0.3),
+      0 0 30px rgba(193, 241, 29, 0.2),
+      inset 0 0 20px rgba(255, 255, 255, 0.1);
+    animation: logoFloat 3s ease-in-out infinite;
+    filter: brightness(1.1) contrast(1.05);
+    transition: transform 0.3s ease;
+    
+    /* Effet de survol */
+    &:hover {
+      transform: scale(1.05) rotate(5deg);
+    }
   }
 }
 
 .app-title {
   font-size: 2.5rem;
   font-weight: 900;
-  color: #151515;
+  background: linear-gradient(45deg, #151515, #C1F11D, #151515);
+  background-size: 300% 300%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmerText 3s ease-in-out infinite, titleBounce 2s ease-in-out infinite;
   margin: 1rem 0 0.5rem 0;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-  animation: titlePulse 2s ease-in-out infinite;
+  text-shadow: 0 0 20px rgba(193, 241, 29, 0.5);
+  position: relative;
+  
+  /* Effet de reflet */
+  &::after {
+    content: 'LOKO TAXI';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: linear-gradient(45deg, #151515, #C1F11D, #151515);
+    background-size: 300% 300%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    opacity: 0.3;
+    transform: scaleY(-1) translateY(10px);
+    mask: linear-gradient(transparent, transparent 30%, black 100%);
+    -webkit-mask: linear-gradient(transparent, transparent 30%, black 100%);
+    animation: shimmerText 3s ease-in-out infinite;
+  }
 }
 
 .app-subtitle {
@@ -51,84 +149,272 @@
   font-weight: 600;
   color: #797979;
   margin: 0 0 2rem 0;
-  opacity: 0.8;
+  opacity: 0;
+  animation: fadeInUp 1s ease-out 0.5s forwards, subtitleGlow 2s ease-in-out 1s infinite;
+  text-transform: uppercase;
+  letter-spacing: 3px;
 }
 
 .loading-container {
+  position: relative;
+  
   .loading-dots {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     margin-bottom: 1rem;
     
     .dot {
-      width: 12px;
-      height: 12px;
-      background: var(--ion-color-dark);
+      width: 16px;
+      height: 16px;
+      background: linear-gradient(45deg, #C1F11D, #A8E6CF);
       border-radius: 50%;
-      animation: dotPulse 1.4s ease-in-out infinite both;
+      position: relative;
+      animation: dotWave 2s ease-in-out infinite;
+      box-shadow: 
+        0 0 10px rgba(193, 241, 29, 0.6),
+        inset 0 0 5px rgba(255, 255, 255, 0.3);
       
-      &:nth-child(1) { animation-delay: -0.32s; }
-      &:nth-child(2) { animation-delay: -0.16s; }
-      &:nth-child(3) { animation-delay: 0s; }
+      /* Effet de traînée */
+      &::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: inherit;
+        opacity: 0.3;
+        animation: dotTrail 2s ease-in-out infinite;
+      }
+      
+      &:nth-child(1) { 
+        animation-delay: -0.6s;
+        &::after { animation-delay: -0.6s; }
+      }
+      &:nth-child(2) { 
+        animation-delay: -0.3s;
+        &::after { animation-delay: -0.3s; }
+      }
+      &:nth-child(3) { 
+        animation-delay: 0s;
+        &::after { animation-delay: 0s; }
+      }
     }
   }
   
   .loading-text {
-    color: var(--ion-color-dark);
+    color: #151515;
     font-size: 1.1rem;
-    font-weight: 500;
+    font-weight: 600;
     margin: 0;
-    opacity: 0.8;
+    opacity: 0;
+    animation: fadeInUp 1s ease-out 1s forwards, textPulse 2s ease-in-out 2s infinite;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(193, 241, 29, 0.3);
   }
 }
 
-/* Animations */
-@keyframes slideUp {
-  from {
-    transform: translateY(50px);
-    opacity: 0;
+/* Animations modernes avancées */
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes floatingParticles {
+  0% { transform: translateX(0) translateY(0) rotate(0deg); }
+  33% { transform: translateX(30px) translateY(-30px) rotate(120deg); }
+  66% { transform: translateX(-20px) translateY(20px) rotate(240deg); }
+  100% { transform: translateX(0) translateY(0) rotate(360deg); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { 
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.3;
   }
-  to {
+  50% { 
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.6;
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(100px) scale(0.8);
+    opacity: 0;
+    filter: blur(10px);
+  }
+  50% {
+    transform: translateY(20px) scale(1.05);
+    opacity: 0.8;
+    filter: blur(2px);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes rotateRing {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(-2deg) scale(1);
+  }
+  25% {
+    transform: translateY(-15px) rotate(1deg) scale(1.02);
+  }
+  50% {
+    transform: translateY(-8px) rotate(2deg) scale(1.05);
+  }
+  75% {
+    transform: translateY(-12px) rotate(-1deg) scale(1.02);
+  }
+}
+
+@keyframes shimmerText {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes titleBounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.03);
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    transform: translateY(30px);
+    opacity: 0;
+    filter: blur(5px);
+  }
+  100% {
     transform: translateY(0);
     opacity: 1;
+    filter: blur(0);
   }
 }
 
-@keyframes logoAnimate {
+@keyframes subtitleGlow {
   0%, 100% {
-    transform: scale(1) rotate(0deg);
+    text-shadow: 0 0 5px rgba(193, 241, 29, 0.3);
   }
   50% {
-    transform: scale(1.05) rotate(2deg);
+    text-shadow: 0 0 15px rgba(193, 241, 29, 0.6);
   }
 }
 
-@keyframes dotPulse {
-  0%, 80%, 100% {
-    transform: scale(0.8);
-    opacity: 0.5;
-  }
-  40% {
-    transform: scale(1);
+@keyframes dotWave {
+  0%, 100% {
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
+  50% {
+    transform: translateY(-20px) scale(1.3);
+    opacity: 0.7;
+  }
 }
 
-@keyframes titlePulse {
+@keyframes dotTrail {
+  0% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes textPulse {
   0%, 100% {
+    opacity: 0.8;
     transform: scale(1);
   }
   50% {
-    transform: scale(1.02);
+    opacity: 1;
+    transform: scale(1.05);
   }
 }
 
-/* Responsive */
+/* Responsive avec animations adaptées */
 @media (max-width: 768px) {
-  .logo-container .logo {
-    width: 120px;
-    height: 120px;
+  .logo-container {
+    .logo {
+      width: 150px;
+      height: 150px;
+    }
+    
+    &::before {
+      top: -15px;
+      left: -15px;
+      right: -15px;
+      bottom: -15px;
+    }
+    
+    &::after {
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+    }
+  }
+  
+  .app-title {
+    font-size: 2rem;
+    
+    &::after {
+      font-size: 2rem;
+    }
+  }
+  
+  .app-subtitle {
+    font-size: 1rem;
+    letter-spacing: 2px;
+  }
+  
+  .loading-container .loading-text {
+    font-size: 0.9rem;
+  }
+  
+  /* Réduire les particules sur mobile */
+  .splash-screen::before {
+    background-size: 30px 30px;
+  }
+}
+
+/* Amélioration des performances */
+@media (prefers-reduced-motion: reduce) {
+  .splash-screen,
+  .splash-content,
+  .logo-container .logo,
+  .app-title,
+  .app-subtitle,
+  .loading-container .dot,
+  .loading-container .loading-text {
+    animation-duration: 0.5s;
+    animation-iteration-count: 1;
+  }
+  
+  .splash-screen::before,
+  .splash-screen::after,
+  .logo-container::before,
+  .logo-container::after {
+    animation: none;
   }
 }
