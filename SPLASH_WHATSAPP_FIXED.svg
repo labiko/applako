@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="2732" height="2732" viewBox="0 0 2732 2732" xmlns="http://www.w3.org/2000/svg">
+  
+  <!-- Fond WhatsApp -->
+  <rect width="2732" height="2732" fill="#075E54"/>
+  
+  <!-- Zone de chat -->
+  <rect x="200" y="300" width="2332" height="1800" fill="#E5DDD5" rx="20"/>
+  
+  <!-- Header chat -->
+  <rect x="200" y="300" width="2332" height="120" fill="#075E54" rx="20"/>
+  
+  <!-- Avatar bot -->
+  <circle cx="320" cy="360" r="40" fill="#FFFFFF"/>
+  <text x="320" y="375" font-size="50" text-anchor="middle">🤖</text>
+  
+  <!-- Nom du bot -->
+  <text x="400" y="350" font-family="Arial, sans-serif" font-size="40" font-weight="bold" fill="#FFFFFF">LAKO Bot</text>
+  <text x="400" y="380" font-family="Arial, sans-serif" font-size="28" fill="#B3E5C1">En ligne</text>
+  
+  <!-- Message 1 : Client -->
+  <rect x="1800" y="500" width="600" height="100" rx="15" fill="#FFFFFF"/>
+  <path d="M2400 520 L2420 520 L2400 500" fill="#FFFFFF"/>
+  <text x="1820" y="530" font-family="Arial, sans-serif" font-size="30" fill="#333">Bonjour, taxi pour aéroport</text>
+  <text x="1820" y="565" font-family="Arial, sans-serif" font-size="30" fill="#333">s'il vous plaît 🛫</text>
+  
+  <!-- Message 2 : Bot -->
+  <rect x="300" y="650" width="650" height="120" rx="15" fill="#C1F11D"/>
+  <path d="M300 670 L280 670 L300 650" fill="#C1F11D"/>
+  <text x="320" y="680" font-family="Arial, sans-serif" font-size="30" fill="#151515">Bonjour! 👋 LAKO à votre service.</text>
+  <text x="320" y="715" font-family="Arial, sans-serif" font-size="30" fill="#151515">Je trouve votre chauffeur... 🚗</text>
+  <text x="320" y="750" font-family="Arial, sans-serif" font-size="30" fill="#151515">Veuillez patienter un moment.</text>
+  
+  <!-- Message 3 : Client -->
+  <rect x="1900" y="820" width="300" height="60" rx="15" fill="#FFFFFF"/>
+  <path d="M2200 840 L2220 840 L2200 820" fill="#FFFFFF"/>
+  <text x="1920" y="855" font-family="Arial, sans-serif" font-size="30" fill="#333">D'accord, merci!</text>
+  
+  <!-- Message 4 : Bot confirmation -->
+  <rect x="300" y="920" width="700" height="160" rx="15" fill="#C1F11D"/>
+  <path d="M300 940 L280 940 L300 920" fill="#C1F11D"/>
+  <text x="320" y="950" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#151515">✅ Chauffeur trouvé!</text>
+  <text x="320" y="985" font-family="Arial, sans-serif" font-size="28" fill="#151515">🚗 Toyota Corolla - Jaune</text>
+  <text x="320" y="1020" font-family="Arial, sans-serif" font-size="28" fill="#151515">⏱️ Arrivée dans 5 minutes</text>
+  <text x="320" y="1055" font-family="Arial, sans-serif" font-size="28" fill="#151515">📞 Conducteur: Mamadou S.</text>
+  
+  <!-- Message en cours de frappe -->
+  <rect x="300" y="1130" width="150" height="60" rx="15" fill="#C1F11D" opacity="0.8"/>
+  <path d="M300 1150 L280 1150 L300 1130" fill="#C1F11D" opacity="0.8"/>
+  <circle cx="340" cy="1160" r="6" fill="#797979">
+    <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="365" cy="1160" r="6" fill="#797979">
+    <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" begin="0.3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="390" cy="1160" r="6" fill="#797979">
+    <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" begin="0.6s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Logo WhatsApp central -->
+  <circle cx="1366" cy="1500" r="80" fill="#25D366"/>
+  <path d="M1326 1460 Q1316 1450 1326 1440 Q1336 1440 1346 1450 L1366 1470 Q1376 1480 1366 1490 L1356 1500 Q1366 1510 1376 1500 L1386 1490 Q1396 1480 1406 1490 L1386 1510 Q1376 1520 1366 1510 L1346 1490 Q1336 1480 1346 1470 L1356 1460 Q1346 1450 1356 1440 L1376 1420 Q1386 1410 1376 1420 Z" 
+        fill="#FFFFFF"/>
+  
+  <!-- Texte LAKO -->
+  <text x="1366" y="1700" font-family="Arial Black, sans-serif" font-size="200" font-weight="900" text-anchor="middle" fill="#FFFFFF">LAKO</text>
+  
+  <!-- Slogan -->
+  <text x="1366" y="1800" font-family="Arial, sans-serif" font-size="60" font-weight="600" text-anchor="middle" fill="#FFFFFF">Envoyez un message, Votre chauffeur arrive</text>
+  
+  <!-- Icônes véhicules -->
+  <g transform="translate(1200, 1900)">
+    <!-- Voiture -->
+    <rect x="0" y="0" width="50" height="25" rx="5" fill="#F1C40F"/>
+    <circle cx="8" cy="25" r="4" fill="#151515"/>
+    <circle cx="42" cy="25" r="4" fill="#151515"/>
+  </g>
+  
+  <g transform="translate(1480, 1900)">
+    <!-- Moto -->
+    <ellipse cx="15" cy="8" rx="20" ry="8" fill="#C1F11D"/>
+    <circle cx="4" cy="16" r="3" fill="#151515"/>
+    <circle cx="26" cy="16" r="3" fill="#151515"/>
+  </g>
+  
+  <!-- Footer -->
+  <text x="1366" y="2000" font-family="Arial, sans-serif" font-size="40" text-anchor="middle" fill="#FFFFFF" opacity="0.8">💬 Disponible 24/7 sur WhatsApp</text>
+  
+  <!-- Version -->
+  <text x="1366" y="2100" font-family="Arial, sans-serif" font-size="30" text-anchor="middle" fill="#FFFFFF" opacity="0.5">© 2025 Lako Services</text>
+
+</svg>

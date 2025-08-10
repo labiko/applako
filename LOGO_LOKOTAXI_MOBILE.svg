@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  
+  <defs>
+    <!-- Gradient Lako Green -->
+    <linearGradient id="lakoGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4FF2E"/>
+      <stop offset="50%" style="stop-color:#C1F11D"/>
+      <stop offset="100%" style="stop-color:#A8D814"/>
+    </linearGradient>
+    
+    <!-- Gradient métallique -->
+    <linearGradient id="metalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9A9A9A"/>
+      <stop offset="50%" style="stop-color:#797979"/>
+      <stop offset="100%" style="stop-color:#5A5A5A"/>
+    </linearGradient>
+    
+    <!-- Ombre portée -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="0" dy="6" result="offsetblur"/>
+      <feFlood flood-color="#000000" flood-opacity="0.3"/>
+      <feComposite in2="offsetblur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Effet glow -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Fond du logo -->
+  <circle cx="256" cy="256" r="256" fill="#FFFEE9"/>
+  
+  <!-- Cercle principal agrandi -->
+  <circle cx="256" cy="256" r="240" fill="url(#lakoGreen)" filter="url(#shadow)"/>
+  <circle cx="256" cy="256" r="230" fill="none" stroke="#A8D814" stroke-width="4"/>
+  
+  <!-- Smartphone central AGRANDI -->
+  <g transform="translate(256, 200)">
+    <!-- Corps du téléphone -->
+    <rect x="-80" y="-120" width="160" height="240" rx="20" fill="url(#metalGradient)" filter="url(#shadow)"/>
+    <rect x="-70" y="-110" width="140" height="220" rx="15" fill="#151515"/>
+    <rect x="-60" y="-90" width="120" height="180" rx="8" fill="#FFFFFF"/>
+    
+    <!-- Haut-parleur -->
+    <rect x="-30" y="-105" width="60" height="6" rx="3" fill="#797979"/>
+    
+    <!-- Bouton home -->
+    <circle cx="0" cy="110" r="12" fill="#797979"/>
+  </g>
+  
+  <!-- Voiture AGRANDIE -->
+  <g transform="translate(140, 320)">
+    <!-- Corps voiture -->
+    <rect x="-60" y="-25" width="120" height="50" rx="12" fill="url(#lakoGreen)" filter="url(#shadow)"/>
+    <!-- Toit -->
+    <path d="M-40 -25 Q-30 -50 -15 -50 L15 -50 Q30 -50 40 -25" fill="#A8D814"/>
+    <!-- Fenêtres -->
+    <path d="M-35 -25 Q-25 -40 -12 -40 L12 -40 Q25 -40 35 -25" fill="#87CEEB" opacity="0.7"/>
+    <!-- Roues -->
+    <circle cx="-35" cy="25" r="12" fill="#151515"/>
+    <circle cx="35" cy="25" r="12" fill="#151515"/>
+    <!-- Jantes -->
+    <circle cx="-35" cy="25" r="8" fill="#797979"/>
+    <circle cx="35" cy="25" r="8" fill="#797979"/>
+    <!-- Phares -->
+    <ellipse cx="-60" cy="0" rx="6" ry="4" fill="#FFF3CD"/>
+    <ellipse cx="60" cy="0" rx="6" ry="4" fill="#FFF3CD"/>
+  </g>
+  
+  <!-- Moto AGRANDIE -->
+  <g transform="translate(372, 320)">
+    <!-- Corps moto -->
+    <ellipse cx="0" cy="-8" rx="40" ry="16" fill="url(#lakoGreen)" filter="url(#shadow)"/>
+    <!-- Siège -->
+    <ellipse cx="8" cy="-12" rx="25" ry="6" fill="#151515"/>
+    <!-- Roue avant -->
+    <circle cx="-28" cy="12" r="10" fill="#151515"/>
+    <circle cx="-28" cy="12" r="6" fill="#797979"/>
+    <!-- Roue arrière -->
+    <circle cx="28" cy="12" r="10" fill="#151515"/>
+    <circle cx="28" cy="12" r="6" fill="#797979"/>
+    <!-- Guidon -->
+    <path d="M-20 -18 L-25 -25 M-15 -18 L-20 -25" stroke="#151515" stroke-width="3"/>
+    <!-- Phare -->
+    <circle cx="-30" cy="-8" r="4" fill="#FFF3CD"/>
+  </g>
+  
+  <!-- Bulle d'appel AGRANDIE -->
+  <g transform="translate(256, 120)">
+    <circle cx="0" cy="0" r="50" fill="url(#lakoGreen)" filter="url(#glow)"/>
+    <!-- Icône téléphone -->
+    <path d="M-15 -20 Q-18 -23 -15 -26 Q-12 -26 -9 -23 L0 -14 Q3 -11 0 -8 L-3 -5 Q0 -2 3 -5 L6 -8 Q9 -5 6 -2 L3 1 Q6 4 9 1 L12 -2 Q15 1 12 4 Q9 7 6 4 L0 -2 Q-3 -5 -6 -2 Q-9 1 -12 -2 Q-15 -5 -12 -8 L-6 -14 Q-3 -17 -6 -20 L-9 -23 Q-12 -26 -12 -20 Z" 
+          fill="#FFFFFF" transform="scale(1.2)"/>
+    <!-- Queue bulle -->
+    <path d="M-35 35 L-40 40 L-30 38" fill="url(#lakoGreen)"/>
+  </g>
+  
+  <!-- WhatsApp AGRANDI -->
+  <g transform="translate(360, 160)">
+    <circle cx="0" cy="0" r="30" fill="#25D366"/>
+    <path d="M-15 -15 Q-18 -18 -15 -22 Q-12 -22 -7 -18 L0 -11 Q3 -8 0 -5 L-3 -2 Q0 1 3 -2 L7 -5 Q10 -2 7 1 Q3 5 0 1 L-7 -5 Q-10 -8 -7 -11 L-3 -15 Q0 -18 -3 -22 L-10 -25 Q-15 -30 -15 -15 Z" 
+          fill="#FFFFFF" transform="scale(0.8)"/>
+  </g>
+  
+  <!-- Texte LOKO TAXI AGRANDI -->
+  <text x="256" y="440" font-family="Arial Black, sans-serif" font-size="38" font-weight="900" text-anchor="middle" fill="#151515">
+    LOKO TAXI
+  </text>
+  
+</svg>

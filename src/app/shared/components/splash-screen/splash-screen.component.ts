@@ -14,7 +14,7 @@ export class SplashScreenComponent implements OnInit {
   fadeOut = false;
 
   ngOnInit() {
-    // Afficher le splash pendant 3 secondes
+    // Afficher le splash pendant 6 secondes
     setTimeout(() => {
       this.fadeOut = true;
       
@@ -22,6 +22,6 @@ export class SplashScreenComponent implements OnInit {
       setTimeout(() => {
         this.splashComplete.emit();
       }, 500);
-    }, 3000);
+    }, 6000);
   }
 }

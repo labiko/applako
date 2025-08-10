@@ -34,7 +34,14 @@
       "Bash(powershell:*)",
       "WebFetch(domain:documentation.onesignal.com)",
       "WebFetch(domain:stackoverflow.com)",
-      "WebFetch(domain:forum.ionicframework.com)"
+      "WebFetch(domain:forum.ionicframework.com)",
+      "Bash(npx @capacitor/assets generate:*)",
+      "Bash(npx capacitor:*)",
+      "Bash(adb uninstall:*)",
+      "Bash(ionic build:*)",
+      "Bash(./gradlew:*)",
+      "Bash(adb install:*)",
+      "Bash(adb shell pm uninstall:*)"
     ],
     "deny": []
   }

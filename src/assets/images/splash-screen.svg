@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="2732" height="2732" viewBox="0 0 2732 2732" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background avec gradient subtil -->
+  <defs>
+    <!-- Gradient principal animé -->
+    <radialGradient id="bgGradient" cx="50%" cy="50%" r="100%">
+      <stop offset="0%" style="stop-color:#FFFEE9">
+        <animate attributeName="stop-color" values="#FFFEE9;#FFFFFB;#FFFEE9" dur="4s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" style="stop-color:#F5F5DC">
+        <animate attributeName="stop-color" values="#F5F5DC;#F8F8F0;#F5F5DC" dur="4s" repeatCount="indefinite"/>
+      </stop>
+    </radialGradient>
+    
+    <!-- Gradient Lako Green animé -->
+    <linearGradient id="lakoGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4FF2E">
+        <animate attributeName="stop-color" values="#D4FF2E;#E4FF3E;#D4FF2E" dur="3s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="50%" style="stop-color:#C1F11D">
+        <animate attributeName="stop-color" values="#C1F11D;#D1FF2D;#C1F11D" dur="3s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" style="stop-color:#A8D814">
+        <animate attributeName="stop-color" values="#A8D814;#B8E824;#A8D814" dur="3s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+    
+    <!-- Ombre portée -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="0" dy="8" result="offsetblur"/>
+      <feFlood flood-color="#000000" flood-opacity="0.15"/>
+      <feComposite in2="offsetblur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Effet glow animé -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="12" result="coloredBlur">
+        <animate attributeName="stdDeviation" values="12;18;12" dur="2s" repeatCount="indefinite"/>
+      </feGaussianBlur>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Fond -->
+  <rect width="2732" height="2732" fill="url(#bgGradient)"/>
+  
+  <!-- Éléments décoratifs qui apparaissent en séquence -->
+  <circle cx="400" cy="400" r="20" fill="#C1F11D" opacity="0">
+    <animate attributeName="opacity" values="0;0.8;0" dur="3s" begin="0.5s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="scale" values="0;1.5;0" dur="3s" begin="0.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <circle cx="2332" cy="400" r="15" fill="#C1F11D" opacity="0">
+    <animate attributeName="opacity" values="0;0.6;0" dur="2.5s" begin="1s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="scale" values="0;1.2;0" dur="2.5s" begin="1s" repeatCount="indefinite"/>
+  </circle>
+  
+  <circle cx="400" cy="2332" r="18" fill="#C1F11D" opacity="0">
+    <animate attributeName="opacity" values="0;0.7;0" dur="3.5s" begin="1.5s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="scale" values="0;1.3;0" dur="3.5s" begin="1.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <circle cx="2332" cy="2332" r="22" fill="#C1F11D" opacity="0">
+    <animate attributeName="opacity" values="0;0.5;0" dur="4s" begin="2s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="scale" values="0;1.4;0" dur="4s" begin="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Cercle central principal avec animation d'entrée -->
+  <circle cx="1366" cy="1200" r="500" fill="#FFFFFF" filter="url(#shadow)" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="1s" begin="0.5s" fill="freeze"/>
+    <animateTransform attributeName="transform" type="scale" values="0;1.1;1" dur="1.2s" begin="0.5s" fill="freeze"/>
+  </circle>
+  <circle cx="1366" cy="1200" r="480" fill="url(#lakoGreen)" opacity="0">
+    <animate attributeName="opacity" values="0;0.1" dur="0.8s" begin="1s" fill="freeze"/>
+    <animateTransform attributeName="transform" type="scale" values="0;1" dur="1s" begin="1s" fill="freeze"/>
+  </circle>
+
+  <!-- Smartphone stylisé avec animation d'entrée -->
+  <g transform="translate(1366, 1200)" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.8s" begin="1.2s" fill="freeze"/>
+    <animateTransform attributeName="transform" type="translate" values="1366,1400; 1366,1200" dur="0.8s" begin="1.2s" fill="freeze"/>
+    
+    <!-- Téléphone -->
+    <rect x="-180" y="-320" width="360" height="640" rx="40" fill="#151515" filter="url(#shadow)"/>
+    <rect x="-160" y="-300" width="320" height="600" rx="30" fill="#2D2D2D"/>
+    <rect x="-150" y="-270" width="300" height="480" rx="10" fill="#FFFFFF">
+      <animate attributeName="fill" values="#FFFFFF;#F8F8F8;#FFFFFF" dur="2s" begin="2s" repeatCount="indefinite"/>
+    </rect>
+    
+    <!-- Haut-parleur -->
+    <rect x="-40" y="-295" width="80" height="8" rx="4" fill="#151515"/>
+    
+    <!-- Bouton home avec pulsation -->
+    <circle cx="0" cy="280" r="25" fill="#151515">
+      <animateTransform attributeName="transform" type="scale" values="1;1.1;1" dur="2s" begin="3s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Voiture moderne avec animation d'arrivée -->
+  <g transform="translate(900, 1200)" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.6s" begin="1.5s" fill="freeze"/>
+    <animateTransform attributeName="transform" type="translate" values="700,1200; 1100,1200" dur="1s" begin="1.5s" fill="freeze"/>
+    
+    <g filter="url(#shadow)">
+      <!-- Corps de la voiture avec brillance -->
+      <path d="M-120 -40 Q-130 -40 -130 -30 L-130 40 Q-130 50 -120 50 L120 50 Q130 50 130 40 L130 -30 Q130 -40 120 -40 L80 -40 Q70 -80 30 -80 L-30 -80 Q-70 -80 -80 -40 Z" 
+            fill="url(#lakoGreen)">
+        <animate attributeName="fill" values="url(#lakoGreen);#D4FF2E;url(#lakoGreen)" dur="3s" begin="2.5s" repeatCount="indefinite"/>
+      </path>
+      <!-- Toit -->
+      <path d="M-80 -40 Q-70 -100 -30 -100 L30 -100 Q70 -100 80 -40" 
+            fill="#A8D814"/>
+      <!-- Fenêtres brillantes -->
+      <path d="M-70 -40 Q-60 -85 -25 -85 L25 -85 Q60 -85 70 -40" 
+            fill="#87CEEB" opacity="0.6">
+        <animate attributeName="opacity" values="0.6;0.9;0.6" dur="2s" begin="3s" repeatCount="indefinite"/>
+      </path>
+      <!-- Roues qui tournent -->
+      <g>
+        <circle cx="-70" cy="50" r="20" fill="#151515"/>
+        <circle cx="70" cy="50" r="20" fill="#151515"/>
+        <!-- Jantes rotatives -->
+        <g>
+          <animateTransform attributeName="transform" type="rotate" values="0 -70 50;360 -70 50" dur="2s" begin="2.5s" repeatCount="indefinite"/>
+          <circle cx="-70" cy="50" r="10" fill="#797979"/>
+          <rect x="-75" y="45" width="10" height="10" fill="#C1F11D"/>
+        </g>
+        <g>
+          <animateTransform attributeName="transform" type="rotate" values="0 70 50;360 70 50" dur="2s" begin="2.5s" repeatCount="indefinite"/>
+          <circle cx="70" cy="50" r="10" fill="#797979"/>
+          <rect x="65" y="45" width="10" height="10" fill="#C1F11D"/>
+        </g>
+      </g>
+      <!-- Phares clignotants -->
+      <ellipse cx="-130" cy="0" rx="15" ry="10" fill="#FFF3CD">
+        <animate attributeName="opacity" values="1;0.3;1" dur="1s" begin="3s" repeatCount="indefinite"/>
+      </ellipse>
+      <ellipse cx="130" cy="0" rx="15" ry="10" fill="#FFE5B4">
+        <animate attributeName="opacity" values="1;0.3;1" dur="1s" begin="3.2s" repeatCount="indefinite"/>
+      </ellipse>
+    </g>
+  </g>
+
+  <!-- Moto stylisée avec animation -->
+  <g transform="translate(1830, 1200)" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.6s" begin="1.8s" fill="freeze"/>
+    <animateTransform attributeName="transform" type="translate" values="2030,1200; 1630,1200" dur="1s" begin="1.8s" fill="freeze"/>
+    
+    <g filter="url(#shadow)">
+      <!-- Corps principal -->
+      <ellipse cx="0" cy="-20" rx="60" ry="25" fill="url(#lakoGreen)"/>
+      <!-- Réservoir -->
+      <path d="M-30 -30 Q-35 -45 -20 -50 L20 -50 Q35 -45 30 -30" fill="#A8D814"/>
+      <!-- Siège -->
+      <ellipse cx="10" cy="-30" rx="40" ry="12" fill="#151515"/>
+      <!-- Roues avec rotation -->
+      <g>
+        <circle cx="-45" cy="20" r="18" fill="#151515"/>
+        <circle cx="45" cy="20" r="18" fill="#151515"/>
+        <!-- Jantes rotatives -->
+        <g>
+          <animateTransform attributeName="transform" type="rotate" values="0 -45 20;360 -45 20" dur="1.8s" begin="2.8s" repeatCount="indefinite"/>
+          <circle cx="-45" cy="20" r="8" fill="#797979"/>
+          <rect x="-49" y="16" width="8" height="8" fill="#C1F11D"/>
+        </g>
+        <g>
+          <animateTransform attributeName="transform" type="rotate" values="0 45 20;360 45 20" dur="1.8s" begin="2.8s" repeatCount="indefinite"/>
+          <circle cx="45" cy="20" r="8" fill="#797979"/>
+          <rect x="41" y="16" width="8" height="8" fill="#C1F11D"/>
+        </g>
+      </g>
+      <!-- Guidon -->
+      <path d="M-35 -40 L-45 -55 M-25 -40 L-35 -55" stroke="#151515" stroke-width="6" stroke-linecap="round"/>
+      <!-- Phare clignotant -->
+      <circle cx="-50" cy="-20" r="8" fill="#FFF3CD">
+        <animate attributeName="opacity" values="1;0.4;1" dur="1.2s" begin="3.5s" repeatCount="indefinite"/>
+      </circle>
+      <!-- Pot d'échappement -->
+      <rect x="50" y="5" width="15" height="6" rx="3" fill="#797979"/>
+    </g>
+  </g>
+
+  <!-- Icône téléphone/appel avec animation de pulsation -->
+  <g transform="translate(1366, 1200)" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.5s" begin="2.2s" fill="freeze"/>
+    <animateTransform attributeName="transform" type="translate scale" values="1366,1200,0; 1366,1200,1.2; 1366,1200,1" dur="0.8s" begin="2.2s" fill="freeze"/>
+    
+    <circle cx="0" cy="-100" r="80" fill="#FFFFFF" filter="url(#shadow)">
+      <animateTransform attributeName="transform" type="scale" values="1;1.05;1" dur="2s" begin="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="0" cy="-100" r="70" fill="url(#lakoGreen)" filter="url(#glow)">
+      <animateTransform attributeName="transform" type="scale" values="1;1.08;1" dur="2s" begin="3s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Icône téléphone animée -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;1" dur="0.4s" begin="2.8s" fill="freeze"/>
+      <path d="M-30 -120 Q-35 -125 -30 -130 Q-25 -130 -20 -125 L-10 -115 Q-5 -110 -10 -105 L-15 -100 Q-10 -95 -5 -100 L0 -105 Q5 -110 10 -105 L20 -95 Q25 -90 20 -85 Q15 -80 10 -85 L0 -95 Q-5 -100 -10 -95 Q-15 -90 -20 -95 Q-25 -100 -20 -105 L-15 -110 Q-10 -115 -15 -120 L-25 -130 Q-30 -135 -30 -120 Z" 
+            fill="#FFFFFF" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"
+            transform="scale(2.5)">
+        <animateTransform attributeName="transform" type="rotate scale" values="0,2.5;10,2.6;-10,2.4;0,2.5" dur="0.8s" begin="3.5s" repeatCount="2"/>
+      </path>
+    </g>
+  </g>
+
+  <!-- Texte LOKOTAXI avec animation simple -->
+  <text x="1366" y="1750" font-family="Arial Black, sans-serif" font-size="200" font-weight="900" text-anchor="middle" fill="#151515" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.8s" begin="3.5s" fill="freeze"/>
+    <animateTransform attributeName="transform" type="scale" values="0.5;1.1;1" dur="1s" begin="3.5s" fill="freeze"/>
+    LOKOTAXI
+  </text>
+
+  <!-- Sous-titre avec délai -->
+  <text x="1366" y="1880" font-family="Arial, sans-serif" font-size="100" text-anchor="middle" fill="#797979" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.6s" begin="4.5s" fill="freeze"/>
+    <animateTransform attributeName="transform" type="translate" values="0,20; 0,0" dur="0.6s" begin="4.5s" fill="freeze"/>
+    CHAUFFEUR
+  </text>
+
+  <!-- Tagline avec effet de frappe -->
+  <text x="1366" y="1980" font-family="Arial, sans-serif" font-size="60" font-style="italic" text-anchor="middle" fill="#797979" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.8s" begin="5s" fill="freeze"/>
+    <animateTransform attributeName="transform" type="translate" values="0,30; 0,0" dur="0.8s" begin="5s" fill="freeze"/>
+    Un message, un trajet
+  </text>
+  
+  <!-- Mention Entreprise -->
+  <text x="1366" y="2040" font-family="Arial, sans-serif" font-size="45" text-anchor="middle" fill="#797979" opacity="0">
+    <animate attributeName="opacity" values="0;0.8" dur="0.6s" begin="5.3s" fill="freeze"/>
+    <animateTransform attributeName="transform" type="translate" values="0,20; 0,0" dur="0.6s" begin="5.3s" fill="freeze"/>
+    Particuliers • Entreprises
+  </text>
+
+  <!-- Points décoratifs animés en continu -->
+  <g opacity="0.3">
+    <circle cx="400" cy="400" r="8" fill="#C1F11D">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" begin="6s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="scale" values="1;1.2;1" dur="3s" begin="6s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="2332" cy="400" r="8" fill="#C1F11D">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" begin="6.5s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="scale" values="1;1.2;1" dur="3s" begin="6.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="400" cy="2332" r="8" fill="#C1F11D">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" begin="7s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="scale" values="1;1.2;1" dur="3s" begin="7s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="2332" cy="2332" r="8" fill="#C1F11D">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" begin="7.5s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="scale" values="1;1.2;1" dur="3s" begin="7.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Indicateur de chargement en bas -->
+  <g transform="translate(1366, 2300)" opacity="0">
+    <animate attributeName="opacity" values="0;1" dur="0.5s" begin="1s" fill="freeze"/>
+    
+    <circle cx="-40" cy="0" r="6" fill="#C1F11D" opacity="0.4">
+      <animate attributeName="opacity" values="0.4;1;0.4" dur="1s" begin="1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="0" cy="0" r="6" fill="#C1F11D" opacity="0.4">
+      <animate attributeName="opacity" values="0.4;1;0.4" dur="1s" begin="1.3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="40" cy="0" r="6" fill="#C1F11D" opacity="0.4">
+      <animate attributeName="opacity" values="0.4;1;0.4" dur="1s" begin="1.6s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Version/Copyright avec apparition finale -->
+  <text x="1366" y="2600" font-family="Arial, sans-serif" font-size="40" text-anchor="middle" fill="#B0B0B0" opacity="0">
+    <animate attributeName="opacity" values="0;0.5" dur="0.8s" begin="6s" fill="freeze"/>
+    © 2025 Lako Services - v1.0
+  </text>
+
+</svg>

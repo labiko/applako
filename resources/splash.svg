@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="2732" height="2732" viewBox="0 0 2732 2732" xmlns="http://www.w3.org/2000/svg">
+  
+  <defs>
+    <!-- Gradient principal -->
+    <radialGradient id="bgGradient" cx="50%" cy="50%" r="100%">
+      <stop offset="0%" style="stop-color:#FFFEE9"/>
+      <stop offset="100%" style="stop-color:#F5F5DC"/>
+    </radialGradient>
+    
+    <!-- Gradient Loko Green -->
+    <linearGradient id="lakoGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4FF2E"/>
+      <stop offset="50%" style="stop-color:#C1F11D"/>
+      <stop offset="100%" style="stop-color:#A8D814"/>
+    </linearGradient>
+    
+    <!-- Ombre portée -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="12"/>
+      <feOffset dx="0" dy="12" result="offsetblur"/>
+      <feFlood flood-color="#000000" flood-opacity="0.2"/>
+      <feComposite in2="offsetblur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Effet glow -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="15" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Fond -->
+  <rect width="2732" height="2732" fill="url(#bgGradient)"/>
+  
+  <!-- Cercle central principal -->
+  <circle cx="1366" cy="1200" r="600" fill="#FFFFFF" filter="url(#shadow)"/>
+  <circle cx="1366" cy="1200" r="580" fill="url(#lakoGreen)" opacity="0.15"/>
+
+  <!-- Smartphone stylisé AGRANDI -->
+  <g transform="translate(1366, 1200)">
+    <!-- Téléphone -->
+    <rect x="-220" y="-380" width="440" height="760" rx="50" fill="#151515" filter="url(#shadow)"/>
+    <rect x="-200" y="-360" width="400" height="720" rx="40" fill="#2D2D2D"/>
+    <rect x="-180" y="-320" width="360" height="580" rx="15" fill="#FFFFFF"/>
+    
+    <!-- Haut-parleur -->
+    <rect x="-50" y="-350" width="100" height="12" rx="6" fill="#151515"/>
+    
+    <!-- Bouton home -->
+    <circle cx="0" cy="340" r="35" fill="#151515"/>
+  </g>
+
+  <!-- Voiture moderne AGRANDIE -->
+  <g transform="translate(1000, 1200)">
+    <g filter="url(#shadow)">
+      <!-- Corps de la voiture -->
+      <path d="M-150 -50 Q-160 -50 -160 -40 L-160 50 Q-160 60 -150 60 L150 60 Q160 60 160 50 L160 -40 Q160 -50 150 -50 L100 -50 Q85 -100 40 -100 L-40 -100 Q-85 -100 -100 -50 Z" 
+            fill="url(#lakoGreen)"/>
+      <!-- Toit -->
+      <path d="M-100 -50 Q-85 -120 -40 -120 L40 -120 Q85 -120 100 -50" 
+            fill="#A8D814"/>
+      <!-- Fenêtres -->
+      <path d="M-85 -50 Q-75 -105 -35 -105 L35 -105 Q75 -105 85 -50" 
+            fill="#87CEEB" opacity="0.6"/>
+      <!-- Roues -->
+      <circle cx="-85" cy="60" r="25" fill="#151515"/>
+      <circle cx="85" cy="60" r="25" fill="#151515"/>
+      <!-- Jantes -->
+      <circle cx="-85" cy="60" r="15" fill="#797979"/>
+      <circle cx="85" cy="60" r="15" fill="#797979"/>
+      <circle cx="-85" cy="60" r="8" fill="#C1F11D"/>
+      <circle cx="85" cy="60" r="8" fill="#C1F11D"/>
+      <!-- Phares -->
+      <ellipse cx="-160" cy="0" rx="20" ry="12" fill="#FFF3CD"/>
+      <ellipse cx="160" cy="0" rx="20" ry="12" fill="#FFE5B4"/>
+    </g>
+  </g>
+
+  <!-- Moto stylisée AGRANDIE -->
+  <g transform="translate(1730, 1200)">
+    <g filter="url(#shadow)">
+      <!-- Corps principal -->
+      <ellipse cx="0" cy="-25" rx="75" ry="30" fill="url(#lakoGreen)"/>
+      <!-- Réservoir -->
+      <path d="M-40 -40 Q-45 -60 -25 -65 L25 -65 Q45 -60 40 -40" fill="#A8D814"/>
+      <!-- Siège -->
+      <ellipse cx="12" cy="-40" rx="50" ry="15" fill="#151515"/>
+      <!-- Roues -->
+      <circle cx="-55" cy="25" r="22" fill="#151515"/>
+      <circle cx="55" cy="25" r="22" fill="#151515"/>
+      <!-- Jantes -->
+      <circle cx="-55" cy="25" r="12" fill="#797979"/>
+      <circle cx="55" cy="25" r="12" fill="#797979"/>
+      <circle cx="-55" cy="25" r="6" fill="#C1F11D"/>
+      <circle cx="55" cy="25" r="6" fill="#C1F11D"/>
+      <!-- Guidon -->
+      <path d="M-45 -50 L-55 -70 M-35 -50 L-45 -70" stroke="#151515" stroke-width="8" stroke-linecap="round"/>
+      <!-- Phare -->
+      <circle cx="-65" cy="-25" r="10" fill="#FFF3CD"/>
+      <!-- Pot d'échappement -->
+      <rect x="65" y="8" width="20" height="8" rx="4" fill="#797979"/>
+    </g>
+  </g>
+
+  <!-- Icône téléphone/appel AGRANDI -->
+  <g transform="translate(1366, 1200)">
+    <circle cx="0" cy="-150" r="100" fill="#FFFFFF" filter="url(#shadow)"/>
+    <circle cx="0" cy="-150" r="85" fill="url(#lakoGreen)" filter="url(#glow)"/>
+    <!-- Icône téléphone -->
+    <path d="M-40 -170 Q-45 -175 -40 -180 Q-35 -180 -30 -175 L-15 -160 Q-10 -155 -15 -150 L-20 -145 Q-15 -140 -10 -145 L0 -155 Q5 -160 15 -155 L30 -140 Q35 -135 30 -130 Q25 -125 20 -130 L0 -150 Q-5 -155 -15 -150 Q-25 -145 -30 -150 Q-35 -155 -30 -160 L-20 -165 Q-15 -170 -20 -175 L-35 -185 Q-40 -190 -40 -170 Z" 
+          fill="#FFFFFF" stroke="#FFFFFF" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"
+          transform="scale(1.8)"/>
+  </g>
+
+  <!-- Texte LOKO TAXI -->
+  <text x="1366" y="1850" font-family="Arial Black, sans-serif" font-size="240" font-weight="900" text-anchor="middle" fill="#151515">
+    LOKO TAXI
+  </text>
+
+  <!-- Sous-titre -->
+  <text x="1366" y="1980" font-family="Arial, sans-serif" font-size="100" text-anchor="middle" fill="#797979">
+    CHAUFFEUR
+  </text>
+
+  <!-- Tagline -->
+  <text x="1366" y="2080" font-family="Arial, sans-serif" font-size="60" font-style="italic" text-anchor="middle" fill="#797979">
+    Un message, un trajet
+  </text>
+  
+  <!-- Mention Entreprise -->
+  <text x="1366" y="2140" font-family="Arial, sans-serif" font-size="45" text-anchor="middle" fill="#797979" opacity="0.8">
+    Particuliers • Entreprises
+  </text>
+
+  <!-- Points décoratifs -->
+  <circle cx="400" cy="400" r="12" fill="#C1F11D" opacity="0.4"/>
+  <circle cx="2332" cy="400" r="12" fill="#C1F11D" opacity="0.4"/>
+  <circle cx="400" cy="2332" r="12" fill="#C1F11D" opacity="0.4"/>
+  <circle cx="2332" cy="2332" r="12" fill="#C1F11D" opacity="0.4"/>
+
+  <!-- Version/Copyright -->
+  <text x="1366" y="2600" font-family="Arial, sans-serif" font-size="40" text-anchor="middle" fill="#B0B0B0" opacity="0.5">
+    © 2025 Loko Services - v1.0
+  </text>
+</svg>

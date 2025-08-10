@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="4096" height="4096" viewBox="0 0 4096 4096" xmlns="http://www.w3.org/2000/svg">
+  
+  <defs>
+    <!-- Gradient Lako Green HD -->
+    <linearGradient id="lakoGreenHD" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4FF2E"/>
+      <stop offset="30%" style="stop-color:#C1F11D"/>
+      <stop offset="70%" style="stop-color:#A8D814"/>
+      <stop offset="100%" style="stop-color:#8FC00F"/>
+    </linearGradient>
+    
+    <!-- Gradient métallique pour smartphone -->
+    <linearGradient id="metalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9A9A9A"/>
+      <stop offset="50%" style="stop-color:#797979"/>
+      <stop offset="100%" style="stop-color:#5A5A5A"/>
+    </linearGradient>
+    
+    <!-- Gradient écran -->
+    <linearGradient id="screenGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF"/>
+      <stop offset="100%" style="stop-color:#F8F8F8"/>
+    </linearGradient>
+    
+    <!-- Ombre haute résolution -->
+    <filter id="hdShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="15"/>
+      <feOffset dx="0" dy="20" result="offsetblur"/>
+      <feFlood flood-color="#151515" flood-opacity="0.25"/>
+      <feComposite in2="offsetblur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Effet brillance -->
+    <filter id="shine">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feOffset dx="-5" dy="-5" result="offsetblur"/>
+      <feFlood flood-color="#FFFFFF" flood-opacity="0.3"/>
+      <feComposite in2="offsetblur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Fond premium -->
+  <rect width="4096" height="4096" fill="#FFFEE9"/>
+  
+  <!-- Éléments décoratifs HD -->
+  <circle cx="600" cy="600" r="80" fill="#C1F11D" opacity="0.1"/>
+  <circle cx="3496" cy="600" r="60" fill="#C1F11D" opacity="0.15"/>
+  <circle cx="600" cy="3496" r="70" fill="#C1F11D" opacity="0.12"/>
+  <circle cx="3496" cy="3496" r="90" fill="#C1F11D" opacity="0.08"/>
+  
+  <!-- Smartphone haute résolution -->
+  <g transform="translate(2048, 2048)" filter="url(#hdShadow)">
+    <!-- Contour externe premium -->
+    <rect x="-450" y="-750" width="900" height="1500" rx="120" fill="url(#metalGradient)"/>
+    <!-- Corps principal -->
+    <rect x="-420" y="-720" width="840" height="1440" rx="90" fill="#151515"/>
+    <!-- Écran HD -->
+    <rect x="-390" y="-630" width="780" height="1200" rx="45" fill="url(#screenGradient)"/>
+    
+    <!-- Haut-parleur détaillé -->
+    <rect x="-120" y="-690" width="240" height="30" rx="15" fill="url(#metalGradient)"/>
+    <rect x="-110" y="-685" width="220" height="20" rx="10" fill="#151515"/>
+    
+    <!-- Capteur frontal -->
+    <circle cx="0" cy="-660" r="8" fill="#151515"/>
+    
+    <!-- Bouton home premium -->
+    <circle cx="0" cy="675" r="45" fill="url(#metalGradient)"/>
+    <circle cx="0" cy="675" r="35" fill="#151515"/>
+    <circle cx="0" cy="675" r="25" fill="url(#metalGradient)"/>
+    
+    <!-- Boutons latéraux -->
+    <rect x="-450" y="-200" width="30" height="100" rx="15" fill="url(#metalGradient)"/>
+    <rect x="-450" y="-50" width="30" height="80" rx="15" fill="url(#metalGradient)"/>
+    <rect x="420" y="-100" width="30" height="200" rx="15" fill="url(#metalGradient)"/>
+  </g>
+  
+  <!-- Voiture ultra-détaillée -->
+  <g transform="translate(2048, 2048)" filter="url(#hdShadow)">
+    <!-- Carrosserie principale -->
+    <path d="M-300 -90 Q-330 -90 -330 -60 L-330 90 Q-330 120 -300 120 L300 120 Q330 120 330 90 L330 -60 Q330 -90 300 -90 L210 -90 Q180 -180 75 -180 L-75 -180 Q-180 -180 -210 -90 Z" 
+          fill="url(#lakoGreenHD)" filter="url(#shine)"/>
+    
+    <!-- Toit détaillé -->
+    <path d="M-210 -90 Q-180 -210 -75 -210 L75 -210 Q180 -210 210 -90" 
+          fill="#A8D814"/>
+    
+    <!-- Pare-brise avant -->
+    <path d="M-195 -90 Q-165 -195 -70 -195 L70 -195 Q165 -195 195 -90" 
+          fill="#87CEEB" opacity="0.8"/>
+    
+    <!-- Vitres latérales -->
+    <path d="M-180 -90 Q-165 -120 -140 -120 L-100 -120 Q-85 -120 -85 -90" fill="#87CEEB" opacity="0.6"/>
+    <path d="M85 -90 Q85 -120 100 -120 L140 -120 Q165 -120 180 -90" fill="#87CEEB" opacity="0.6"/>
+    
+    <!-- Lunette arrière -->
+    <path d="M-70 -90 Q-50 -140 0 -140 Q50 -140 70 -90" fill="#87CEEB" opacity="0.7"/>
+    
+    <!-- Roues HD avec détails -->
+    <g>
+      <!-- Roue avant -->
+      <circle cx="-180" cy="120" r="60" fill="#151515"/>
+      <circle cx="-180" cy="120" r="45" fill="#2D2D2D"/>
+      <circle cx="-180" cy="120" r="35" fill="url(#metalGradient)"/>
+      <circle cx="-180" cy="120" r="25" fill="#C1F11D"/>
+      <circle cx="-180" cy="120" r="15" fill="#151515"/>
+      
+      <!-- Détails jante avant -->
+      <rect x="-185" y="95" width="10" height="50" rx="5" fill="#FFFFFF"/>
+      <rect x="-195" y="115" width="30" height="10" rx="5" fill="#FFFFFF"/>
+      
+      <!-- Roue arrière -->
+      <circle cx="180" cy="120" r="60" fill="#151515"/>
+      <circle cx="180" cy="120" r="45" fill="#2D2D2D"/>
+      <circle cx="180" cy="120" r="35" fill="url(#metalGradient)"/>
+      <circle cx="180" cy="120" r="25" fill="#C1F11D"/>
+      <circle cx="180" cy="120" r="15" fill="#151515"/>
+      
+      <!-- Détails jante arrière -->
+      <rect x="175" y="95" width="10" height="50" rx="5" fill="#FFFFFF"/>
+      <rect x="165" y="115" width="30" height="10" rx="5" fill="#FFFFFF"/>
+    </g>
+    
+    <!-- Phares avant HD -->
+    <ellipse cx="-330" cy="0" rx="30" ry="22" fill="#FFF3CD"/>
+    <ellipse cx="-330" cy="0" rx="20" ry="15" fill="#FFFFFF"/>
+    <ellipse cx="330" cy="0" rx="30" ry="22" fill="#FFF3CD"/>
+    <ellipse cx="330" cy="0" rx="20" ry="15" fill="#FFFFFF"/>
+    
+    <!-- Feux arrière -->
+    <ellipse cx="-300" cy="60" rx="15" ry="10" fill="#FF4444"/>
+    <ellipse cx="-300" cy="30" rx="15" ry="10" fill="#FFA500"/>
+    <ellipse cx="300" cy="60" rx="15" ry="10" fill="#FF4444"/>
+    <ellipse cx="300" cy="30" rx="15" ry="10" fill="#FFA500"/>
+    
+    <!-- Détails carrosserie -->
+    <rect x="-75" y="-60" width="150" height="12" rx="6" fill="#151515"/> <!-- Grille -->
+    <rect x="-240" y="-30" width="12" height="30" rx="6" fill="#151515"/> <!-- Poignée gauche -->
+    <rect x="228" y="-30" width="12" height="30" rx="6" fill="#151515"/> <!-- Poignée droite -->
+    
+    <!-- Rétroviseurs -->
+    <ellipse cx="-240" cy="-60" rx="20" ry="15" fill="#151515"/>
+    <ellipse cx="240" cy="-60" rx="20" ry="15" fill="#151515"/>
+    <ellipse cx="-240" cy="-60" rx="15" ry="10" fill="#87CEEB" opacity="0.8"/>
+    <ellipse cx="240" cy="-60" rx="15" ry="10" fill="#87CEEB" opacity="0.8"/>
+    
+    <!-- Antenne -->
+    <rect x="0" y="-210" width="4" height="30" fill="#151515"/>
+    <circle cx="0" cy="-220" r="3" fill="#151515"/>
+  </g>
+  
+  <!-- Bulle d'appel ultra-détaillée -->
+  <g transform="translate(1748, 1650)" filter="url(#hdShadow)">
+    <!-- Bulle principale HD -->
+    <circle cx="0" cy="0" r="180" fill="url(#lakoGreenHD)" filter="url(#shine)"/>
+    <circle cx="0" cy="0" r="180" fill="none" stroke="#A8D814" stroke-width="6"/>
+    <circle cx="0" cy="0" r="160" fill="none" stroke="#D4FF2E" stroke-width="2"/>
+    
+    <!-- Icône téléphone HD -->
+    <g transform="scale(2.5)">
+      <path d="M-20 -25 Q-25 -30 -20 -35 Q-15 -35 -10 -30 L0 -20 Q5 -15 0 -10 L-5 -5 Q0 0 5 -5 L10 -10 Q15 -5 10 0 L5 5 Q10 10 15 5 L20 0 Q25 5 20 10 Q15 15 10 10 L0 0 Q-5 -5 -10 0 Q-15 5 -20 0 Q-25 -5 -20 -10 L-10 -20 Q-5 -25 -10 -30 L-15 -35 Q-20 -40 -20 -25 Z" 
+            fill="#151515" stroke="#151515" stroke-width="2"/>
+      
+      <!-- Détails téléphone -->
+      <rect x="-18" y="-32" width="36" height="64" rx="8" fill="none" stroke="#151515" stroke-width="2"/>
+      <circle cx="0" cy="25" r="4" fill="#151515"/>
+      <rect x="-8" y="-28" width="16" height="2" rx="1" fill="#151515"/>
+    </g>
+    
+    <!-- Queue de bulle détaillée -->
+    <path d="M-120 120 Q-150 150 -180 180 Q-150 165 -105 135" fill="url(#lakoGreenHD)"/>
+    <path d="M-115 125 Q-140 145 -165 165 Q-145 160 -110 140" fill="#A8D814"/>
+  </g>
+  
+  <!-- WhatsApp HD -->
+  <g transform="translate(2348, 1650)" filter="url(#hdShadow)">
+    <circle cx="0" cy="0" r="60" fill="#25D366"/>
+    <circle cx="0" cy="0" r="55" fill="#128C7E"/>
+    <circle cx="0" cy="0" r="50" fill="#25D366"/>
+    
+    <!-- Logo WhatsApp détaillé -->
+    <g transform="scale(1.8)">
+      <path d="M-15 -20 Q-20 -25 -15 -30 Q-10 -30 -5 -25 L0 -20 Q5 -15 0 -10 L-5 -5 Q0 0 5 -5 L10 -10 Q15 -5 10 0 L5 5 Q10 10 15 5 L10 15 Q5 20 0 15 L-5 10 Q-10 15 -15 10 Q-20 5 -15 0 L-10 -5 Q-15 -10 -10 -15 L-5 -20 Q0 -25 -5 -30 L-10 -35 Q-15 -40 -15 -20 Z" 
+            fill="#FFFFFF"/>
+    </g>
+    
+    <!-- Bulle de chat WhatsApp -->
+    <path d="M-40 40 Q-50 50 -60 60 Q-50 55 -35 45" fill="#25D366"/>
+  </g>
+  
+  <!-- Texte LAKO HD -->
+  <text x="2048" y="2850" font-family="Arial Black, sans-serif" font-size="420" font-weight="900" text-anchor="middle" fill="#151515" filter="url(#hdShadow)">LAKO</text>
+  
+  <!-- Sous-titre HD -->
+  <text x="2048" y="3050" font-family="Arial, sans-serif" font-size="150" font-weight="600" text-anchor="middle" fill="#797979">CHAUFFEUR</text>
+  
+  <!-- Slogan HD -->
+  <text x="2048" y="3250" font-family="Arial, sans-serif" font-size="105" font-style="italic" text-anchor="middle" fill="#797979">Envoyez un message, Votre chauffeur arrive</text>
+  
+  <!-- Détails premium -->
+  <g opacity="0.6">
+    <!-- Petites voitures HD décoratives -->
+    <g transform="translate(300, 3600)">
+      <rect x="0" y="0" width="90" height="45" rx="12" fill="#C1F11D"/>
+      <circle cx="18" cy="45" r="9" fill="#151515"/>
+      <circle cx="72" cy="45" r="9" fill="#151515"/>
+    </g>
+    
+    <g transform="translate(3496, 3600)">
+      <rect x="0" y="0" width="90" height="45" rx="12" fill="#C1F11D"/>
+      <circle cx="18" cy="45" r="9" fill="#151515"/>
+      <circle cx="72" cy="45" r="9" fill="#151515"/>
+    </g>
+  </g>
+  
+  <!-- Copyright premium -->
+  <text x="2048" y="3750" font-family="Arial, sans-serif" font-size="75" text-anchor="middle" fill="#797979" opacity="0.8">© 2025 Lako Services - Transport Intelligent</text>
+  
+  <!-- Signature HD -->
+  <text x="2048" y="3850" font-family="Arial, sans-serif" font-size="60" text-anchor="middle" fill="#C1F11D" opacity="0.5">Ultra HD - 4096x4096px</text>
+  
+</svg>

@@ -1,0 +1,158 @@
+<svg width="2732" height="2732" viewBox="0 0 2732 2732" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background avec gradient subtil -->
+  <defs>
+    <!-- Gradient principal -->
+    <radialGradient id="bgGradient" cx="50%" cy="50%" r="100%">
+      <stop offset="0%" style="stop-color:#FFFEE9"/>
+      <stop offset="100%" style="stop-color:#F5F5DC"/>
+    </radialGradient>
+    
+    <!-- Gradient Lako Green -->
+    <linearGradient id="lakoGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4FF2E"/>
+      <stop offset="50%" style="stop-color:#C1F11D"/>
+      <stop offset="100%" style="stop-color:#A8D814"/>
+    </linearGradient>
+    
+    <!-- Ombre portée -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="0" dy="8" result="offsetblur"/>
+      <feFlood flood-color="#000000" flood-opacity="0.15"/>
+      <feComposite in2="offsetblur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Effet glow -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="12" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Fond -->
+  <rect width="2732" height="2732" fill="url(#bgGradient)"/>
+  
+  <!-- Cercle central principal -->
+  <circle cx="1366" cy="1200" r="500" fill="#FFFFFF" filter="url(#shadow)"/>
+  <circle cx="1366" cy="1200" r="480" fill="url(#lakoGreen)" opacity="0.1"/>
+  
+  <!-- Smartphone stylisé -->
+  <g transform="translate(1366, 1200)">
+    <!-- Téléphone -->
+    <rect x="-180" y="-320" width="360" height="640" rx="40" fill="#151515" filter="url(#shadow)"/>
+    <rect x="-160" y="-300" width="320" height="600" rx="30" fill="#2D2D2D"/>
+    <rect x="-150" y="-270" width="300" height="480" rx="10" fill="#FFFFFF"/>
+    
+    <!-- Haut-parleur -->
+    <rect x="-40" y="-295" width="80" height="8" rx="4" fill="#151515"/>
+    
+    <!-- Bouton home -->
+    <circle cx="0" cy="280" r="25" fill="#151515"/>
+  </g>
+  
+  <!-- Voiture moderne -->
+  <g transform="translate(1100, 1200)">
+    <g filter="url(#shadow)">
+      <!-- Corps de la voiture -->
+      <path d="M-120 -40 Q-130 -40 -130 -30 L-130 40 Q-130 50 -120 50 L120 50 Q130 50 130 40 L130 -30 Q130 -40 120 -40 L80 -40 Q70 -80 30 -80 L-30 -80 Q-70 -80 -80 -40 Z" 
+            fill="url(#lakoGreen)"/>
+      <!-- Toit -->
+      <path d="M-80 -40 Q-70 -100 -30 -100 L30 -100 Q70 -100 80 -40" 
+            fill="#A8D814"/>
+      <!-- Fenêtres -->
+      <path d="M-70 -40 Q-60 -85 -25 -85 L25 -85 Q60 -85 70 -40" 
+            fill="#87CEEB" opacity="0.6"/>
+      <!-- Roues -->
+      <circle cx="-70" cy="50" r="20" fill="#151515"/>
+      <circle cx="70" cy="50" r="20" fill="#151515"/>
+      <!-- Jantes -->
+      <circle cx="-70" cy="50" r="10" fill="#797979"/>
+      <circle cx="70" cy="50" r="10" fill="#797979"/>
+      <!-- Phares -->
+      <ellipse cx="-130" cy="0" rx="15" ry="10" fill="#FFF3CD"/>
+      <ellipse cx="130" cy="0" rx="15" ry="10" fill="#FFE5B4"/>
+    </g>
+  </g>
+  
+  <!-- Moto stylisée -->
+  <g transform="translate(1630, 1200)">
+    <g filter="url(#shadow)">
+      <!-- Corps principal -->
+      <ellipse cx="0" cy="-20" rx="60" ry="25" fill="url(#lakoGreen)"/>
+      <!-- Réservoir -->
+      <path d="M-30 -30 Q-35 -45 -20 -50 L20 -50 Q35 -45 30 -30" fill="#A8D814"/>
+      <!-- Siège -->
+      <ellipse cx="10" cy="-30" rx="40" ry="12" fill="#151515"/>
+      <!-- Roue avant -->
+      <circle cx="-45" cy="20" r="18" fill="#151515"/>
+      <circle cx="-45" cy="20" r="8" fill="#797979"/>
+      <!-- Roue arrière -->
+      <circle cx="45" cy="20" r="18" fill="#151515"/>
+      <circle cx="45" cy="20" r="8" fill="#797979"/>
+      <!-- Guidon -->
+      <path d="M-35 -40 L-45 -55 M-25 -40 L-35 -55" stroke="#151515" stroke-width="6" stroke-linecap="round"/>
+      <!-- Phare -->
+      <circle cx="-50" cy="-20" r="8" fill="#FFF3CD"/>
+      <!-- Pot d'échappement -->
+      <rect x="50" y="5" width="15" height="6" rx="3" fill="#797979"/>
+    </g>
+  </g>
+  
+  <!-- Icône téléphone/appel -->
+  <g transform="translate(1366, 1200)">
+    <circle cx="0" cy="-100" r="80" fill="#FFFFFF" filter="url(#shadow)"/>
+    <circle cx="0" cy="-100" r="70" fill="url(#lakoGreen)"/>
+    <!-- Icône téléphone -->
+    <path d="M-30 -120 Q-35 -125 -30 -130 Q-25 -130 -20 -125 L-10 -115 Q-5 -110 -10 -105 L-15 -100 Q-10 -95 -5 -100 L0 -105 Q5 -110 10 -105 L20 -95 Q25 -90 20 -85 Q15 -80 10 -85 L0 -95 Q-5 -100 -10 -95 Q-15 -90 -20 -95 Q-25 -100 -20 -105 L-15 -110 Q-10 -115 -15 -120 L-25 -130 Q-30 -135 -30 -120 Z" 
+          fill="#FFFFFF" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"
+          transform="scale(2.5)"/>
+  </g>
+  
+  <!-- Texte LOKOTAXI -->
+  <text x="1366" y="1750" font-family="Arial Black, sans-serif" font-size="200" font-weight="900" text-anchor="middle" fill="#151515">
+    LOKOTAXI
+  </text>
+  
+  <!-- Sous-titre -->
+  <text x="1366" y="1880" font-family="Arial, sans-serif" font-size="100" text-anchor="middle" fill="#797979">
+    CHAUFFEUR
+  </text>
+  
+  <!-- Tagline -->
+  <text x="1366" y="1980" font-family="Arial, sans-serif" font-size="60" font-style="italic" text-anchor="middle" fill="#797979">
+    Un message, un trajet
+  </text>
+  
+  <!-- Mention Entreprise -->
+  <text x="1366" y="2040" font-family="Arial, sans-serif" font-size="45" text-anchor="middle" fill="#797979" opacity="0.8">
+    Particuliers • Entreprises
+  </text>
+  
+  <!-- Points décoratifs animés -->
+  <g opacity="0.3">
+    <circle cx="400" cy="400" r="8" fill="#C1F11D">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="2332" cy="400" r="8" fill="#C1F11D">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" begin="0.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="400" cy="2332" r="8" fill="#C1F11D">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" begin="1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="2332" cy="2332" r="8" fill="#C1F11D">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Version/Copyright (optionnel) -->
+  <text x="1366" y="2600" font-family="Arial, sans-serif" font-size="40" text-anchor="middle" fill="#B0B0B0" opacity="0.5">
+    © 2025 Lako Services - v1.0
+  </text>
+</svg>

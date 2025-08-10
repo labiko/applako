@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="2732" height="2732" viewBox="0 0 2732 2732" xmlns="http://www.w3.org/2000/svg">
+  
+  <defs>
+    <!-- Gradient de fond crème -->
+    <radialGradient id="bgGradient" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" style="stop-color:#FFFEE9"/>
+      <stop offset="100%" style="stop-color:#F5F5DC"/>
+    </radialGradient>
+    
+    <!-- Gradient Lako Green -->
+    <linearGradient id="lakoGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4FF2E"/>
+      <stop offset="50%" style="stop-color:#C1F11D"/>
+      <stop offset="100%" style="stop-color:#A8D814"/>
+    </linearGradient>
+    
+    <!-- Ombre portée -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#151515" flood-opacity="0.15"/>
+    </filter>
+    
+    <!-- Effet glow vert -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Fond crème -->
+  <rect width="2732" height="2732" fill="url(#bgGradient)"/>
+  
+  <!-- Cercles décoratifs en arrière-plan -->
+  <circle cx="400" cy="400" r="60" fill="#C1F11D" opacity="0.1"/>
+  <circle cx="2332" cy="400" r="40" fill="#C1F11D" opacity="0.15"/>
+  <circle cx="400" cy="2332" r="50" fill="#C1F11D" opacity="0.12"/>
+  <circle cx="2332" cy="2332" r="70" fill="#C1F11D" opacity="0.08"/>
+  
+  <!-- Smartphone principal -->
+  <g transform="translate(1366, 1366)" filter="url(#shadow)">
+    <!-- Contour externe du téléphone -->
+    <rect x="-300" y="-500" width="600" height="1000" rx="80" fill="#797979"/>
+    <!-- Corps du téléphone -->
+    <rect x="-280" y="-480" width="560" height="960" rx="60" fill="#151515"/>
+    <!-- Écran -->
+    <rect x="-260" y="-420" width="520" height="800" rx="30" fill="#FFFFFF"/>
+    
+    <!-- Haut-parleur -->
+    <rect x="-80" y="-460" width="160" height="20" rx="10" fill="#797979"/>
+    <!-- Bouton home -->
+    <circle cx="0" cy="450" r="30" fill="#797979"/>
+  </g>
+  
+  <!-- Voiture (amélioration de l'originale) -->
+  <g transform="translate(1066, 1200)" filter="url(#shadow)">
+    <!-- Corps principal de la voiture -->
+    <path d="M-200 -60 Q-220 -60 -220 -40 L-220 60 Q-220 80 -200 80 L200 80 Q220 80 220 60 L220 -40 Q220 -60 200 -60 L140 -60 Q120 -120 50 -120 L-50 -120 Q-120 -120 -140 -60 Z" 
+          fill="url(#lakoGreen)"/>
+    
+    <!-- Toit de la voiture -->
+    <path d="M-140 -60 Q-120 -140 -50 -140 L50 -140 Q120 -140 140 -60" 
+          fill="#A8D814"/>
+    
+    <!-- Fenêtres -->
+    <path d="M-130 -60 Q-110 -125 -45 -125 L45 -125 Q110 -125 130 -60" 
+          fill="#87CEEB" opacity="0.7"/>
+    
+    <!-- Roues avec jantes détaillées -->
+    <circle cx="-120" cy="80" r="40" fill="#151515"/>
+    <circle cx="120" cy="80" r="40" fill="#151515"/>
+    <!-- Jantes -->
+    <circle cx="-120" cy="80" r="25" fill="#797979"/>
+    <circle cx="120" cy="80" r="25" fill="#797979"/>
+    <circle cx="-120" cy="80" r="15" fill="#C1F11D"/>
+    <circle cx="120" cy="80" r="15" fill="#C1F11D"/>
+    
+    <!-- Phares avant */
+    <ellipse cx="-220" cy="0" rx="20" ry="15" fill="#FFF3CD"/>
+    <ellipse cx="220" cy="0" rx="20" ry="15" fill="#FFF3CD"/>
+    
+    <!-- Détails voiture -->
+    <rect x="-50" y="-40" width="100" height="8" rx="4" fill="#151515"/> <!-- Grille -->
+    <rect x="-160" y="-20" width="8" height="20" rx="4" fill="#151515"/> <!-- Poignée -->
+  </g>
+  
+  <!-- Bulle d'appel (amélioration avec WhatsApp) -->
+  <g transform="translate(1366, 800)" filter="url(#glow)">
+    <!-- Bulle principale -->
+    <circle cx="0" cy="0" r="120" fill="url(#lakoGreen)"/>
+    <!-- Contour bulle -->
+    <circle cx="0" cy="0" r="120" fill="none" stroke="#A8D814" stroke-width="4"/>
+    
+    <!-- Icône téléphone stylisée -->
+    <path d="M-40 -50 Q-50 -60 -40 -70 Q-30 -70 -20 -60 L0 -40 Q10 -30 0 -20 L-10 -10 Q0 0 10 -10 L20 -20 Q30 -10 20 0 L10 10 Q20 20 30 10 L40 0 Q50 10 40 20 Q30 30 20 20 L0 0 Q-10 -10 -20 0 Q-30 10 -40 0 Q-50 -10 -40 -20 L-20 -40 Q-10 -50 -20 -60 L-30 -70 Q-40 -80 -40 -50 Z" 
+          fill="#151515" transform="scale(1.8)"/>
+    
+    <!-- Queue de la bulle -->
+    <path d="M-80 80 Q-100 100 -120 120 Q-100 110 -70 90" fill="url(#lakoGreen)"/>
+  </g>
+  
+  <!-- Texte LAKO (style moderne) -->
+  <text x="1366" y="1900" font-family="Arial Black, sans-serif" font-size="280" font-weight="900" text-anchor="middle" fill="#151515" filter="url(#shadow)">
+    LAKO
+  </text>
+  
+  <!-- Sous-titre stylé -->
+  <text x="1366" y="2050" font-family="Arial, sans-serif" font-size="100" font-weight="600" text-anchor="middle" fill="#797979">
+    CHAUFFEUR
+  </text>
+  
+  <!-- Slogan (repris mais amélioré) -->
+  <text x="1366" y="2200" font-family="Arial, sans-serif" font-size="70" font-style="italic" text-anchor="middle" fill="#797979">
+    Envoyez un message, Votre chauffeur arrive
+  </text>
+  
+  <!-- Éléments décoratifs animés -->
+  <g opacity="0.4">
+    <!-- Petites voitures en mouvement -->
+    <g transform="translate(200, 2400)">
+      <rect x="0" y="0" width="60" height="30" rx="8" fill="#C1F11D"/>
+      <circle cx="12" cy="30" r="6" fill="#151515"/>
+      <circle cx="48" cy="30" r="6" fill="#151515"/>
+      <animateTransform attributeName="transform" type="translate" 
+        values="200,2400; 400,2400; 200,2400" dur="6s" repeatCount="indefinite"/>
+    </g>
+    
+    <g transform="translate(2332, 2400)">
+      <rect x="0" y="0" width="60" height="30" rx="8" fill="#C1F11D"/>
+      <circle cx="12" cy="30" r="6" fill="#151515"/>
+      <circle cx="48" cy="30" r="6" fill="#151515"/>
+      <animateTransform attributeName="transform" type="translate" 
+        values="2332,2400; 2132,2400; 2332,2400" dur="8s" repeatCount="indefinite"/>
+    </g>
+  </g>
+  
+  <!-- Détails WhatsApp subtils -->
+  <g transform="translate(1650, 1200)" opacity="0.8">
+    <circle cx="0" cy="0" r="40" fill="#25D366"/>
+    <path d="M-20 -20 Q-25 -25 -20 -30 Q-15 -30 -10 -25 L0 -15 Q5 -10 0 -5 L-5 0 Q0 5 5 0 L10 -5 Q15 0 10 5 Q5 10 0 5 L-10 -5 Q-15 -10 -10 -15 L-5 -20 Q0 -25 -5 -30 L-15 -35 Q-20 -40 -20 -20 Z" 
+          fill="#FFFFFF" transform="scale(1.2)"/>
+  </g>
+  
+  <!-- Copyright -->
+  <text x="1366" y="2500" font-family="Arial, sans-serif" font-size="50" text-anchor="middle" fill="#797979" opacity="0.6">
+    © 2025 Lako Services - Transport Intelligent
+  </text>
+  
+</svg>
