@@ -55,6 +55,23 @@
     </ion-card>
   </div>
 
+  <!-- Segments pour séparer réservations normales et planifiées -->
+  <div class="segments-container">
+    <ion-segment [value]="selectedSegment" (ionChange)="onSegmentChange($event)">
+      <ion-segment-button value="nouvelles">
+        <ion-label>
+          Nouvelles
+          <ion-badge color="primary" class="segment-badge">{{ allReservations.length }}</ion-badge>
+        </ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="planifiees">
+        <ion-label>
+          Planifiées
+          <ion-badge color="warning" class="segment-badge">{{ scheduledReservations.length }}</ion-badge>
+        </ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
 
   <div class="content-container">
     <div *ngIf="isLoading" class="loading-container">
@@ -65,10 +82,10 @@
     </div>
 
     <div *ngIf="!isLoading && reservations.length === 0" class="empty-state">
-      <ion-icon name="car-sport-outline" class="empty-icon"></ion-icon>
+      <ion-icon [name]="selectedSegment === 'nouvelles' ? 'car-sport-outline' : 'calendar'" class="empty-icon"></ion-icon>
       <ion-text color="medium">
-        <h3>Aucune réservation en attente</h3>
-        <p>Tirez vers le bas pour actualiser</p>
+        <h3>{{ selectedSegment === 'nouvelles' ? 'Aucune nouvelle réservation' : 'Aucune réservation planifiée' }}</h3>
+        <p>{{ selectedSegment === 'nouvelles' ? 'Tirez vers le bas pour actualiser' : 'Vos réservations acceptées apparaîtront ici' }}</p>
       </ion-text>
     </div>
 
@@ -79,11 +96,20 @@
                 [attr.data-reservation-id]="reservation.id">
         <ion-card-header class="reservation-header">
           <ion-card-title>
-            <ion-icon name="person"></ion-icon>
-            Client: {{ reservation.client_phone || 'Non spécifié' }}
-            <ion-badge *ngIf="reservation.statut === 'scheduled'" color="warning" class="scheduled-badge">
-              Planifiée
-            </ion-badge>
+            <div class="header-info">
+              <div class="client-info">
+                <ion-icon name="person"></ion-icon>
+                Client: {{ reservation.client_phone || 'Non spécifié' }}
+                <ion-badge *ngIf="reservation.statut === 'scheduled'" color="warning" class="scheduled-badge">
+                  Planifiée
+                </ion-badge>
+              </div>
+              <div class="reservation-id">
+                <ion-text color="medium">
+                  <small>ID: {{ reservation.id.substring(0, 8) }}...</small>
+                </ion-text>
+              </div>
+            </div>
           </ion-card-title>
         </ion-card-header>
 

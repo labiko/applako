@@ -3,6 +3,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 import { Conducteur } from './auth.service';
 import { Entreprise } from './entreprise-auth.service';
+import { Reservation } from '../models/reservation.model';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable({
@@ -181,12 +182,14 @@ export class SupabaseService {
         return [];
       }
 
-      // Récupérer PENDING avec la fonction existante
+      // Récupérer PENDING avec requête directe pour inclure position_arrivee
       const { data: pendingData, error: pendingError } = await this.supabase
-        .rpc('get_reservations_nearby_conducteur', {
-          p_conducteur_id: currentConducteur.id,
-          p_max_distance_km: 5
-        });
+        .from('reservations')
+        .select('*, position_depart, position_arrivee')
+        .eq('statut', 'pending')
+        .is('conducteur_id', null)
+        .eq('vehicle_type', currentConducteur.vehicle_type)
+        .order('created_at', { ascending: false });
 
       if (pendingError) {
         console.error('Erreur fonction filtrage 5km:', pendingError);
@@ -197,7 +200,7 @@ export class SupabaseService {
       // Récupérer SCHEDULED avec requête supplémentaire (même logique de filtrage)
       const { data: scheduledData, error: scheduledError } = await this.supabase
         .from('reservations')
-        .select('*')
+        .select('*, position_depart, position_arrivee')
         .eq('statut', 'scheduled')
         .is('conducteur_id', null)
         .eq('vehicle_type', currentConducteur.vehicle_type)
@@ -209,6 +212,7 @@ export class SupabaseService {
         ...(pendingData || []),
         ...(scheduledData || [])
       ];
+
 
       // Trier : pending en premier, puis scheduled par date/heure
       return allReservations.sort((a, b) => {
@@ -241,7 +245,7 @@ export class SupabaseService {
   private async getPendingAndScheduledReservationsLegacy() {
     const { data, error } = await this.supabase
       .from('reservations')
-      .select('*')
+      .select('*, position_depart, position_arrivee')
       .in('statut', ['pending', 'scheduled'])
       .is('conducteur_id', null)
       .order('created_at', { ascending: false });
@@ -257,7 +261,7 @@ export class SupabaseService {
   private async getPendingReservationsLegacy() {
     const { data, error } = await this.supabase
       .from('reservations')
-      .select('*')
+      .select('*, position_depart, position_arrivee')
       .eq('statut', 'pending')
       .is('conducteur_id', null)
       .order('created_at', { ascending: false });
@@ -268,6 +272,37 @@ export class SupabaseService {
     }
 
     return data || [];
+  }
+
+  // Récupérer les réservations planifiées assignées à un conducteur spécifique
+  async getScheduledReservationsForConducteur(conducteurId: string): Promise<Reservation[]> {
+    try {
+      console.log('🔍 SQL Query - Recherche réservations planifiées pour conducteur:', conducteurId);
+      
+      const { data, error } = await this.supabase
+        .from('reservations')
+        .select('*, position_depart, position_arrivee')
+        .eq('conducteur_id', conducteurId)
+        .not('date_reservation', 'is', null) // date_reservation != null
+        .is('date_code_validation', null)    // date_code_validation = null
+        .in('statut', ['accepted', 'scheduled']) // Réservations acceptées ou planifiées
+        .order('date_reservation', { ascending: true })
+        .order('heure_reservation', { ascending: true });
+
+      console.log('📊 Résultat requête SQL:', { data, error });
+
+      if (error) {
+        console.error('Error fetching scheduled reservations for conducteur:', error);
+        return [];
+      }
+
+      console.log('✅ Données retournées:', data?.length || 0, 'réservations');
+      
+      return data || [];
+    } catch (error) {
+      console.error('Error in getScheduledReservationsForConducteur:', error);
+      return [];
+    }
   }
 
   // Update reservation status and assign conducteur
@@ -317,7 +352,7 @@ export class SupabaseService {
   async getReservationHistory(conducteurId?: string) {
     let query = this.supabase
       .from('reservations')
-      .select('*')
+      .select('*, position_depart, position_arrivee')
       .neq('statut', 'pending');
 
     if (conducteurId) {

@@ -48,8 +48,15 @@
           <ion-card-title>
             <div class="header-content">
               <div class="customer-info">
-                <ion-icon name="person"></ion-icon>
-                Client: {{ reservation.client_phone }}
+                <div class="client-main">
+                  <ion-icon name="person"></ion-icon>
+                  Client: {{ reservation.client_phone }}
+                </div>
+                <div class="reservation-id">
+                  <ion-text color="medium">
+                    <small>ID: {{ reservation.id.substring(0, 8) }}...</small>
+                  </ion-text>
+                </div>
               </div>
               <ion-badge [color]="getStatusColor(reservation.statut)" class="status-badge">
                 <ion-icon [name]="getStatusIcon(reservation.statut)"></ion-icon>

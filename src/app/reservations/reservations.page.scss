@@ -102,14 +102,39 @@
   padding: 16px;
   
   ion-card-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
     font-size: 1.1em;
     font-weight: 600;
     
-    ion-icon {
-      font-size: 1.2em;
+    .header-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      
+      .client-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        
+        ion-icon {
+          font-size: 1.2em;
+        }
+      }
+      
+      .reservation-id {
+        flex-shrink: 0;
+        
+        small {
+          font-size: 0.75rem;
+          font-weight: 400;
+          opacity: 0.8;
+          font-family: monospace;
+          background: rgba(0, 0, 0, 0.1);
+          padding: 2px 6px;
+          border-radius: 4px;
+        }
+      }
     }
   }
 }
@@ -214,6 +239,7 @@
   border-radius: 12px;
 }
 
+
 .reservation-actions {
   display: flex;
   gap: 12px;
@@ -316,12 +342,153 @@ ion-title {
   &:hover {
     transform: scale(1.25);
   }
+}
+
+// Styles pour les segments
+.segments-container {
+  padding: 0 16px;
+  margin-bottom: 16px;
   
-  // Custom switch colors
-  &.ion-color-success {
-    --track-background-checked: var(--lako-green);
-    --handle-background-checked: var(--lako-dark);
+  ion-segment {
+    --background: transparent;
+    border: 2px solid var(--lako-cream);
+    border-radius: 12px;
+    padding: 0;
+    box-shadow: none;
+    
+    ion-segment-button {
+      --background: transparent;
+      --background-checked: transparent;
+      --color: var(--ion-color-medium);
+      --color-checked: var(--lako-dark);
+      --border-radius: 10px;
+      border: none;
+      margin: 2px;
+      padding: 0 12px;
+      min-width: auto;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      
+      ion-label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin: 8px 0;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        overflow: visible;
+        position: relative;
+        z-index: 2; // Au-dessus de l'effet ::after
+        pointer-events: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      
+      // Animation pour le segment sélectionné
+      &.segment-button-checked {
+        --color: var(--lako-dark);
+        border: 2px solid var(--lako-green);
+        background: linear-gradient(135deg, 
+          rgba(var(--ion-color-success-rgb), 0.1), 
+          rgba(var(--ion-color-success-rgb), 0.05)
+        );
+        transform: scale(1.02);
+        
+        ion-label {
+          font-weight: 700;
+          font-size: 0.9rem;
+        }
+        
+        // Effet de brillance animé (désactivé pour éviter les bugs de clic)
+        // &::after {
+        //   content: '';
+        //   position: absolute;
+        //   top: 0;
+        //   left: -100%;
+        //   width: 100%;
+        //   height: 100%;
+        //   background: linear-gradient(90deg, 
+        //     transparent, 
+        //     rgba(255, 255, 255, 0.3), 
+        //     transparent
+        //   );
+        //   animation: shine 0.6s ease-out;
+        //   border-radius: inherit;
+        //   pointer-events: none;
+        //   z-index: 1;
+        // }
+      }
+      
+      // Animation hover
+      &:not(.segment-button-checked):hover {
+        border: 2px solid var(--lako-gray);
+        background: rgba(var(--ion-color-light-rgb), 0.3);
+        transform: scale(1.01);
+        
+        ion-label {
+          font-weight: 600;
+        }
+      }
+    }
   }
+}
+
+// Styles pour les badges de count
+.segment-badge {
+  --background: var(--ion-color-medium);
+  --color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+  transition: all 0.3s ease;
+  
+  // Badge pour segment sélectionné
+  ion-segment-button.segment-button-checked & {
+    --background: var(--lako-dark);
+    --color: var(--lako-green);
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  // Badge nouvelles réservations
+  &[color="primary"] {
+    --background: var(--ion-color-primary);
+  }
+  
+  // Badge réservations planifiées  
+  &[color="warning"] {
+    --background: var(--ion-color-warning);
+    --color: var(--ion-color-warning-contrast);
+  }
+  
+  // Animation quand le count change
+  &.count-updated {
+    animation: bounce-count 0.5s ease;
+  }
+}
+
+// Animation de brillance
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+// Animation pour count qui change
+@keyframes bounce-count {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
 }
 
 // Animation for status changes

@@ -8,7 +8,7 @@ export interface Reservation {
   destination_nom: string;
   distance_km: number;
   prix_total: number;
-  statut: 'pending' | 'accepted' | 'refused' | 'completed' | 'scheduled';
+  statut: 'pending' | 'accepted' | 'refused' | 'completed' | 'scheduled' | 'canceled';
   created_at: string;
   updated_at?: string;
   conducteur_id?: string | null;

@@ -22,7 +22,7 @@ import {
   LoadingController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline, calendar } from 'ionicons/icons';
+import { location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline, calendar, ban } from 'ionicons/icons';
 import { SupabaseService } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
 import { Reservation } from '../models/reservation.model';
@@ -64,7 +64,7 @@ export class HistoriquePage implements OnInit {
     private toastController: ToastController,
     private loadingController: LoadingController
   ) {
-    addIcons({ location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline, calendar });
+    addIcons({ location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline, calendar, ban });
   }
 
   ngOnInit() {
@@ -117,6 +117,8 @@ export class HistoriquePage implements OnInit {
         return 'primary';
       case 'scheduled':
         return 'warning';
+      case 'canceled':
+        return 'danger';
       default:
         return 'medium';
     }
@@ -132,6 +134,8 @@ export class HistoriquePage implements OnInit {
         return 'checkmark-done-circle';
       case 'scheduled':
         return 'calendar';
+      case 'canceled':
+        return 'ban';
       default:
         return 'time';
     }
@@ -147,6 +151,8 @@ export class HistoriquePage implements OnInit {
         return 'Terminée';
       case 'scheduled':
         return 'Planifiée';
+      case 'canceled':
+        return 'Annulée';
       default:
         return status;
     }

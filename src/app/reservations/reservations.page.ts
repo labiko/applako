@@ -21,6 +21,8 @@ import {
   IonIcon,
   IonToggle,
   IonBadge,
+  IonSegment,
+  IonSegmentButton,
   ToastController,
   LoadingController,
   AlertController
@@ -60,6 +62,8 @@ import { Reservation } from '../models/reservation.model';
     IonIcon,
     IonToggle,
     IonBadge,
+    IonSegment,
+    IonSegmentButton,
     CommonModule,
     FormsModule,
   ],
@@ -69,6 +73,11 @@ export class ReservationsPage implements OnInit, OnDestroy {
   isLoading = true;
   conducteurPosition: string = 'Chargement de la position...';
   isOnline: boolean = true; // Statut en ligne par défaut
+  
+  // Segments pour séparer réservations nouvelles et planifiées
+  selectedSegment: string = 'nouvelles'; // Par défaut sur nouvelles réservations
+  allReservations: Reservation[] = []; // Toutes les réservations récupérées
+  scheduledReservations: Reservation[] = []; // Réservations planifiées assignées
   
   // Système d'actualisation automatique optimisé
   private refreshInterval: any = null;
@@ -302,8 +311,14 @@ export class ReservationsPage implements OnInit, OnDestroy {
   async loadReservations() {
     this.isLoading = true;
     try {
-      // Get reservations that are pending and not assigned to any driver
-      this.reservations = await this.supabaseService.getPendingReservations();
+      // Charger les nouvelles réservations (pending et scheduled non assignées)
+      this.allReservations = await this.supabaseService.getPendingReservations();
+      
+      // Charger les réservations planifiées assignées au conducteur connecté
+      await this.loadScheduledReservations();
+      
+      // Filtrer selon le segment actuel
+      this.filterReservationsBySegment();
       
       // Calculate duration for each reservation and update conducteur position display
       await this.updateConducteurPosition();
@@ -317,6 +332,53 @@ export class ReservationsPage implements OnInit, OnDestroy {
       this.presentToast('Erreur lors du chargement des réservations', 'danger');
     } finally {
       this.isLoading = false;
+    }
+  }
+
+  // Charger les réservations planifiées assignées au conducteur connecté
+  private async loadScheduledReservations() {
+    try {
+      const conducteurId = this.authService.getCurrentConducteurId();
+      console.log('🔍 Chargement réservations planifiées pour conducteur:', conducteurId);
+      
+      if (conducteurId) {
+        this.scheduledReservations = await this.supabaseService.getScheduledReservationsForConducteur(conducteurId);
+        console.log('📋 Réservations planifiées trouvées:', this.scheduledReservations.length, this.scheduledReservations);
+      } else {
+        console.warn('❌ Aucun conducteur connecté');
+        this.scheduledReservations = [];
+      }
+    } catch (error) {
+      console.error('Error loading scheduled reservations:', error);
+      this.scheduledReservations = [];
+    }
+  }
+
+  // Gestionnaire changement de segment
+  onSegmentChange(event: any) {
+    console.log('Segment event:', event);
+    console.log('Event detail:', event.detail);
+    const newValue = event.detail?.value || event.target?.value;
+    console.log('Segment changed to:', newValue);
+    
+    if (newValue) {
+      this.selectedSegment = newValue;
+      this.filterReservationsBySegment();
+    }
+  }
+
+  // Filtrer les réservations selon le segment sélectionné
+  private filterReservationsBySegment() {
+    console.log('🎯 Filtrage segment:', this.selectedSegment);
+    console.log('📊 Nouvelles réservations:', this.allReservations.length);
+    console.log('📅 Réservations planifiées:', this.scheduledReservations.length);
+    
+    if (this.selectedSegment === 'nouvelles') {
+      this.reservations = this.allReservations;
+      console.log('✅ Affichage nouvelles réservations:', this.reservations.length);
+    } else if (this.selectedSegment === 'planifiees') {
+      this.reservations = this.scheduledReservations;
+      console.log('✅ Affichage réservations planifiées:', this.reservations.length);
     }
   }
 
@@ -512,33 +574,41 @@ Accepter cette réservation planifiée ?`,
 
   // Ouvrir Google Maps pour la destination finale (même logique que départ)
   openGoogleMapsDestination(reservation: Reservation) {
+    console.log('🏁 DEBUG openGoogleMapsDestination - Réservation:', reservation.id);
+    console.log('🏁 position_arrivee (brut):', reservation.position_arrivee);
+    console.log('🏁 destination_nom:', reservation.destination_nom);
+    console.log('🏁 Type de position_arrivee:', typeof reservation.position_arrivee);
+    
     let destination = '';
     
     // Extraire la position d'arrivée (destination finale)
     if (reservation.position_arrivee) {
+      console.log('🔍 Extraction coordonnées position_arrivee...');
       const arriveeCoords = this.extractCoordinates(reservation.position_arrivee);
+      console.log('📊 Coordonnées extraites position_arrivee:', arriveeCoords);
+      
       if (arriveeCoords) {
         destination = `${arriveeCoords.lat},${arriveeCoords.lng}`;
+        console.log('✅ Destination avec coordonnées:', destination);
       } else {
         // Fallback sur le nom de la position d'arrivée
         destination = encodeURIComponent(reservation.position_arrivee);
+        console.log('⚠️ Fallback position_arrivee comme texte:', destination);
       }
     }
     
     // Fallback ultime sur le nom de destination
     if (!destination) {
       destination = encodeURIComponent(reservation.destination_nom || 'Destination');
+      console.log('❌ Fallback destination_nom:', destination);
     }
     
     // Navigation directe depuis la position actuelle vers la destination finale
     // Google Maps utilisera automatiquement la position GPS actuelle comme point de départ
     const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
     
-    console.log('🗺️ Opening navigation from current location to destination:', { 
-      destination, 
-      url,
-      reservationId: reservation.id 
-    });
+    console.log('🗺️ URL finale Google Maps destination:', url);
+    console.log('🚀 Ouverture navigation vers destination finale');
     
     // Ouvrir dans l'app Google Maps ou navigateur
     window.open(url, '_system');
@@ -663,20 +733,26 @@ Accepter cette réservation planifiée ?`,
   // Extraire coordonnées depuis format POINT(lng lat) ou WKB
   private extractCoordinates(pointString: string): {lat: number, lng: number} | null {
     try {
+      console.log('🔍 DEBUG extractCoordinates - Input:', pointString);
+      console.log('🔍 Type:', typeof pointString);
+      console.log('🔍 Length:', pointString?.length);
       
       // Vérifier si pointString est undefined ou null
       if (!pointString) {
+        console.log('❌ pointString est null/undefined');
         return null;
       }
       
       // Format texte: POINT(2.5847236 48.6273519) - utilisé par les réservations
       if (pointString.startsWith('POINT(')) {
+        console.log('✅ Format POINT détecté');
         const coords = pointString.replace('POINT(', '').replace(')', '').split(' ');
+        console.log('📊 Coordonnées brutes extraites:', coords);
         const result = {
           lng: parseFloat(coords[0]),
           lat: parseFloat(coords[1])
         };
-        console.log('Extracted POINT coordinates:', result);
+        console.log('✅ POINT coordinates extraites:', result);
         return result;
       }
       
@@ -686,12 +762,15 @@ Accepter cette réservation planifiée ?`,
       if (pointString.length >= 50 && 
           pointString.match(/^[0-9A-F]+$/i) && 
           pointString.toUpperCase().startsWith('0101000020E6100000')) {
+        console.log('✅ Format WKB détecté');
         const result = this.decodeWKB(pointString);
-        console.log('Extracted WKB coordinates:', result);
+        console.log('✅ WKB coordinates extraites:', result);
         return result;
       }
       
-      console.warn('Unknown coordinate format:', pointString);
+      console.warn('❌ Format de coordonnées inconnu:', pointString);
+      console.warn('❌ Longueur:', pointString.length);
+      console.warn('❌ Débute par WKB?', pointString.toUpperCase().startsWith('0101000020E6100000'));
       return null;
     } catch (error) {
       console.error('Error extracting coordinates:', error, 'from:', pointString);
