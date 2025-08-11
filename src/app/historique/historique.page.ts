@@ -22,7 +22,7 @@ import {
   LoadingController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline } from 'ionicons/icons';
+import { location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline, calendar } from 'ionicons/icons';
 import { SupabaseService } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
 import { Reservation } from '../models/reservation.model';
@@ -64,7 +64,7 @@ export class HistoriquePage implements OnInit {
     private toastController: ToastController,
     private loadingController: LoadingController
   ) {
-    addIcons({ location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline });
+    addIcons({ location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline, calendar });
   }
 
   ngOnInit() {
@@ -115,6 +115,8 @@ export class HistoriquePage implements OnInit {
         return 'danger';
       case 'completed':
         return 'primary';
+      case 'scheduled':
+        return 'warning';
       default:
         return 'medium';
     }
@@ -128,6 +130,8 @@ export class HistoriquePage implements OnInit {
         return 'close-circle';
       case 'completed':
         return 'checkmark-done-circle';
+      case 'scheduled':
+        return 'calendar';
       default:
         return 'time';
     }
@@ -141,6 +145,8 @@ export class HistoriquePage implements OnInit {
         return 'Refusée';
       case 'completed':
         return 'Terminée';
+      case 'scheduled':
+        return 'Planifiée';
       default:
         return status;
     }
@@ -172,6 +178,27 @@ export class HistoriquePage implements OnInit {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  // Formatage date de réservation planifiée
+  formatScheduledDate(dateString?: string): string {
+    if (!dateString) return 'Date non spécifiée';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  }
+
+  // Formatage heure de réservation planifiée
+  formatScheduledTime(hour?: number | null, minute?: number | null): string {
+    if (hour === null || hour === undefined) return 'Heure non spécifiée';
+    
+    const h = hour.toString().padStart(2, '0');
+    const m = (minute || 0).toString().padStart(2, '0');
+    return `${h}:${m}`;
   }
 
   // Gestion des inputs OTP

@@ -31,6 +31,78 @@
 /* Custom shared styles */
 @import "src/app/shared/styles/header-styles.scss";
 
+/* Styles pour alerte réservation planifiée */
+.scheduled-reservation-alert {
+  .alert-wrapper {
+    max-width: 95vw !important;
+    width: 380px !important;
+    border-radius: 16px !important;
+    
+    @media (max-width: 420px) {
+      width: 92vw !important;
+    }
+  }
+  
+  .alert-head {
+    padding: 20px 16px !important;
+    background: linear-gradient(135deg, #ff9800, #f57c00) !important;
+    
+    h2 {
+      color: white !important;
+      font-size: 1.4rem !important;
+      font-weight: 900 !important;
+      text-align: center !important;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+  }
+  
+  .alert-message {
+    padding: 20px 16px !important;
+    font-size: 1.15rem !important;
+    font-weight: 800 !important;
+    line-height: 1.8 !important;
+    color: #212529 !important;
+    text-align: center !important;
+    white-space: pre-line !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    background: linear-gradient(180deg, #fff, #f8f9fa) !important;
+  }
+  
+  .alert-button-group {
+    padding: 0 !important;
+    border-top: 1px solid #e9ecef !important;
+    
+    .alert-button {
+      font-weight: 800 !important;
+      font-size: 1.1rem !important;
+      height: 56px !important;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      
+      &.alert-button-cancel {
+        color: #6c757d !important;
+        background: #f8f9fa !important;
+        border-right: 1px solid #e9ecef !important;
+        
+        &:active {
+          background: #e9ecef !important;
+        }
+      }
+      
+      &.alert-button-confirm {
+        color: white !important;
+        background: linear-gradient(135deg, #28a745, #218838) !important;
+        font-size: 1.15rem !important;
+        
+        &:active {
+          background: linear-gradient(135deg, #218838, #1e7e34) !important;
+        }
+      }
+    }
+  }
+}
+
 /* Custom global styles */
 .reservation-card {
   margin: 8px 16px;

@@ -76,6 +76,24 @@
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  
+  // Style pour réservations planifiées (scheduled)
+  &.scheduled-reservation {
+    opacity: 0.9;
+    border: 2px solid var(--ion-color-warning);
+    background: linear-gradient(135deg, 
+      rgba(var(--ion-color-warning-rgb), 0.05), 
+      rgba(var(--ion-color-warning-rgb), 0.1)
+    );
+    
+    .reservation-header {
+      background: linear-gradient(135deg, 
+        var(--ion-color-warning), 
+        var(--ion-color-warning-shade)
+      );
+      color: var(--ion-color-warning-contrast);
+    }
+  }
 }
 
 .reservation-header {
@@ -153,6 +171,47 @@
       font-weight: 600;
     }
   }
+}
+
+// Informations de planification
+.scheduled-info {
+  background: linear-gradient(135deg, 
+    rgba(var(--ion-color-warning-rgb), 0.1), 
+    rgba(var(--ion-color-warning-rgb), 0.05)
+  );
+  border: 1px solid rgba(var(--ion-color-warning-rgb), 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  
+  .detail-item {
+    margin-bottom: 8px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    ion-icon {
+      color: var(--ion-color-warning);
+      font-size: 1.2em;
+    }
+    
+    ion-text {
+      font-weight: 600;
+      
+      strong {
+        color: var(--ion-color-warning-shade);
+      }
+    }
+  }
+}
+
+// Badge pour réservations planifiées
+.scheduled-badge {
+  margin-left: 8px;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 12px;
 }
 
 .reservation-actions {

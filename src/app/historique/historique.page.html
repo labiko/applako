@@ -41,7 +41,9 @@
     </div>
 
     <div *ngIf="!isLoading && reservations.length > 0">
-      <ion-card *ngFor="let reservation of reservations" class="reservation-card">
+      <ion-card *ngFor="let reservation of reservations" 
+                class="reservation-card"
+                [class.scheduled-reservation]="reservation.statut === 'scheduled'">
         <ion-card-header class="reservation-header">
           <ion-card-title>
             <div class="header-content">
@@ -90,6 +92,23 @@
               <ion-text>
                 <strong>Prix:</strong> {{ reservation.prix_total }} FCFA
               </ion-text>
+            </div>
+
+            <!-- Informations de planification pour réservations scheduled -->
+            <div *ngIf="reservation.statut === 'scheduled'" class="scheduled-info">
+              <div class="detail-item" *ngIf="reservation.date_reservation">
+                <ion-icon name="calendar" color="warning"></ion-icon>
+                <ion-text color="warning">
+                  <strong>Date prévue:</strong> {{ formatScheduledDate(reservation.date_reservation) }}
+                </ion-text>
+              </div>
+              
+              <div class="detail-item" *ngIf="reservation.heure_reservation !== null">
+                <ion-icon name="time" color="warning"></ion-icon>
+                <ion-text color="warning">
+                  <strong>Heure prévue:</strong> {{ formatScheduledTime(reservation.heure_reservation, reservation.minute_reservation) }}
+                </ion-text>
+              </div>
             </div>
 
             <div class="detail-item">

@@ -26,6 +26,25 @@
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  
+  // Style pour réservations planifiées (scheduled)
+  &.scheduled-reservation {
+    opacity: 0.9;
+    border: 2px solid var(--ion-color-warning);
+    background: linear-gradient(135deg, 
+      rgba(var(--ion-color-warning-rgb), 0.05), 
+      rgba(var(--ion-color-warning-rgb), 0.1)
+    );
+    
+    .reservation-header {
+      background: linear-gradient(135deg, 
+        var(--ion-color-warning), 
+        var(--ion-color-warning-shade)
+      );
+      color: var(--ion-color-warning-contrast);
+      border-bottom: none;
+    }
+  }
 }
 
 .reservation-header {

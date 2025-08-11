@@ -181,20 +181,55 @@ export class SupabaseService {
         return [];
       }
 
-      // Appel fonction PostgreSQL avec filtrage 5km
-      const { data, error } = await this.supabase
+      // Récupérer PENDING avec la fonction existante
+      const { data: pendingData, error: pendingError } = await this.supabase
         .rpc('get_reservations_nearby_conducteur', {
           p_conducteur_id: currentConducteur.id,
           p_max_distance_km: 5
         });
 
-      if (error) {
-        console.error('Erreur fonction filtrage 5km:', error);
+      if (pendingError) {
+        console.error('Erreur fonction filtrage 5km:', pendingError);
         // Fallback vers ancienne méthode si fonction échoue
-        return this.getPendingReservationsLegacy();
+        return this.getPendingAndScheduledReservationsLegacy();
       }
 
-      return data || [];
+      // Récupérer SCHEDULED avec requête supplémentaire (même logique de filtrage)
+      const { data: scheduledData, error: scheduledError } = await this.supabase
+        .from('reservations')
+        .select('*')
+        .eq('statut', 'scheduled')
+        .is('conducteur_id', null)
+        .eq('vehicle_type', currentConducteur.vehicle_type)
+        .order('date_reservation', { ascending: true })
+        .order('heure_reservation', { ascending: true });
+
+      // Combiner pending + scheduled
+      const allReservations = [
+        ...(pendingData || []),
+        ...(scheduledData || [])
+      ];
+
+      // Trier : pending en premier, puis scheduled par date/heure
+      return allReservations.sort((a, b) => {
+        // Priorité aux pending
+        if (a.statut === 'pending' && b.statut === 'scheduled') return -1;
+        if (a.statut === 'scheduled' && b.statut === 'pending') return 1;
+        
+        // Si deux scheduled, trier par date/heure
+        if (a.statut === 'scheduled' && b.statut === 'scheduled') {
+          if (a.date_reservation && b.date_reservation) {
+            const dateCompare = new Date(a.date_reservation).getTime() - new Date(b.date_reservation).getTime();
+            if (dateCompare !== 0) return dateCompare;
+            
+            // Si même date, trier par heure
+            return (a.heure_reservation || 0) - (b.heure_reservation || 0);
+          }
+        }
+        
+        // Par défaut, trier par created_at
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      });
 
     } catch (error) {
       console.error('Erreur getPendingReservations:', error);
@@ -203,6 +238,22 @@ export class SupabaseService {
   }
 
   // Méthode fallback (ancienne logique)
+  private async getPendingAndScheduledReservationsLegacy() {
+    const { data, error } = await this.supabase
+      .from('reservations')
+      .select('*')
+      .in('statut', ['pending', 'scheduled'])
+      .is('conducteur_id', null)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching reservations (legacy):', error);
+      return [];
+    }
+
+    return data || [];
+  }
+
   private async getPendingReservationsLegacy() {
     const { data, error } = await this.supabase
       .from('reservations')

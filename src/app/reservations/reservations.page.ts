@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
@@ -20,11 +20,13 @@ import {
   IonText,
   IonIcon,
   IonToggle,
+  IonBadge,
   ToastController,
-  LoadingController
+  LoadingController,
+  AlertController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { location, time, person, call, checkmark, close, car, resize, card, carSportOutline, openOutline, timeOutline, checkmarkCircle, closeCircle, flag } from 'ionicons/icons';
+import { location, time, person, call, checkmark, close, car, resize, card, carSportOutline, openOutline, timeOutline, checkmarkCircle, closeCircle, flag, calendar } from 'ionicons/icons';
 import { SupabaseService } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
 import { GeolocationService } from '../services/geolocation.service';
@@ -57,6 +59,7 @@ import { Reservation } from '../models/reservation.model';
     IonText,
     IonIcon,
     IonToggle,
+    IonBadge,
     CommonModule,
     FormsModule,
   ],
@@ -82,9 +85,11 @@ export class ReservationsPage implements OnInit, OnDestroy {
     private geolocationService: GeolocationService,
     private oneSignalService: OneSignalService,
     private toastController: ToastController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private alertController: AlertController,
+    private cdr: ChangeDetectorRef
   ) {
-    addIcons({ location, time, person, call, checkmark, close, car, resize, card, carSportOutline, openOutline, timeOutline, checkmarkCircle, closeCircle, flag });
+    addIcons({ location, time, person, call, checkmark, close, car, resize, card, carSportOutline, openOutline, timeOutline, checkmarkCircle, closeCircle, flag, calendar });
   }
 
   ngOnInit() {
@@ -321,6 +326,49 @@ export class ReservationsPage implements OnInit, OnDestroy {
   }
 
   async acceptReservation(reservation: Reservation) {
+    // Vérifier si c'est une réservation planifiée
+    if (reservation.statut === 'scheduled') {
+      await this.confirmScheduledReservation(reservation);
+      return;
+    }
+
+    // Pour les réservations pending normales
+    await this.processAcceptReservation(reservation);
+  }
+
+  // Confirmation pour réservations planifiées
+  private async confirmScheduledReservation(reservation: Reservation) {
+    const scheduledDate = this.formatScheduledDate(reservation.date_reservation);
+    const scheduledTime = this.formatScheduledTime(reservation.heure_reservation, reservation.minute_reservation);
+    
+    const alert = await this.alertController.create({
+      header: '⚠️ RÉSERVATION PLANIFIÉE',
+      cssClass: 'scheduled-reservation-alert',
+      message: `📅 ${scheduledDate.toUpperCase()}
+🕐 ${scheduledTime}
+
+Accepter cette réservation planifiée ?`,
+      buttons: [
+        {
+          text: 'NON',
+          role: 'cancel',
+          cssClass: 'alert-button-cancel'
+        },
+        {
+          text: 'OUI',
+          cssClass: 'alert-button-confirm',
+          handler: () => {
+            this.processAcceptReservation(reservation);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  // Traitement de l'acceptation (commun)
+  private async processAcceptReservation(reservation: Reservation) {
     const loading = await this.loadingController.create({
       message: 'Acceptation en cours...',
     });
@@ -334,8 +382,18 @@ export class ReservationsPage implements OnInit, OnDestroy {
       }
 
       await this.supabaseService.updateReservationStatus(reservation.id, 'accepted', conducteurId);
+      
+      // Supprimer immédiatement de la liste locale
+      console.log('Avant suppression:', this.reservations.length, 'réservations');
       this.reservations = this.reservations.filter(r => r.id !== reservation.id);
-      this.presentToast('Réservation acceptée avec succès', 'success');
+      console.log('Après suppression:', this.reservations.length, 'réservations');
+      this.cdr.detectChanges(); // Forcer la détection des changements
+      
+      const message = reservation.statut === 'scheduled' 
+        ? 'Réservation planifiée acceptée avec succès' 
+        : 'Réservation acceptée avec succès';
+      
+      this.presentToast(message, 'success');
     } catch (error) {
       console.error('Error accepting reservation:', error);
       this.presentToast('Erreur lors de l\'acceptation', 'danger');
@@ -389,6 +447,27 @@ export class ReservationsPage implements OnInit, OnDestroy {
     return price.toLocaleString('fr-FR');
   }
 
+  // Formatage date de réservation planifiée
+  formatScheduledDate(dateString?: string): string {
+    if (!dateString) return 'Date non spécifiée';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  }
+
+  // Formatage heure de réservation planifiée
+  formatScheduledTime(hour?: number | null, minute?: number | null): string {
+    if (hour === null || hour === undefined) return 'Heure non spécifiée';
+    
+    const h = hour.toString().padStart(2, '0');
+    const m = (minute || 0).toString().padStart(2, '0');
+    return `${h}:${m}`;
+  }
+
   // Ouvrir Google Maps avec navigation directe vers le point de récupération du client
   openGoogleMaps(reservation: Reservation) {
     let destination = '';
@@ -422,6 +501,40 @@ export class ReservationsPage implements OnInit, OnDestroy {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
     
     console.log('🗺️ Opening navigation from current location to pickup client:', { 
+      destination, 
+      url,
+      reservationId: reservation.id 
+    });
+    
+    // Ouvrir dans l'app Google Maps ou navigateur
+    window.open(url, '_system');
+  }
+
+  // Ouvrir Google Maps pour la destination finale (même logique que départ)
+  openGoogleMapsDestination(reservation: Reservation) {
+    let destination = '';
+    
+    // Extraire la position d'arrivée (destination finale)
+    if (reservation.position_arrivee) {
+      const arriveeCoords = this.extractCoordinates(reservation.position_arrivee);
+      if (arriveeCoords) {
+        destination = `${arriveeCoords.lat},${arriveeCoords.lng}`;
+      } else {
+        // Fallback sur le nom de la position d'arrivée
+        destination = encodeURIComponent(reservation.position_arrivee);
+      }
+    }
+    
+    // Fallback ultime sur le nom de destination
+    if (!destination) {
+      destination = encodeURIComponent(reservation.destination_nom || 'Destination');
+    }
+    
+    // Navigation directe depuis la position actuelle vers la destination finale
+    // Google Maps utilisera automatiquement la position GPS actuelle comme point de départ
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+    
+    console.log('🗺️ Opening navigation from current location to destination:', { 
       destination, 
       url,
       reservationId: reservation.id 

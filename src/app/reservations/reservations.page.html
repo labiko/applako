@@ -73,11 +73,17 @@
     </div>
 
     <div *ngIf="!isLoading && reservations.length > 0">
-      <ion-card *ngFor="let reservation of reservations" class="reservation-card" [attr.data-reservation-id]="reservation.id">
+      <ion-card *ngFor="let reservation of reservations" 
+                class="reservation-card" 
+                [class.scheduled-reservation]="reservation.statut === 'scheduled'"
+                [attr.data-reservation-id]="reservation.id">
         <ion-card-header class="reservation-header">
           <ion-card-title>
             <ion-icon name="person"></ion-icon>
             Client: {{ reservation.client_phone || 'Non spécifié' }}
+            <ion-badge *ngIf="reservation.statut === 'scheduled'" color="warning" class="scheduled-badge">
+              Planifiée
+            </ion-badge>
           </ion-card-title>
         </ion-card-header>
 
@@ -103,10 +109,10 @@
               </ion-text>
             </div>
 
-            <div class="detail-item clickable" (click)="navigateToDestination(reservation)" *ngIf="reservation.position_arrivee">
+            <div class="detail-item clickable" (click)="openGoogleMapsDestination(reservation)">
               <ion-icon name="flag" color="success"></ion-icon>
               <ion-text color="success">
-                <strong>Destination:</strong> {{ reservation.destination_nom || 'Destination finale' }}
+                <strong>Destination:</strong> {{ reservation.destination_nom || 'Non spécifiée' }}
                 <ion-icon name="open-outline" class="external-link-icon"></ion-icon>
               </ion-text>
             </div>
@@ -123,6 +129,23 @@
               <ion-text>
                 <strong>Prix:</strong> {{ formatPrice(reservation.prix_total) }} GNF
               </ion-text>
+            </div>
+
+            <!-- Informations de planification pour réservations scheduled -->
+            <div *ngIf="reservation.statut === 'scheduled'" class="scheduled-info">
+              <div class="detail-item" *ngIf="reservation.date_reservation">
+                <ion-icon name="calendar" color="warning"></ion-icon>
+                <ion-text color="warning">
+                  <strong>Date prévue:</strong> {{ formatScheduledDate(reservation.date_reservation) }}
+                </ion-text>
+              </div>
+              
+              <div class="detail-item" *ngIf="reservation.heure_reservation !== null">
+                <ion-icon name="time" color="warning"></ion-icon>
+                <ion-text color="warning">
+                  <strong>Heure prévue:</strong> {{ formatScheduledTime(reservation.heure_reservation, reservation.minute_reservation) }}
+                </ion-text>
+              </div>
             </div>
 
             <div class="detail-item">
