@@ -57,14 +57,18 @@
 
   <!-- Segments pour séparer réservations normales et planifiées -->
   <div class="segments-container">
-    <ion-segment [value]="selectedSegment" (ionChange)="onSegmentChange($event)">
-      <ion-segment-button value="nouvelles">
+    <ion-segment [value]="selectedSegment">
+      <ion-segment-button value="nouvelles" 
+                          (click)="changeSegment('nouvelles')"
+                          [class.segment-active]="selectedSegment === 'nouvelles'">
         <ion-label>
           Nouvelles
           <ion-badge color="primary" class="segment-badge">{{ allReservations.length }}</ion-badge>
         </ion-label>
       </ion-segment-button>
-      <ion-segment-button value="planifiees">
+      <ion-segment-button value="planifiees" 
+                          (click)="changeSegment('planifiees')"
+                          [class.segment-active]="selectedSegment === 'planifiees'">
         <ion-label>
           Planifiées
           <ion-badge color="warning" class="segment-badge">{{ scheduledReservations.length }}</ion-badge>
@@ -98,16 +102,18 @@
           <ion-card-title>
             <div class="header-info">
               <div class="client-info">
-                <ion-icon name="person"></ion-icon>
-                Client: {{ reservation.client_phone || 'Non spécifié' }}
-                <ion-badge *ngIf="reservation.statut === 'scheduled'" color="warning" class="scheduled-badge">
-                  Planifiée
-                </ion-badge>
-              </div>
-              <div class="reservation-id">
-                <ion-text color="medium">
-                  <small>ID: {{ reservation.id.substring(0, 8) }}...</small>
-                </ion-text>
+                <div class="client-main">
+                  <ion-icon name="person"></ion-icon>
+                  Client: {{ reservation.client_phone || 'Non spécifié' }}
+                  <ion-badge *ngIf="reservation.statut === 'scheduled'" color="warning" class="scheduled-badge">
+                    Planifiée
+                  </ion-badge>
+                </div>
+                <div class="reservation-id-inline">
+                  <ion-text color="medium">
+                    <small>{{ reservation.id.substring(0, 8) }}...</small>
+                  </ion-text>
+                </div>
               </div>
             </div>
           </ion-card-title>

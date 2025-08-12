@@ -41,7 +41,10 @@
       "Bash(ionic build:*)",
       "Bash(./gradlew:*)",
       "Bash(adb install:*)",
-      "Bash(adb shell pm uninstall:*)"
+      "Bash(adb shell pm uninstall:*)",
+      "Bash(grep:*)",
+      "Bash(ionic capacitor:*)",
+      "Bash(adb:*)"
     ],
     "deny": []
   }

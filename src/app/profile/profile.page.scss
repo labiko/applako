@@ -154,3 +154,57 @@ ion-title {
   color: var(--lako-dark);
   font-weight: 600;
 }
+
+// Styles pour la section rayon de recherche
+.rayon-container {
+  .rayon-control {
+    padding: 16px 0;
+    
+    ion-range {
+      padding: 16px 0;
+    }
+    
+    .rayon-presets {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 16px 0;
+      
+      ion-chip {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          transform: scale(1.05);
+        }
+        
+        &[color="primary"] {
+          font-weight: bold;
+          box-shadow: 0 2px 8px rgba(var(--ion-color-primary-rgb), 0.3);
+        }
+      }
+    }
+    
+    .rayon-info {
+      background: rgba(var(--ion-color-light-rgb), 0.5);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 16px;
+      
+      p {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        
+        ion-icon {
+          flex-shrink: 0;
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+}

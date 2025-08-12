@@ -46,9 +46,10 @@ The application uses a custom color scheme:
 
 ### Key Services
 - **SupabaseService** (`src/app/services/supabase.service.ts`): Handles all database operations
-  - `getPendingReservations()`: Fetches reservations with status 'pending'
+  - `getPendingReservations()`: Fetches reservations with custom radius filtering via RPC
   - `updateReservationStatus()`: Updates reservation status to 'accepted' or 'refused'
   - `getReservationHistory()`: Fetches processed reservations
+  - `updateConducteurRayon()`: Updates driver's search radius preference (1-50km)
 
 - **GeolocationService** (`src/app/services/geolocation.service.ts`): GPS tracking with Wake Lock
   - `startLocationTracking()`: Starts GPS tracking every 5 minutes + activates Wake Lock
@@ -70,6 +71,8 @@ The application uses a custom color scheme:
 
 ### Database Requirements
 The application expects a `reservations` table in Supabase with these columns (structure réelle vérifiée):
+
+**IMPORTANT:** The database now includes a custom search radius system for drivers.
 - `id`: UUID (Primary key, auto-generated avec uuid_generate_v4())
 - `client_phone`: Text NOT NULL (pas customer_phone)
 - `vehicle_type`: Text ('moto' ou 'voiture')
@@ -86,6 +89,9 @@ The application expects a `reservations` table in Supabase with these columns (s
 - `minute_reservation`: Integer (0-59)
 - `created_at`: Timestamp (auto)
 - `updated_at`: Timestamp (auto)
+
+**NOUVELLES COLONNES AJOUTÉES:**
+- ✅ `rayon_km_reservation`: Integer (conducteurs table) - Rayon de recherche personnalisé (NULL = 5km défaut)
 
 **COLONNES QUI N'EXISTENT PAS** (erreurs courantes):
 - ❌ `customer_name` → utiliser `client_phone`
@@ -105,6 +111,21 @@ For complete database structure analysis and schema details, refer to:
 
 This file contains the complete database schema including all tables, columns, relationships, and constraints. Always consult this file when analyzing database structure or implementing new features that require database modifications.
 
+### Required PostgreSQL Functions
+
+**`get_reservations_within_radius()`** - Custom RPC function for distance-based filtering:
+```sql
+CREATE OR REPLACE FUNCTION get_reservations_within_radius(
+  conducteur_position TEXT,    -- Driver position as WKB hex
+  radius_meters INTEGER,       -- Search radius in meters
+  vehicle_type_filter TEXT,    -- Vehicle type ('moto' or 'voiture')
+  statut_filter TEXT          -- Status filter ('pending' or 'scheduled')
+)
+RETURNS SETOF reservations
+```
+
+This function handles the complex geometry operations for filtering reservations by distance while managing the mixed data types (TEXT WKB vs GEOMETRY PostGIS).
+
 ## 🔋 GPS Tracking & Wake Lock System
 
 ### Overview
@@ -122,7 +143,9 @@ The application implements an intelligent GPS tracking system with Wake Lock man
 - ✅ **User Friendly**: Simple online/offline toggle
 
 ### Documentation
-For complete technical details, see: `SYSTEME_GPS_WAKE_LOCK.md`
+For complete technical details, see: 
+- `SYSTEME_GPS_WAKE_LOCK.md`
+- `SYSTEME_FILTRAGE_RAYON.md` - **NEW:** Custom radius filtering system
 
 ## Git Repository & Deployment
 

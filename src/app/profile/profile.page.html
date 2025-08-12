@@ -125,6 +125,75 @@
       </ion-card-content>
     </ion-card>
 
+    <!-- Rayon de recherche -->
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="location" slot="start"></ion-icon>
+          Rayon de recherche
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="rayon-container">
+          <ion-item>
+            <ion-icon name="navigate-circle" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <h3>Distance maximale</h3>
+              <p>{{ getCurrentRayonLabel() }}</p>
+            </ion-label>
+          </ion-item>
+          
+          <div class="rayon-control">
+            <ion-range
+              [value]="driver.rayon_km_reservation || 5"
+              [min]="1"
+              [max]="50"
+              [step]="1"
+              [pin]="true"
+              [ticks]="false"
+              color="primary"
+              (ionInput)="onRayonChange($event)">
+              
+              <ion-label slot="start">1km</ion-label>
+              <ion-label slot="end">50km</ion-label>
+            </ion-range>
+            
+            <div class="rayon-presets">
+              <ion-chip 
+                [color]="(driver.rayon_km_reservation || 5) === 5 ? 'primary' : 'medium'"
+                (click)="setRayon(5)">
+                5km
+              </ion-chip>
+              <ion-chip 
+                [color]="(driver.rayon_km_reservation || 5) === 10 ? 'primary' : 'medium'"
+                (click)="setRayon(10)">
+                10km
+              </ion-chip>
+              <ion-chip 
+                [color]="(driver.rayon_km_reservation || 5) === 20 ? 'primary' : 'medium'"
+                (click)="setRayon(20)">
+                20km
+              </ion-chip>
+              <ion-chip 
+                [color]="(driver.rayon_km_reservation || 5) === 50 ? 'primary' : 'medium'"
+                (click)="setRayon(50)">
+                50km
+              </ion-chip>
+            </div>
+            
+            <div class="rayon-info">
+              <ion-text color="medium">
+                <p>
+                  <ion-icon name="information-circle" color="medium"></ion-icon>
+                  Vous recevrez les réservations dans un rayon de {{ driver.rayon_km_reservation || 5 }}km autour de votre position
+                </p>
+              </ion-text>
+            </div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
     <!-- Statistics -->
     <ion-card class="stats-card">
       <ion-card-header>

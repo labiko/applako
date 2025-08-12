@@ -113,26 +113,31 @@
       
       .client-info {
         display: flex;
-        align-items: center;
-        gap: 8px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
         flex: 1;
         
-        ion-icon {
-          font-size: 1.2em;
+        .client-main {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          
+          ion-icon {
+            font-size: 1.2em;
+          }
         }
-      }
-      
-      .reservation-id {
-        flex-shrink: 0;
         
-        small {
-          font-size: 0.75rem;
-          font-weight: 400;
-          opacity: 0.8;
-          font-family: monospace;
-          background: rgba(0, 0, 0, 0.1);
-          padding: 2px 6px;
-          border-radius: 4px;
+        .reservation-id-inline {
+          margin-left: 28px; // Aligné avec le texte "Client:"
+          
+          small {
+            font-size: 0.65rem;
+            font-weight: 400;
+            opacity: 0.4; // Faible opacity comme demandé
+            font-family: monospace;
+            color: var(--ion-color-medium);
+          }
         }
       }
     }
@@ -386,38 +391,21 @@ ion-title {
       }
       
       // Animation pour le segment sélectionné
-      &.segment-button-checked {
-        --color: var(--lako-dark);
-        border: 2px solid var(--lako-green);
-        background: linear-gradient(135deg, 
-          rgba(var(--ion-color-success-rgb), 0.1), 
-          rgba(var(--ion-color-success-rgb), 0.05)
-        );
-        transform: scale(1.02);
+      &.segment-button-checked,
+      &.segment-active {
+        --color: var(--lako-dark) !important;
+        border: none !important;
+        background: transparent !important;
+        transform: none;
+        box-shadow: none;
         
         ion-label {
-          font-weight: 700;
-          font-size: 0.9rem;
+          font-weight: 700 !important;
+          font-size: 0.9rem !important;
+          color: var(--lako-dark) !important;
+          border-bottom: 3px solid var(--lako-green) !important;
+          padding-bottom: 4px !important;
         }
-        
-        // Effet de brillance animé (désactivé pour éviter les bugs de clic)
-        // &::after {
-        //   content: '';
-        //   position: absolute;
-        //   top: 0;
-        //   left: -100%;
-        //   width: 100%;
-        //   height: 100%;
-        //   background: linear-gradient(90deg, 
-        //     transparent, 
-        //     rgba(255, 255, 255, 0.3), 
-        //     transparent
-        //   );
-        //   animation: shine 0.6s ease-out;
-        //   border-radius: inherit;
-        //   pointer-events: none;
-        //   z-index: 1;
-        // }
       }
       
       // Animation hover

@@ -17,10 +17,13 @@ import {
   IonText,
   IonAvatar,
   IonList,
-  IonListHeader
+  IonListHeader,
+  IonRange,
+  IonChip,
+  ToastController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { person, call, mail, car, star, settings, logOut, personCircleOutline, business, colorPalette, idCard, speedometer } from 'ionicons/icons';
+import { person, call, mail, car, star, settings, logOut, personCircleOutline, business, colorPalette, idCard, speedometer, location, navigateCircle, informationCircle } from 'ionicons/icons';
 import { AuthService } from '../services/auth.service';
 import { SupabaseService } from '../services/supabase.service';
 import { OneSignalService } from '../services/onesignal.service';
@@ -46,6 +49,8 @@ import { OneSignalService } from '../services/onesignal.service';
     IonAvatar,
     IonList,
     IonListHeader,
+    IonRange,
+    IonChip,
     CommonModule,
     FormsModule,
   ],
@@ -66,9 +71,10 @@ export class ProfilePage implements OnInit {
     private authService: AuthService,
     private supabaseService: SupabaseService,
     private oneSignalService: OneSignalService,
-    private router: Router
+    private router: Router,
+    private toastController: ToastController
   ) {
-    addIcons({ person, call, mail, car, star, settings, logOut, personCircleOutline, business, colorPalette, idCard, speedometer });
+    addIcons({ person, call, mail, car, star, settings, logOut, personCircleOutline, business, colorPalette, idCard, speedometer, location, navigateCircle, informationCircle });
   }
 
   ngOnInit() {
@@ -99,7 +105,8 @@ export class ProfilePage implements OnInit {
         vehicle_plaque: conducteur.vehicle_plaque || '',
         rating: conducteur.note_moyenne || 5.0,
         totalRides: totalRides,
-        memberSince: memberSince
+        memberSince: memberSince,
+        rayon_km_reservation: conducteur.rayon_km_reservation
       };
     }
   }
@@ -123,5 +130,66 @@ export class ProfilePage implements OnInit {
     
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  // Méthodes pour la gestion du rayon de réservation
+  getCurrentRayonLabel(): string {
+    const rayon = this.driver.rayon_km_reservation || 5;
+    return `${rayon}km (${rayon === 5 ? 'par défaut' : 'personnalisé'})`;
+  }
+
+  async onRayonChange(event: any) {
+    const newRayon = event.detail.value;
+    await this.updateRayon(newRayon);
+  }
+
+  async setRayon(rayon: number) {
+    await this.updateRayon(rayon);
+  }
+
+  private async updateRayon(rayon: number) {
+    const conducteur = this.authService.getCurrentConducteur();
+    if (!conducteur) {
+      console.error('Aucun conducteur connecté');
+      return;
+    }
+
+    try {
+      // Mettre à jour en base de données
+      const success = await this.supabaseService.updateConducteurRayon(conducteur.id, rayon);
+      
+      if (success) {
+        // Mettre à jour localement
+        this.driver.rayon_km_reservation = rayon;
+        
+        // Mettre à jour le conducteur dans AuthService
+        conducteur.rayon_km_reservation = rayon;
+        (this.authService as any).currentConducteurSubject.next(conducteur);
+        
+        // Afficher toast de confirmation
+        await this.showToast(`Rayon mis à jour : ${rayon}km`, 'success');
+        
+        console.log(`✅ Rayon de réservation mis à jour : ${rayon}km`);
+      } else {
+        await this.showToast('Erreur lors de la mise à jour', 'danger');
+      }
+    } catch (error) {
+      console.error('Erreur updateRayon:', error);
+      await this.showToast('Erreur lors de la mise à jour', 'danger');
+    }
+  }
+
+  private async showToast(message: string, color: string) {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 2000,
+      position: 'top',
+      color: color,
+      buttons: [{
+        text: 'OK',
+        role: 'cancel'
+      }]
+    });
+    await toast.present();
   }
 }

@@ -159,7 +159,7 @@ export class SupabaseService {
     }
   }
 
-  // Get pending reservations within 5km of current conducteur
+  // Get pending reservations within custom radius of current conducteur
   async getPendingReservations(conducteurId?: string) {
     try {
       // Si conducteurId fourni, utiliser l'ancienne méthode (pour historique assigné)
@@ -175,43 +175,74 @@ export class SupabaseService {
         return data || [];
       }
 
-      // NOUVEAU: Filtrage 5km pour conducteur connecté
+      // NOUVEAU: Filtrage par rayon personnalisé pour conducteur connecté
       const currentConducteur = this.getCurrentConducteurFromStorage();
       if (!currentConducteur?.id) {
-        console.warn('Aucun conducteur connecté pour filtrage 5km');
+        console.warn('Aucun conducteur connecté pour filtrage par rayon');
         return [];
       }
 
-      // Récupérer PENDING avec requête directe pour inclure position_arrivee
-      const { data: pendingData, error: pendingError } = await this.supabase
-        .from('reservations')
-        .select('*, position_depart, position_arrivee')
-        .eq('statut', 'pending')
-        .is('conducteur_id', null)
-        .eq('vehicle_type', currentConducteur.vehicle_type)
-        .order('created_at', { ascending: false });
+      // Récupérer les données complètes du conducteur avec rayon_km_reservation
+      const { data: conducteurData, error: conducteurError } = await this.supabase
+        .from('conducteurs')
+        .select('rayon_km_reservation, position_actuelle')
+        .eq('id', currentConducteur.id)
+        .single();
 
-      if (pendingError) {
-        console.error('Erreur fonction filtrage 5km:', pendingError);
-        // Fallback vers ancienne méthode si fonction échoue
+      if (conducteurError) {
+        console.error('Erreur récupération données conducteur:', conducteurError);
         return this.getPendingAndScheduledReservationsLegacy();
       }
 
-      // Récupérer SCHEDULED avec requête supplémentaire (même logique de filtrage)
+      // Définir le rayon : si NULL, utiliser 5km par défaut
+      const rayonKm = conducteurData.rayon_km_reservation || 5;
+      const rayonMetres = rayonKm * 1000;
+      
+      console.log(`📍 Filtrage réservations avec rayon: ${rayonKm}km`);
+      console.log('🔍 DEBUG RPC Paramètres:', {
+        conducteur_position: conducteurData.position_actuelle,
+        radius_meters: rayonMetres,
+        vehicle_type_filter: currentConducteur.vehicle_type,
+        statut_filter: 'pending'
+      });
+
+      // Si pas de position conducteur, fallback sans filtrage distance
+      if (!conducteurData.position_actuelle) {
+        console.warn('Position conducteur manquante, filtrage sans distance');
+        return this.getPendingAndScheduledReservationsLegacy();
+      }
+
+      // Filtrage PENDING avec distance PostGIS
+      const { data: pendingData, error: pendingError } = await this.supabase
+        .rpc('get_reservations_within_radius', {
+          conducteur_position: conducteurData.position_actuelle,
+          radius_meters: rayonMetres,
+          vehicle_type_filter: currentConducteur.vehicle_type,
+          statut_filter: 'pending'
+        });
+
+      // Filtrage SCHEDULED avec distance PostGIS
       const { data: scheduledData, error: scheduledError } = await this.supabase
-        .from('reservations')
-        .select('*, position_depart, position_arrivee')
-        .eq('statut', 'scheduled')
-        .is('conducteur_id', null)
-        .eq('vehicle_type', currentConducteur.vehicle_type)
-        .order('date_reservation', { ascending: true })
-        .order('heure_reservation', { ascending: true });
+        .rpc('get_reservations_within_radius', {
+          conducteur_position: conducteurData.position_actuelle,
+          radius_meters: rayonMetres,
+          vehicle_type_filter: currentConducteur.vehicle_type,
+          statut_filter: 'scheduled'
+        });
+
+      // Si les RPC échouent, fallback vers méthode legacy
+      if (pendingError || scheduledError) {
+        console.error('Erreur RPC filtrage distance:', { pendingError, scheduledError });
+        return this.getPendingAndScheduledReservationsLegacy();
+      }
 
       // Combiner pending + scheduled
       const allReservations = [
         ...(pendingData || []),
         ...(scheduledData || [])
       ];
+      
+      console.log(`✅ Réservations trouvées dans rayon ${rayonKm}km: ${allReservations.length}`);
 
 
       // Trier : pending en premier, puis scheduled par date/heure
@@ -238,6 +269,27 @@ export class SupabaseService {
     } catch (error) {
       console.error('Erreur getPendingReservations:', error);
       return [];
+    }
+  }
+
+  // Nouvelle méthode pour mettre à jour le rayon de réservation
+  async updateConducteurRayon(conducteurId: string, rayonKm: number | null): Promise<boolean> {
+    try {
+      const { error } = await this.supabase
+        .from('conducteurs')
+        .update({ rayon_km_reservation: rayonKm })
+        .eq('id', conducteurId);
+
+      if (error) {
+        console.error('Erreur mise à jour rayon conducteur:', error);
+        return false;
+      }
+
+      console.log(`✅ Rayon mis à jour: ${rayonKm}km pour conducteur ${conducteurId}`);
+      return true;
+    } catch (error) {
+      console.error('Erreur updateConducteurRayon:', error);
+      return false;
     }
   }
 
@@ -305,6 +357,22 @@ export class SupabaseService {
     }
   }
 
+  // Récupérer une réservation par son ID
+  async getReservationById(reservationId: string): Promise<any> {
+    const { data, error } = await this.supabase
+      .from('reservations')
+      .select('*')
+      .eq('id', reservationId)
+      .single();
+      
+    if (error) {
+      console.error('Error fetching reservation by ID:', error);
+      throw error;
+    }
+    
+    return data;
+  }
+
   // Update reservation status and assign conducteur
   // Mettre à jour le Player ID OneSignal d'un conducteur
   async updateConducteurPlayerId(conducteurId: string, playerId: string): Promise<boolean> {
@@ -328,21 +396,54 @@ export class SupabaseService {
   }
 
   async updateReservationStatus(id: string, status: 'accepted' | 'refused', conducteurId?: string) {
+    // DOUBLE VÉRIFICATION AVANT UPDATE
+    if (status === 'accepted' && conducteurId) {
+      // 1. Vérifier que conducteur_id est toujours null
+      const { data: checkData, error: checkError } = await this.supabase
+        .from('reservations')
+        .select('conducteur_id')
+        .eq('id', id)
+        .single();
+        
+      if (checkError) {
+        console.error('Error checking reservation status:', checkError);
+        throw checkError;
+      }
+        
+      if (checkData?.conducteur_id !== null) {
+        console.warn('Reservation already taken by another driver:', checkData.conducteur_id);
+        throw new Error('RESERVATION_ALREADY_TAKEN');
+      }
+    }
+    
     const updateData: any = { statut: status };
     
     if (status === 'accepted' && conducteurId) {
       updateData.conducteur_id = conducteurId;
     }
 
-    const { data, error } = await this.supabase
+    // UPDATE avec condition WHERE pour garantir l'atomicité
+    let query = this.supabase
       .from('reservations')
       .update(updateData)
-      .eq('id', id)
-      .select();
+      .eq('id', id);
+    
+    // Ajouter condition atomique si acceptation
+    if (status === 'accepted') {
+      query = query.is('conducteur_id', null); // ⚠️ CONDITION CRITIQUE
+    }
+    
+    const { data, error } = await query.select();
 
     if (error) {
       console.error('Error updating reservation:', error);
       throw error;
+    }
+    
+    // Vérifier que l'update a bien eu lieu
+    if (!data || data.length === 0) {
+      console.warn('No reservation updated - probably already taken');
+      throw new Error('RESERVATION_ALREADY_TAKEN');
     }
 
     return data;
@@ -372,30 +473,40 @@ export class SupabaseService {
   // Mettre à jour la position du conducteur
   async updateConducteurPosition(conducteurId: string, longitude: number, latitude: number, accuracy?: number): Promise<boolean> {
     try {
+      console.log('🔄 DEBUG updateConducteurPosition - Input:', { conducteurId, longitude, latitude, accuracy });
+      
       // Convertir les coordonnées en format WKB PostGIS
       // Format: SRID=4326;POINT(longitude latitude)
       const wkbHex = this.createWKBPoint(longitude, latitude);
+      console.log('📍 DEBUG WKB généré:', wkbHex);
       
       const updateData: any = {
         position_actuelle: wkbHex,
-        date_update_position: new Date().toISOString()
+        date_update_position: new Date().toISOString(),
+        derniere_activite: new Date().toISOString()
       };
+      
+      console.log('💾 DEBUG updateData:', updateData);
 
       // Ajouter l'accuracy si fournie
       if (accuracy !== undefined) {
         updateData.accuracy = accuracy;
       }
       
-      const { error } = await this.supabase
+      const { data, error } = await this.supabase
         .from('conducteurs')
         .update(updateData)
-        .eq('id', conducteurId);
+        .eq('id', conducteurId)
+        .select('id, position_actuelle, date_update_position');
+
+      console.log('🔄 DEBUG Update result:', { data, error });
 
       if (error) {
-        console.error('Error updating conductor position:', error);
+        console.error('❌ Error updating conductor position:', error);
         return false;
       }
 
+      console.log('✅ Position updated successfully:', data);
       return true;
     } catch (error) {
       console.error('Error in updateConducteurPosition:', error);

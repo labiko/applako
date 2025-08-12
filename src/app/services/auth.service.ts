@@ -28,6 +28,7 @@ export interface Conducteur {
   hors_ligne?: boolean; // Statut en ligne/hors ligne
   accuracy?: number; // Précision GPS en mètres
   date_inscription?: string; // Date d'inscription du conducteur
+  rayon_km_reservation?: number; // Rayon de recherche personnalisé en km
 }
 
 @Injectable({

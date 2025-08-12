@@ -24,7 +24,6 @@ export class GeolocationService {
   // Démarrer le tracking de position
   async startLocationTracking() {
     if (this.isTracking) {
-      console.log('Location tracking already active');
       return;
     }
 
@@ -48,12 +47,8 @@ export class GeolocationService {
           await this.showLocationPermissionAlert();
           return;
         }
-      } else {
-        console.log('✅ Permissions GPS déjà accordées');
       }
 
-      // NOUVEAU : Activer Wake Lock pour maintenir l'écran allumé
-      console.log('🔋 Activation Wake Lock - Écran restera allumé pendant le tracking');
       await this.wakeLockService.enable();
 
       this.isTracking = true;
@@ -67,8 +62,6 @@ export class GeolocationService {
           await this.updateLocation();
         }
       }, 300000); // 5 minutes
-
-      console.log('Location tracking started');
     } catch (error) {
       console.error('Error starting location tracking:', error);
       await this.handleLocationError(error);
@@ -120,18 +113,20 @@ export class GeolocationService {
       const latitude = position.coords.latitude;
       const accuracy = position.coords.accuracy;
 
-      console.log(`Updating position: ${latitude}, ${longitude} (accuracy: ${accuracy}m)`);
+      console.log('🌍 Position obtenue:', { longitude, latitude });
 
       // Mettre à jour dans la base de données
+      console.log('🚀 Appel updateConducteurPosition...');
       const success = await this.supabaseService.updateConducteurPosition(
         conducteurId,
         longitude,
         latitude,
         accuracy
       );
+      console.log('🏁 updateConducteurPosition result:', success);
 
       if (success) {
-        console.log('Position updated successfully');
+        console.log('✅ Position mise à jour avec succès');
         
         // Mettre à jour aussi la position dans le service auth local
         const conducteur = this.authService.getCurrentConducteur();
@@ -141,7 +136,7 @@ export class GeolocationService {
           (this.authService as any).currentConducteurSubject.next(conducteur);
         }
       } else {
-        console.error('Failed to update position in database');
+        console.error('❌ Échec mise à jour position');
       }
     } catch (error) {
       console.error('Error updating location:', error);
@@ -157,8 +152,6 @@ export class GeolocationService {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`Position attempt ${attempt}/${maxRetries}`);
-        
         // Configuration adaptée selon la tentative
         const config = {
           enableHighAccuracy: true,
@@ -169,8 +162,6 @@ export class GeolocationService {
         const position = await Geolocation.getCurrentPosition(config);
         const accuracy = position.coords.accuracy;
 
-        console.log(`Attempt ${attempt}: accuracy ${accuracy}m`);
-
         // Garder la meilleure position
         if (accuracy < bestAccuracy) {
           bestPosition = position;
@@ -179,7 +170,6 @@ export class GeolocationService {
 
         // Si on atteint la précision désirée, arrêter
         if (accuracy <= desiredAccuracy) {
-          console.log(`Desired accuracy achieved: ${accuracy}m`);
           break;
         }
 
@@ -189,26 +179,19 @@ export class GeolocationService {
         }
 
       } catch (error) {
-        console.warn(`Position attempt ${attempt} failed:`, error);
-        
         // Si c'est la dernière tentative et qu'on n'a rien, essayer une config moins stricte
         if (attempt === maxRetries && !bestPosition) {
           try {
-            console.log('Final fallback attempt with relaxed settings');
             bestPosition = await Geolocation.getCurrentPosition({
               enableHighAccuracy: false,  // Utiliser le réseau si nécessaire
               timeout: 30000,
               maximumAge: 300000  // Accepter une position récente (5 min)
             });
           } catch (fallbackError) {
-            console.error('All position attempts failed:', fallbackError);
+            console.error('Tous les tentatives GPS ont échoué');
           }
         }
       }
-    }
-
-    if (bestPosition) {
-      console.log(`Best position selected: accuracy ${bestPosition.coords.accuracy}m`);
     }
 
     return bestPosition;
@@ -388,6 +371,15 @@ Vérifiez que :
   // Obtenir le statut du Wake Lock
   getWakeLockStatus(): { active: boolean, supported: boolean } {
     return this.wakeLockService.getStatus();
+  }
+
+  // Force une mise à jour immédiate de la position (pour refresh)
+  async forceUpdateLocation() {
+    try {
+      await this.updateLocation();
+    } catch (error) {
+      console.error('Erreur forceUpdateLocation:', error);
+    }
   }
 
   // Vérifier si le tracking est actif ET l'écran maintenu allumé
