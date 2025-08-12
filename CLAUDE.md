@@ -61,6 +61,14 @@ The application uses a custom color scheme:
   - `disable()`: Allows phone to lock when conductor goes OFFLINE
   - `getStatus()`: Returns Wake Lock active/supported status
 
+- **AutoRefreshService** (`src/app/services/auto-refresh.service.ts`): ⭐ **NEW** - Non-blocking auto-refresh system
+  - `startAutoRefresh(callback, immediate)`: Starts 2-minute interval refresh with memory-safe management
+  - `stopAutoRefresh()`: Stops auto-refresh and cleans up resources
+  - `forceRefresh()`: Manual immediate refresh without blocking UI
+  - `refreshState$`: Observable for real-time refresh status (isRefreshing, lastRefreshTime, errorCount)
+  - `getTimeSinceLastRefresh()`: Returns human-readable time since last refresh
+  - Built with RxJS for proper subscription management and memory leak prevention
+
 ### Data Models
 - **Reservation** (`src/app/models/reservation.model.ts`): Main data model with fields like customer_name, pickup_location, destination, status, etc.
 
@@ -105,6 +113,50 @@ The application expects a `reservations` table in Supabase with these columns (s
 - ❌ `status` → utiliser `statut`
 - ❌ `notified_at` → n'existe pas, ajouter si nécessaire
 
+### SQL INSERT Format for Geographic Data
+
+**IMPORTANT:** Always use ST_MakePoint() for geographic coordinates to avoid WKB encoding errors.
+
+**Correct format for reservation INSERT:**
+```sql
+INSERT INTO reservations (
+  id,
+  client_phone,
+  vehicle_type,
+  position_depart,
+  position_arrivee,
+  depart_nom,
+  destination_nom,
+  distance_km,
+  prix_total,
+  statut,
+  date_reservation,
+  heure_reservation,
+  minute_reservation,
+  created_at,
+  updated_at
+) VALUES (
+  uuid_generate_v4(),
+  '+33600123456',
+  'moto',
+  ST_SetSRID(ST_MakePoint(2.6596, 48.5392), 4326), -- ALWAYS use ST_MakePoint for coordinates
+  ST_SetSRID(ST_MakePoint(2.35, 48.85), 4326), -- PostgreSQL handles WKB conversion
+  'Location Name',
+  'Destination Name',
+  30.0,
+  15000,
+  'scheduled',
+  CURRENT_DATE + INTERVAL '1 day',
+  21,
+  0,
+  NOW(),
+  NOW()
+);
+```
+
+**❌ NEVER manually encode WKB format** - it leads to coordinate errors and incorrect distances.
+**✅ ALWAYS verify coordinates** with real GPS locations before insertion.
+
 ### Database Structure Reference
 For complete database structure analysis and schema details, refer to:
 `C:\Users\diall\Documents\LABICOTAXI\SCRIPT\db_structure.sql`
@@ -146,6 +198,211 @@ The application implements an intelligent GPS tracking system with Wake Lock man
 For complete technical details, see: 
 - `SYSTEME_GPS_WAKE_LOCK.md`
 - `SYSTEME_FILTRAGE_RAYON.md` - **NEW:** Custom radius filtering system
+
+## 🔄 Auto-Refresh System
+
+### Overview
+⭐ **NEW FEATURE**: The application now includes an intelligent auto-refresh system that automatically updates reservations every 2 minutes when the conductor is ONLINE, without blocking the user interface.
+
+### Key Features
+- ✅ **Non-Blocking**: Background refresh without spinners or UI freezing
+- ✅ **Memory Safe**: Proper subscription management prevents memory leaks
+- ✅ **Smart Scheduling**: Only refreshes when conductor is ONLINE
+- ✅ **Error Resilient**: Automatic retry with progressive backoff
+- ✅ **Visual Indicator**: Discrete pulse animation shows refresh status
+- ✅ **Performance Optimized**: Parallel data loading and timeout protection
+
+### Architecture
+
+#### AutoRefreshService (`src/app/services/auto-refresh.service.ts`)
+**Core service managing the refresh lifecycle:**
+
+```typescript
+// Start auto-refresh with callback
+autoRefreshService.startAutoRefresh(refreshCallback, immediate);
+
+// Stop auto-refresh (cleans all resources)
+autoRefreshService.stopAutoRefresh();
+
+// Subscribe to refresh state
+autoRefreshService.refreshState$.subscribe(state => {
+  console.log('Refreshing:', state.isRefreshing);
+  console.log('Last refresh:', state.lastRefreshTime);
+  console.log('Error count:', state.errorCount);
+});
+```
+
+#### Integration in ReservationsPage
+**Automatic lifecycle management:**
+
+```typescript
+ngOnInit() {
+  // Subscribe to refresh state for UI updates
+  this.refreshStateSubscription = this.autoRefreshService.refreshState$.subscribe(
+    state => {
+      this.refreshState = state;
+      this.cdr.detectChanges(); // Update visual indicator
+    }
+  );
+  
+  // Start auto-refresh if conductor is online
+  if (this.isOnline) {
+    this.startAutoRefresh();
+  }
+}
+
+async onStatusToggle(event: any) {
+  const newStatus = event.detail.checked;
+  
+  if (newStatus) {
+    // EN LIGNE: Start auto-refresh + GPS tracking
+    this.startAutoRefresh();
+    await this.geolocationService.startLocationTracking();
+  } else {
+    // HORS LIGNE: Stop everything
+    this.autoRefreshService.stopAutoRefresh();
+    this.geolocationService.stopLocationTracking();
+  }
+}
+```
+
+### How It Works
+
+#### 1. **Intelligent Timing**
+- **Interval**: Exactly 2 minutes between refreshes
+- **Skip Logic**: Prevents duplicate calls if already refreshing
+- **Timeout**: 30-second maximum per refresh operation
+
+#### 2. **Memory Management**
+```typescript
+ngOnDestroy() {
+  // Stop auto-refresh service
+  this.autoRefreshService.stopAutoRefresh();
+  
+  // Unsubscribe from all observables
+  if (this.refreshStateSubscription) {
+    this.refreshStateSubscription.unsubscribe();
+  }
+  
+  // Clear data arrays
+  this.reservations = [];
+  this.allReservations = [];
+  this.scheduledReservations = [];
+}
+```
+
+#### 3. **Parallel Data Loading**
+```typescript
+// Load all data simultaneously (non-blocking)
+await Promise.all([
+  this.supabaseService.getPendingReservations(),
+  this.loadScheduledReservations()
+]);
+
+// Calculate durations in parallel
+const durationPromises = this.reservations.map(async (reservation) => {
+  reservation.duration = await this.calculateDuration(reservation.position_depart);
+  reservation.calculatedDistance = await this.calculateDistanceToReservation(reservation.position_depart);
+});
+await Promise.all(durationPromises);
+```
+
+### Visual Indicator
+
+#### HTML Template
+```html
+<!-- Auto-refresh indicator (only shown when online) -->
+<div class="auto-refresh-indicator" *ngIf="isOnline && refreshState">
+  <div class="refresh-info">
+    <div class="refresh-status">
+      <ion-icon 
+        [name]="refreshState.isRefreshing ? 'sync' : 'checkmark-circle'"
+        [class.spinning]="refreshState.isRefreshing"
+        [color]="refreshState.isRefreshing ? 'warning' : 'success'">
+      </ion-icon>
+      <span>{{ refreshState.isRefreshing ? 'Actualisation...' : 'Auto-refresh actif' }}</span>
+    </div>
+    <div class="last-refresh" *ngIf="!refreshState.isRefreshing">
+      <small>{{ getTimeSinceLastRefresh() }}</small>
+    </div>
+  </div>
+</div>
+```
+
+#### CSS Styles
+```scss
+.auto-refresh-indicator {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 8px;
+  margin: 8px 16px;
+  padding: 8px 12px;
+  
+  .refresh-icon.spinning {
+    animation: spin-refresh 2s linear infinite;
+  }
+}
+```
+
+### Error Handling
+
+#### Progressive Backoff
+- **Normal**: 2-minute intervals
+- **After Error**: Automatic retry
+- **After 3 Errors**: Auto-stop to prevent battery drain
+- **Network Issues**: Graceful degradation
+
+#### Timeout Protection
+```typescript
+// 30-second timeout for each refresh
+const timeoutPromise = new Promise((_, reject) => 
+  setTimeout(() => reject(new Error('Timeout')), 30000)
+);
+
+const result = await Promise.race([
+  this.refreshCallback(),
+  timeoutPromise
+]);
+```
+
+### Performance Benefits
+
+#### Before (Old System)
+- ❌ Manual refresh only
+- ❌ Blocking UI during refresh
+- ❌ Memory leaks with setInterval
+- ❌ No error handling
+
+#### After (New System)
+- ✅ Automatic background refresh
+- ✅ Non-blocking parallel loading
+- ✅ Memory-safe with RxJS
+- ✅ Robust error handling
+- ✅ Real-time visual feedback
+
+### Developer Usage
+
+#### For New Pages
+```typescript
+import { AutoRefreshService } from '../services/auto-refresh.service';
+
+constructor(private autoRefreshService: AutoRefreshService) {}
+
+startMyRefresh() {
+  const callback = async () => {
+    // Your refresh logic here
+    return await this.loadData();
+  };
+  
+  this.autoRefreshService.startAutoRefresh(callback, false);
+}
+```
+
+#### Best Practices
+1. **Always unsubscribe** in ngOnDestroy
+2. **Use parallel loading** for better performance  
+3. **Handle errors gracefully** in your callback
+4. **Test memory usage** in long-running sessions
+5. **Respect user's online/offline status**
 
 ## Git Repository & Deployment
 

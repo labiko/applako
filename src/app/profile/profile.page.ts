@@ -166,6 +166,16 @@ export class ProfilePage implements OnInit {
         conducteur.rayon_km_reservation = rayon;
         (this.authService as any).currentConducteurSubject.next(conducteur);
         
+        // 🔧 NOUVEAU : Synchroniser le localStorage avec les nouvelles données
+        try {
+          if (typeof Storage !== 'undefined') {
+            localStorage.setItem('currentConducteur', JSON.stringify(conducteur));
+            console.log('✅ localStorage synchronisé avec nouveau rayon:', rayon);
+          }
+        } catch (storageError) {
+          console.warn('Erreur synchronisation localStorage:', storageError);
+        }
+        
         // Afficher toast de confirmation
         await this.showToast(`Rayon mis à jour : ${rayon}km`, 'success');
         

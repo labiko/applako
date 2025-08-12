@@ -10,9 +10,32 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <!-- Header fixe pour rappeler de garder l'app ouverte -->
-  <div class="app-open-reminder">
-    📱 Gardez l'application ouverte pour recevoir toutes les réservations
+  <!-- Indicateur de rafraîchissement automatique fixé en haut -->
+  <div class="fixed-refresh-indicator" *ngIf="isOnline && refreshState">
+    <div class="refresh-card" [class.refreshing]="refreshState.isRefreshing">
+      <!-- Status dot avec animation -->
+      <div class="status-dot" [class.pulsing]="!refreshState.isRefreshing" [class.spinning]="refreshState.isRefreshing"></div>
+      
+      <!-- Contenu principal -->
+      <div class="refresh-content">
+        <div class="main-text">
+          <span *ngIf="refreshState.isRefreshing" class="refreshing-text">
+            🔄 Actualisation en cours...
+          </span>
+          <span *ngIf="!refreshState.isRefreshing" class="next-refresh-text">
+            📞Rafraîchissement dans {{ getNextRefreshCountdown() }}s
+          </span>
+        </div>
+        <div class="sub-text" *ngIf="!refreshState.isRefreshing">
+          Dernière mise à jour {{ getTimeSinceLastRefresh() }}
+        </div>
+      </div>
+      
+      <!-- Progress bar pour le countdown -->
+      <div class="countdown-progress" *ngIf="!refreshState.isRefreshing">
+        <div class="progress-bar" [style.width.%]="getProgressPercentage()"></div>
+      </div>
+    </div>
   </div>
 
   <ion-header collapse="condense">
@@ -96,7 +119,7 @@
     <div *ngIf="!isLoading && reservations.length > 0">
       <ion-card *ngFor="let reservation of reservations" 
                 class="reservation-card" 
-                [class.scheduled-reservation]="reservation.statut === 'scheduled'"
+                [class.scheduled-reservation]="reservation.statut === 'scheduled' || (selectedSegment === 'planifiees' && reservation.date_reservation)"
                 [attr.data-reservation-id]="reservation.id">
         <ion-card-header class="reservation-header">
           <ion-card-title>
@@ -104,14 +127,17 @@
               <div class="client-info">
                 <div class="client-main">
                   <ion-icon name="person"></ion-icon>
-                  Client: {{ reservation.client_phone || 'Non spécifié' }}
-                  <ion-badge *ngIf="reservation.statut === 'scheduled'" color="warning" class="scheduled-badge">
+                  <span class="client-phone-nowrap clickable-phone" (click)="callClient(reservation.client_phone)">
+                    <ion-icon name="call" color="primary"></ion-icon>
+                    {{ reservation.client_phone || 'Non spécifié' }}
+                  </span>
+                  <ion-badge *ngIf="reservation.statut === 'scheduled' || (selectedSegment === 'planifiees' && reservation.date_reservation)" color="warning" class="scheduled-badge">
                     Planifiée
                   </ion-badge>
                 </div>
                 <div class="reservation-id-inline">
                   <ion-text color="medium">
-                    <small>{{ reservation.id.substring(0, 8) }}...</small>
+                    <small>{{ reservation.id }}</small>
                   </ion-text>
                 </div>
               </div>
@@ -121,10 +147,6 @@
 
         <ion-card-content class="reservation-content">
           <div class="reservation-details">
-            <div class="detail-item">
-              <ion-icon name="call" color="medium"></ion-icon>
-              <ion-text>{{ reservation.client_phone || 'Non spécifié' }}</ion-text>
-            </div>
 
             <div class="detail-item">
               <ion-icon name="car" color="medium"></ion-icon>
@@ -164,7 +186,7 @@
             </div>
 
             <!-- Informations de planification pour réservations scheduled -->
-            <div *ngIf="reservation.statut === 'scheduled'" class="scheduled-info">
+            <div *ngIf="reservation.statut === 'scheduled' || (selectedSegment === 'planifiees' && reservation.date_reservation)" class="scheduled-info">
               <div class="detail-item" *ngIf="reservation.date_reservation">
                 <ion-icon name="calendar" color="warning"></ion-icon>
                 <ion-text color="warning">

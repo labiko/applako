@@ -23,6 +23,144 @@
   padding: 16px;
 }
 
+// Auto-refresh indicator styles (non-fixed)
+.fixed-refresh-indicator {
+  left: 0;
+  right: 0;
+  background: var(--ion-background-color);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 8px 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  .refresh-card {
+    position: relative;
+    background: transparent;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: var(--ion-color-dark);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    
+    &.refreshing {
+      border-color: var(--ion-color-warning);
+      background: rgba(255, 193, 7, 0.05);
+    }
+    
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--ion-color-success);
+    flex-shrink: 0;
+    
+    &.pulsing {
+      animation: soft-pulse 3s ease-in-out infinite;
+    }
+    
+    &.spinning {
+      background: var(--ion-color-warning);
+      animation: gentle-spin 2s linear infinite;
+    }
+  }
+  
+  .refresh-content {
+    flex: 1;
+    min-width: 0;
+    
+    .main-text {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      
+      .refreshing-text {
+        color: var(--ion-color-dark);
+      }
+      
+      .next-refresh-text {
+        color: var(--ion-color-dark);
+      }
+    }
+    
+    .sub-text {
+      font-size: 0.75rem;
+      color: var(--ion-color-medium);
+      font-weight: 400;
+    }
+  }
+  
+  .countdown-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, 
+      rgba(var(--ion-color-light-rgb), 0.3), 
+      rgba(var(--ion-color-light-rgb), 0.1)
+    );
+    overflow: hidden;
+    border-radius: 0 0 12px 12px;
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, 
+        var(--ion-color-primary), 
+        var(--ion-color-primary-shade)
+      );
+      transition: width 1s cubic-bezier(0.25, 0.8, 0.25, 1);
+      position: relative;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, 
+          transparent, 
+          rgba(255, 255, 255, 0.3), 
+          transparent
+        );
+        animation: shimmer 2s ease-in-out infinite;
+      }
+    }
+  }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+// Animations économes en ressources
+@keyframes soft-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes gentle-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 // ✅ NOUVEAU : Style pour mise en évidence OneSignal
 .reservation-card.highlighted {
   animation: highlight-pulse 2s ease-in-out;
@@ -184,6 +322,33 @@
       font-size: 12px;
       margin-left: 4px;
       opacity: 0.7;
+    }
+  }
+
+  &.clickable-phone {
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+
+    &:hover {
+      background-color: rgba(var(--ion-color-primary-rgb), 0.1);
+      border-color: var(--ion-color-primary);
+      transform: scale(1.02);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    .phone-number {
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    ion-icon {
+      font-size: 1.2em;
     }
   }
 
@@ -496,20 +661,7 @@ ion-title {
   }
 }
 
-// Header fixe app ouverte
-.app-open-reminder {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background: linear-gradient(135deg, #FFA500, #FF6B6B);
-  color: white;
-  text-align: center;
-  padding: 15px;
-  font-size: 16px;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-}
+// Ancien style supprimé - remplacé par fixed-refresh-indicator
 
 // Responsive design
 @media (max-width: 576px) {
@@ -529,8 +681,5 @@ ion-title {
     transform: scale(1.1);
   }
   
-  .app-open-reminder {
-    font-size: 14px;
-    padding: 12px;
-  }
+  // Style app-open-reminder supprimé
 }

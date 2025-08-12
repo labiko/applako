@@ -25,6 +25,7 @@ import { addIcons } from 'ionicons';
 import { location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline, calendar, ban } from 'ionicons/icons';
 import { SupabaseService } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
+import { CallService } from '../services/call.service';
 import { Reservation } from '../models/reservation.model';
 
 @Component({
@@ -61,6 +62,7 @@ export class HistoriquePage implements OnInit {
   constructor(
     private supabaseService: SupabaseService,
     private authService: AuthService,
+    private callService: CallService,
     private toastController: ToastController,
     private loadingController: LoadingController
   ) {
@@ -205,6 +207,11 @@ export class HistoriquePage implements OnInit {
     const h = hour.toString().padStart(2, '0');
     const m = (minute || 0).toString().padStart(2, '0');
     return `${h}:${m}`;
+  }
+
+  // Appeler un client
+  callClient(phoneNumber: string): void {
+    this.callService.callPhoneNumber(phoneNumber);
   }
 
   // Gestion des inputs OTP

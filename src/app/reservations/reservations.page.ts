@@ -28,14 +28,18 @@ import {
   AlertController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { location, time, person, call, checkmark, close, car, resize, card, carSportOutline, openOutline, timeOutline, checkmarkCircle, closeCircle, flag, calendar } from 'ionicons/icons';
+import { location, time, person, call, checkmark, close, car, resize, card, carSportOutline, openOutline, timeOutline, checkmarkCircle, closeCircle, flag, calendar, sync } from 'ionicons/icons';
 import { SupabaseService } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
 import { GeolocationService } from '../services/geolocation.service';
 import { OneSignalService } from '../services/onesignal.service';
+import { AutoRefreshService, RefreshState } from '../services/auto-refresh.service';
+import { RadiusChangeDetectionService } from '../services/radius-change-detection.service';
+import { CallService } from '../services/call.service';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { Reservation } from '../models/reservation.model';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-reservations',
@@ -79,11 +83,18 @@ export class ReservationsPage implements OnInit, OnDestroy {
   allReservations: Reservation[] = []; // Toutes les réservations récupérées
   scheduledReservations: Reservation[] = []; // Réservations planifiées assignées
   
-  // Système d'actualisation automatique optimisé
-  private refreshInterval: any = null;
-  private readonly REFRESH_INTERVAL_MS = 120000; // 2 minutes (économie batterie)
-  private lastRefreshTime: number = 0;
-  private isRefreshing: boolean = false;
+  // État du rafraîchissement automatique
+  refreshState: RefreshState | null = null;
+  private refreshStateSubscription: Subscription | null = null;
+  
+  // Timer pour mise à jour du timestamp et countdown
+  private timestampUpdateInterval: any = null;
+  private readonly REFRESH_INTERVAL_SECONDS = 120; // 2 minutes en secondes
+  
+  // Variables pour éviter les erreurs Angular NG0100
+  private _nextRefreshCountdown: number = 120;
+  private _progressPercentage: number = 0;
+  private _timeSinceLastRefresh: string = 'jamais';
   
   // Listener pour événement resume
   private resumeListener: any = null;
@@ -93,64 +104,77 @@ export class ReservationsPage implements OnInit, OnDestroy {
     private authService: AuthService,
     private geolocationService: GeolocationService,
     private oneSignalService: OneSignalService,
+    private autoRefreshService: AutoRefreshService,
+    private radiusChangeService: RadiusChangeDetectionService,
+    private callService: CallService,
     private toastController: ToastController,
     private loadingController: LoadingController,
     private alertController: AlertController,
     private cdr: ChangeDetectorRef
   ) {
-    addIcons({ location, time, person, call, checkmark, close, car, resize, card, carSportOutline, openOutline, timeOutline, checkmarkCircle, closeCircle, flag, calendar });
+    addIcons({ location, time, person, call, checkmark, close, car, resize, card, carSportOutline, openOutline, timeOutline, checkmarkCircle, closeCircle, flag, calendar, sync });
   }
 
   ngOnInit() {
+    console.log('🚀 ngOnInit - Initialisation unique du composant');
+    
     // Initialiser le statut en ligne basé sur les données du conducteur
     const conducteur = this.authService.getCurrentConducteur();
     if (conducteur) {
-      
       // Si hors_ligne n'est pas défini, considérer comme en ligne par défaut
       const horsLigne = conducteur.hors_ligne ?? false;
       this.isOnline = !horsLigne;
-      
-    } else {
+    }
+    
+    // Arrêt du spinner pour affichage instantané
+    this.isLoading = false;
+    
+    // ✅ S'abonner à l'état du rafraîchissement automatique
+    this.refreshStateSubscription = this.autoRefreshService.refreshState$.subscribe(
+      state => {
+        this.refreshState = state;
+        // Mettre à jour les valeurs cachées
+        this.updateCountdownValues();
+        // Forcer la détection de changements pour l'indicateur visuel
+        this.cdr.markForCheck();
+      }
+    );
+    
+    // ✅ Démarrer la mise à jour du timestamp toutes les 10 secondes
+    this.startTimestampUpdates();
+    
+    // ✅ Actions d'initialisation
+    this.setupResumeListener();
+    this.oneSignalService.enableReservationsNotifications();
+    this.oneSignalService.setReservationsCallback(this.refreshReservationsFromNotification.bind(this));
+    
+    // ℹ️ Chargement initial des données (en arrière-plan)
+    console.log('🔄 Chargement initial en arrière-plan...');
+    this.loadReservationsInBackground();
+    
+    // 🔄 Démarrer le rafraîchissement automatique si en ligne
+    if (this.isOnline) {
+      this.startAutoRefresh();
     }
   }
 
 
    async ionViewWillEnter() {
-     // Synchroniser l'état hors_ligne avec la base de données
-     await this.syncConducteurStatus();
-     
-     // ✅ NOUVEAU : Démarrer le tracking GPS si le conducteur est en ligne
-     console.log('🔍 DEBUG Tracking GPS - isOnline:', this.isOnline);
-     console.log('🔍 DEBUG Tracking GPS - Platform:', Capacitor.getPlatform());
-     
-     if (this.isOnline) {
-       console.log('✅ Démarrage tracking GPS...');
-       await this.geolocationService.startLocationTracking();
-       console.log('✅ Tracking GPS démarré');
+     console.log('📱 ionViewWillEnter - Vérification changement rayon');
+     if (this.radiusChangeService.shouldReload()) {
+       console.log('📱 Rechargement nécessaire, actualisation des réservations...');
+       this.loadReservations();
      } else {
-       console.log('❌ Conducteur hors ligne - Pas de tracking GPS');
+       console.log('📱 Rayon inchangé, pas de rechargement');
      }
-     
-     // Mettre à jour la position du conducteur
-    // await this.updateConducteurPositionOnce();
-     
-     // Charger les réservations
-     this.loadReservations();
-     
-     // Démarrer l'actualisation automatique
-     this.startAutoRefresh();
-     
-     // Configurer le listener resume
-     this.setupResumeListener();
-     
-     // ✅ NOUVEAU : Activer la réception des notifications OneSignal et enregistrer callback
-     this.oneSignalService.enableReservationsNotifications();
-     this.oneSignalService.setReservationsCallback(this.refreshReservationsFromNotification.bind(this));
   }
 
   ionViewWillLeave() {
-    // Arrêter l'actualisation automatique quand on quitte la page
-    this.stopAutoRefresh();
+    // Arrêter le rafraîchissement automatique quand on quitte la page
+    this.autoRefreshService.stopAutoRefresh();
+    
+    // Arrêter la mise à jour du timestamp
+    this.stopTimestampUpdates();
     
     // Supprimer le listener resume
     this.removeResumeListener();
@@ -296,6 +320,33 @@ export class ReservationsPage implements OnInit, OnDestroy {
     return bestPosition;
   }
 
+  // Version sans spinner pour chargement en arrière-plan  
+  async loadReservationsInBackground() {
+    console.log('🔄 Chargement en arrière-plan - pas de spinner');
+    try {
+      // Charger les nouvelles réservations (pending et scheduled non assignées)
+      this.allReservations = await this.supabaseService.getPendingReservations();
+      
+      // Charger les réservations planifiées assignées au conducteur connecté
+      await this.loadScheduledReservations();
+      
+      // Filtrer selon le segment actuel
+      this.filterReservationsBySegment();
+      
+      // Calculate duration for each reservation and update conducteur position display
+      await this.updateConducteurPosition();
+      
+      for (let reservation of this.reservations) {
+        reservation.duration = await this.calculateDuration(reservation.position_depart);
+        reservation.calculatedDistance = await this.calculateDistanceToReservation(reservation.position_depart);
+      }
+      
+      console.log('✅ Chargement arrière-plan terminé');
+    } catch (error) {
+      console.error('Error loading reservations in background:', error);
+    }
+  }
+
   async loadReservations() {
     this.isLoading = true;
     try {
@@ -381,14 +432,21 @@ export class ReservationsPage implements OnInit, OnDestroy {
   }
 
   async handleRefresh(event: any) {
-    // Mettre à jour la position si conducteur en ligne
+    console.log('🔄 Pull-to-refresh - Synchronisation complète');
+    
+    // 1. Synchroniser le statut conducteur depuis la base
+    await this.syncConducteurStatus();
+    
+    // 2. Mettre à jour la position si conducteur en ligne
     if (this.isOnline) {
       console.log('🔄 Refresh - Mise à jour position GPS via GeolocationService...');
-      // Utiliser le service existant
       await this.geolocationService.forceUpdateLocation();
     }
     
+    // 3. Charger les réservations
     await this.loadReservations();
+    
+    console.log('✅ Pull-to-refresh terminé');
     event.target.complete();
   }
 
@@ -961,15 +1019,15 @@ Accepter cette réservation planifiée ?`,
         // ✅ NOUVEAU : Mettre à jour le statut OneSignal (appel simple)
         this.oneSignalService.updateConducteurOnlineStatus(isOnline);
         
-        // Gérer le tracking GPS selon le statut
+        // Gérer le tracking GPS et le rafraîchissement automatique selon le statut
         if (isOnline) {
-          // Passer en ligne : démarrer le tracking GPS
-          
+          // Passer en ligne : démarrer le tracking GPS et l'auto-refresh
           await this.geolocationService.startLocationTracking();
+          this.startAutoRefresh();
         } else {
-          // Passer hors ligne : arrêter le tracking GPS
-          
+          // Passer hors ligne : arrêter le tracking GPS et l'auto-refresh
           this.geolocationService.stopLocationTracking();
+          this.autoRefreshService.stopAutoRefresh();
         }
         
         // Mettre à jour les données locales du conducteur
@@ -1004,99 +1062,174 @@ Accepter cette réservation planifiée ?`,
     }
   }
 
-  // NOUVEAU : Système d'actualisation automatique optimisé
+  // Démarrer le rafraîchissement automatique non-bloquant
   private startAutoRefresh() {
-    // Arrêter l'actualisation existante si elle existe
-    this.stopAutoRefresh();
+    console.log('🚀 Démarrage du rafraîchissement automatique (2 min)');
     
-    
-    this.refreshInterval = setInterval(async () => {
-      await this.performOptimizedRefresh();
-    }, this.REFRESH_INTERVAL_MS);
-  }
-
-  private async performOptimizedRefresh() {
-    // Éviter les fuites mémoire et les appels multiples
-    if (this.isRefreshing) {
-      return;
-    }
-
-    // Actualiser seulement si le conducteur est EN LIGNE
-    if (!this.isOnline) {
-      return;
-    }
-
-    // Vérifier si on n'a pas actualisé trop récemment (protection double)
-    const now = Date.now();
-    if (now - this.lastRefreshTime < this.REFRESH_INTERVAL_MS - 5000) {
-      return;
-    }
-
-    this.isRefreshing = true;
-    this.lastRefreshTime = now;
-    
-    try {
-      
-      // Actualisation silencieuse (sans loader visuel)
+    // Définir le callback de rafraîchissement
+    const refreshCallback = async () => {
+      // Ne pas afficher de spinner lors du rafraîchissement automatique
       const originalIsLoading = this.isLoading;
-      this.isLoading = false; // Éviter le spinner lors de l'actualisation auto
+      this.isLoading = false;
       
-      await this.loadReservations();
-      
-    } catch (error) {
-      
-      // En cas d'erreur répétée, réduire la fréquence
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      if (errorMessage.includes('network') || errorMessage.includes('timeout')) {
-        this.temporarySlowRefresh();
+      try {
+        console.log('🔄 Rafraîchissement automatique en cours...');
+        
+        // Charger les réservations sans bloquer l'interface
+        await Promise.all([
+          this.supabaseService.getPendingReservations().then(res => {
+            this.allReservations = res;
+          }),
+          this.loadScheduledReservations()
+        ]);
+        
+        // Filtrer selon le segment actuel
+        this.filterReservationsBySegment();
+        
+        // Calculer les durées pour chaque réservation (en parallèle)
+        const durationPromises = this.reservations.map(async (reservation) => {
+          reservation.duration = await this.calculateDuration(reservation.position_depart);
+          reservation.calculatedDistance = await this.calculateDistanceToReservation(reservation.position_depart);
+        });
+        
+        await Promise.all(durationPromises);
+        
+        // Forcer la mise à jour de l'affichage
+        this.cdr.detectChanges();
+        
+        console.log('✅ Rafraîchissement automatique terminé');
+        return true;
+        
+      } catch (error) {
+        console.error('❌ Erreur rafraîchissement automatique:', error);
+        throw error;
+      } finally {
+        // Restaurer l'état original du loading
+        this.isLoading = originalIsLoading;
       }
-    } finally {
-      this.isRefreshing = false;
-    }
+    };
+    
+    // Démarrer le rafraîchissement automatique avec le service
+    this.autoRefreshService.startAutoRefresh(refreshCallback, false);
   }
-
-  // Ralentir temporairement en cas d'erreurs réseau
-  private temporarySlowRefresh() {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-      
-      // Ralentir à 5 minutes temporairement
-      this.refreshInterval = setInterval(async () => {
-        await this.performOptimizedRefresh();
-        
-        // Reprendre le rythme normal après 15 minutes
-        setTimeout(() => {
-          if (this.refreshInterval) {
-            this.startAutoRefresh();
-          }
-        }, 15 * 60 * 1000); // 15 minutes
-        
-      }, 5 * 60 * 1000); // 5 minutes
-    }
+  
+  // Obtenir le temps depuis le dernier rafraîchissement (avec cache)
+  getTimeSinceLastRefresh(): string {
+    return this._timeSinceLastRefresh;
   }
-
-  private stopAutoRefresh() {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-      this.refreshInterval = null;
+  
+  // Obtenir le countdown pour le prochain rafraîchissement (avec cache)
+  getNextRefreshCountdown(): number {
+    return this._nextRefreshCountdown;
+  }
+  
+  // Obtenir le pourcentage de progression du countdown (avec cache)
+  getProgressPercentage(): number {
+    return this._progressPercentage;
+  }
+  
+  // Calculer et mettre en cache les valeurs
+  private updateCountdownValues(): void {
+    if (!this.refreshState?.lastRefreshTime) {
+      this._nextRefreshCountdown = this.REFRESH_INTERVAL_SECONDS;
+      this._progressPercentage = 0;
+      this._timeSinceLastRefresh = 'jamais';
+      return;
     }
     
-    // Nettoyer les variables de contrôle
-    this.isRefreshing = false;
-    this.lastRefreshTime = 0;
+    const now = new Date();
+    const lastRefresh = this.refreshState.lastRefreshTime;
+    const elapsedMs = now.getTime() - lastRefresh.getTime();
+    const elapsedSeconds = Math.floor(elapsedMs / 1000);
+    const remainingSeconds = Math.max(0, this.REFRESH_INTERVAL_SECONDS - elapsedSeconds);
+    
+    this._nextRefreshCountdown = remainingSeconds;
+    
+    const percentage = ((this.REFRESH_INTERVAL_SECONDS - remainingSeconds) / this.REFRESH_INTERVAL_SECONDS) * 100;
+    this._progressPercentage = Math.min(100, Math.max(0, percentage));
+    
+    // Mettre en cache le timestamp aussi
+    this._timeSinceLastRefresh = this.calculateTimeSinceLastRefresh(lastRefresh);
+  }
+  
+  // Calculer le temps écoulé depuis le dernier refresh (méthode séparée)
+  private calculateTimeSinceLastRefresh(lastRefresh: Date): string {
+    const now = new Date();
+    const diffMs = now.getTime() - lastRefresh.getTime();
+    const diffSeconds = Math.floor(diffMs / 1000);
+    const diffMinutes = Math.floor(diffSeconds / 60);
+    
+    if (diffSeconds < 5) return 'à l\'instant';
+    if (diffSeconds < 60) return `il y a ${diffSeconds}s`;
+    if (diffMinutes === 1) return 'il y a 1 minute';
+    if (diffMinutes < 60) return `il y a ${diffMinutes} minutes`;
+    
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours === 1) return 'il y a 1 heure';
+    return `il y a ${diffHours} heures`;
+  }
+  
+  // Démarrer la mise à jour du timestamp et countdown
+  private startTimestampUpdates(): void {
+    // Éviter les timers multiples
+    this.stopTimestampUpdates();
+    
+    // Initialiser les valeurs une première fois
+    this.updateCountdownValues();
+    
+    // Mettre à jour toutes les 5 secondes pour éviter l'erreur Angular
+    this.timestampUpdateInterval = setInterval(() => {
+      if (this.refreshState) {
+        // Calculer les nouvelles valeurs en dehors du cycle de détection
+        setTimeout(() => {
+          this.updateCountdownValues();
+          this.cdr.markForCheck();
+        }, 0);
+      }
+    }, 5000); // 5 secondes pour éviter les erreurs Angular
+    
+    console.log('⏰ Countdown moderne démarré (5s)');
+  }
+  
+  // Arrêter la mise à jour du timestamp
+  private stopTimestampUpdates(): void {
+    if (this.timestampUpdateInterval) {
+      clearInterval(this.timestampUpdateInterval);
+      this.timestampUpdateInterval = null;
+      console.log('⏰ Mise à jour timestamp arrêtée');
+    }
   }
 
   // Nettoyer les ressources à la destruction du composant
   ngOnDestroy() {
-    this.stopAutoRefresh();
+    console.log('🧹 Nettoyage du composant ReservationsPage');
+    
+    // Arrêter le rafraîchissement automatique
+    this.autoRefreshService.stopAutoRefresh();
+    
+    // Arrêter la mise à jour du timestamp
+    this.stopTimestampUpdates();
+    
+    // Désabonner de l'état du rafraîchissement
+    if (this.refreshStateSubscription) {
+      this.refreshStateSubscription.unsubscribe();
+      this.refreshStateSubscription = null;
+    }
+    
+    // Supprimer le listener resume
     this.removeResumeListener();
     
     // Nettoyer les données pour libérer la mémoire
     this.reservations = [];
+    this.allReservations = [];
+    this.scheduledReservations = [];
+    this.refreshState = null;
   }
 
-  // NOUVEAU : Configurer le listener pour l'événement resume (déverrouillage téléphone)
+  // 🧪 TEST: Listener de déverrouillage désactivé pour éliminer le délai
   private async setupResumeListener() {
+    console.log('🧪 setupResumeListener désactivé - pas de sync au déverrouillage');
+    /*
     // Supprimer listener existant si présent
     this.removeResumeListener();
     
@@ -1114,6 +1247,7 @@ Accepter cette réservation planifiée ?`,
       });
     } catch (error) {
     }
+    */
   }
 
   // Supprimer le listener resume
@@ -1234,6 +1368,11 @@ Accepter cette réservation planifiée ?`,
       
     } catch (error) {
     }
+  }
+
+  // Appeler un client
+  callClient(phoneNumber: string): void {
+    this.callService.callPhoneNumber(phoneNumber);
   }
 
 }

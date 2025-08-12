@@ -84,13 +84,16 @@ export class BlockageService {
   startMonitoring(): void {
     console.log('🔍 Démarrage monitoring blocage...');
     
+    // 🧪 TEST: Monitoring désactivé pour éliminer les délais
+    /*
     // Vérification toutes les 30 secondes
     this.checkInterval = setInterval(() => {
       this.checkBlockageStatus();
     }, 30000);
+    */
 
-    // Vérification immédiate
-    this.checkBlockageStatus();
+    // 🧪 TEST: Désactivé pour éliminer le délai de 10s
+    // this.checkBlockageStatus();
   }
 
   stopMonitoring(): void {

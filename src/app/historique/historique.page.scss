@@ -156,6 +156,68 @@ ion-title {
   font-weight: 600;
 }
 
+// Empêcher le retour à la ligne pour le numéro de téléphone client
+.client-phone-nowrap {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+
+  &.clickable-phone {
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    color: var(--ion-color-primary);
+
+    &:hover {
+      background-color: rgba(var(--ion-color-primary-rgb), 0.1);
+      border-color: var(--ion-color-primary);
+      transform: scale(1.02);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    ion-icon {
+      font-size: 1.1em;
+    }
+  }
+}
+
+// Style pour les numéros de téléphone cliquables dans les détails
+.detail-item.clickable-phone {
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+
+  &:hover {
+    background-color: rgba(var(--ion-color-primary-rgb), 0.1);
+    border-color: var(--ion-color-primary);
+    transform: scale(1.02);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  .phone-number {
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  ion-icon {
+    font-size: 1.2em;
+  }
+}
+
 // OTP System Styles
 .otp-section {
   margin-top: 20px;

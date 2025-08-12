@@ -489,7 +489,18 @@ export class EntrepriseReservationsPage implements OnInit {
   formatDate(dateString: string): string {
     if (!dateString) return '';
     
-    const date = new Date(dateString);
+    // IMPORTANT: Les timestamps PostgreSQL "without timezone" sont en UTC
+    // Si le timestamp ne contient pas de timezone, on ajoute 'Z' pour indiquer UTC
+    let dateToFormat = dateString;
+    if (!dateString.includes('+') && !dateString.includes('Z') && !dateString.includes('T')) {
+      // Format PostgreSQL: "2025-08-12 19:55:13.178429"
+      // On remplace l'espace par T et on ajoute Z pour ISO 8601
+      dateToFormat = dateString.replace(' ', 'T') + 'Z';
+    } else if (!dateString.includes('+') && !dateString.includes('Z')) {
+      dateToFormat = dateString + 'Z';
+    }
+    
+    const date = new Date(dateToFormat);
     return date.toLocaleString('fr-FR', {
       day: '2-digit',
       month: '2-digit',

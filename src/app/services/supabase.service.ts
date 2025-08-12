@@ -245,25 +245,15 @@ export class SupabaseService {
       console.log(`✅ Réservations trouvées dans rayon ${rayonKm}km: ${allReservations.length}`);
 
 
-      // Trier : pending en premier, puis scheduled par date/heure
+      // La fonction RPC retourne déjà les résultats triés par distance
+      // Combinaison simple : pending d'abord (déjà triés par distance), puis scheduled (déjà triés par distance)
       return allReservations.sort((a, b) => {
-        // Priorité aux pending
+        // Priorité aux pending (plus urgent)
         if (a.statut === 'pending' && b.statut === 'scheduled') return -1;
         if (a.statut === 'scheduled' && b.statut === 'pending') return 1;
         
-        // Si deux scheduled, trier par date/heure
-        if (a.statut === 'scheduled' && b.statut === 'scheduled') {
-          if (a.date_reservation && b.date_reservation) {
-            const dateCompare = new Date(a.date_reservation).getTime() - new Date(b.date_reservation).getTime();
-            if (dateCompare !== 0) return dateCompare;
-            
-            // Si même date, trier par heure
-            return (a.heure_reservation || 0) - (b.heure_reservation || 0);
-          }
-        }
-        
-        // Par défaut, trier par created_at
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        // Pour le même statut, garder l'ordre retourné par RPC (déjà trié par distance)
+        return 0;
       });
 
     } catch (error) {

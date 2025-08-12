@@ -50,11 +50,14 @@
               <div class="customer-info">
                 <div class="client-main">
                   <ion-icon name="person"></ion-icon>
-                  Client: {{ reservation.client_phone }}
+                  <span class="client-phone-nowrap clickable-phone" (click)="callClient(reservation.client_phone)">
+                    <ion-icon name="call" color="primary"></ion-icon>
+                    {{ reservation.client_phone }}
+                  </span>
                 </div>
                 <div class="reservation-id">
                   <ion-text color="medium">
-                    <small>ID: {{ reservation.id.substring(0, 8) }}...</small>
+                    <small>ID: {{ reservation.id.substring(0,8) }}</small>
                   </ion-text>
                 </div>
               </div>
@@ -68,10 +71,6 @@
 
         <ion-card-content class="reservation-content">
           <div class="reservation-details">
-            <div class="detail-item">
-              <ion-icon name="call" color="medium"></ion-icon>
-              <ion-text>{{ reservation.client_phone }}</ion-text>
-            </div>
 
             <div class="detail-item">
               <ion-icon name="car" color="medium"></ion-icon>
