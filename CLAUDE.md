@@ -16,8 +16,11 @@ This is an Ionic + Angular + Capacitor application for a chauffeur service (AppL
 
 ## Development Commands
 
+**⚠️ IMPORTANT: NE JAMAIS LANCER L'APPLICATION AUTOMATIQUEMENT**
+L'application est déjà en cours d'exécution. Ne pas exécuter `npm start`, `ionic serve` ou toute commande de démarrage du serveur de développement.
+
 - `npm install` - Install dependencies
-- `npm start` or `ionic serve` - Start development server
+- `npm start` or `ionic serve` - Start development server (**NE PAS EXÉCUTER - Déjà en cours**)
 - `npm run build` or `ionic build` - Build for production
 - `npm test` - Run unit tests
 - `npm run lint` - Run linting
@@ -177,6 +180,96 @@ RETURNS SETOF reservations
 ```
 
 This function handles the complex geometry operations for filtering reservations by distance while managing the mixed data types (TEXT WKB vs GEOMETRY PostGIS).
+
+### Modal Creation Pattern (TESTED & WORKING)
+
+**⚠️ IMPORTANT:** Use this exact pattern for all modal creation in this project. This structure has been tested and works perfectly.
+
+**Template Structure:**
+```html
+<!-- Modal [Description] -->
+<ion-modal [isOpen]="isModalOpen" (didDismiss)="closeModal()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>Modal Title</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeModal()">
+            <ion-icon name="close-circle-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      
+      <ion-item>
+        <ion-label position="stacked">Field Label *</ion-label>
+        <ion-input
+          [(ngModel)]="formData.field"
+          placeholder="Placeholder text">
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Select Field *</ion-label>
+        <ion-select
+          [(ngModel)]="formData.selectField"
+          placeholder="Select option">
+          <ion-select-option value="option1">Option 1</ion-select-option>
+          <ion-select-option value="option2">Option 2</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Textarea Field</ion-label>
+        <ion-textarea
+          [(ngModel)]="formData.textareaField"
+          placeholder="Long text"
+          rows="3">
+        </ion-textarea>
+      </ion-item>
+
+      <div class="modal-actions">
+        <ion-button 
+          expand="block" 
+          (click)="onSave()"
+          [disabled]="isSaving">
+          {{ isSaving ? 'Saving...' : 'Save' }}
+        </ion-button>
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          (click)="closeModal()">
+          Cancel
+        </ion-button>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+```
+
+**Key Rules:**
+1. **Always use `<ng-template>`** inside `<ion-modal>`
+2. **Use `color="primary"`** for toolbar
+3. **Use `close-circle-outline`** icon for close button
+4. **Use `class="ion-padding"`** on ion-content
+5. **Place form fields directly** in ion-content (no wrapper divs)
+6. **Use `position="stacked"`** for all ion-label
+7. **Use `[(ngModel)]="object.property"`** for bindings
+8. **Place `modal-actions` div at the end**
+9. **Primary button first, cancel button second**
+10. **Test with simple content first** if having issues
+
+**Tested Examples:**
+- Entreprise creation modal (working perfectly)
+- Conducteur creation modal (working perfectly)
+
+**Common Issues to Avoid:**
+- ❌ Don't use complex wrapper divs
+- ❌ Don't use form tags with ngModel issues  
+- ❌ Don't place modals inside `<ion-content>`
+- ❌ Don't use different icon names for close button
+- ✅ Always test with simple content first before adding complex bindings
 
 ## 🔋 GPS Tracking & Wake Lock System
 

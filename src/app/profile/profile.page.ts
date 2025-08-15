@@ -78,11 +78,15 @@ export class ProfilePage implements OnInit {
   }
 
   ngOnInit() {
-    this.loadDriverProfile();
+    // ✅ S'abonner aux changements de conducteur
+    this.authService.currentConducteur$.subscribe(conducteur => {
+      if (conducteur) {
+        this.loadDriverProfile(conducteur);
+      }
+    });
   }
 
-  async loadDriverProfile() {
-    const conducteur = this.authService.getCurrentConducteur();
+  async loadDriverProfile(conducteur: any) {
     if (conducteur) {
       // Récupérer le nombre total de courses
       const totalRides = await this.supabaseService.getConducteurTotalRides(conducteur.id);

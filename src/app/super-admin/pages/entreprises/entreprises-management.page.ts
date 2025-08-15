@@ -3,7 +3,7 @@
  * Création, modification et gestion des entreprises
  */
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -76,7 +76,10 @@ import {
   lockOpenOutline,
   warningOutline,
   banOutline,
-  shieldOutline
+  shieldOutline,
+  personAddOutline,
+  colorPaletteOutline,
+  checkmarkOutline
 } from 'ionicons/icons';
 
 import { 
@@ -91,581 +94,7 @@ import { Injector } from '@angular/core';
 
 @Component({
   selector: 'app-entreprises-management',
-  template: `
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-button 
-      slot="start" 
-      fill="clear" 
-      (click)="goBack()"
-      color="light">
-      <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
-    </ion-button>
-    <ion-title>
-      <ion-icon name="business-outline"></ion-icon>
-      Gestion des Entreprises
-    </ion-title>
-    <ion-button 
-      slot="end" 
-      fill="clear" 
-      (click)="onRefresh()"
-      color="light">
-      <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
-    </ion-button>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content>
-  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
-    <ion-refresher-content></ion-refresher-content>
-  </ion-refresher>
-
-  <div class="page-container">
-    
-    <!-- Statistiques -->
-    <ion-card class="stats-card">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="stats-chart-outline"></ion-icon>
-          Statistiques Entreprises
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-grid>
-          <ion-row>
-            <ion-col size="6" size-md="3">
-              <div class="stat-item">
-                <div class="stat-number">{{ stats.total_entreprises }}</div>
-                <div class="stat-label">Total</div>
-              </div>
-            </ion-col>
-            <ion-col size="6" size-md="3">
-              <div class="stat-item">
-                <div class="stat-number success">{{ stats.entreprises_actives }}</div>
-                <div class="stat-label">Actives</div>
-              </div>
-            </ion-col>
-            <ion-col size="6" size-md="3">
-              <div class="stat-item">
-                <div class="stat-number warning">{{ stats.entreprises_inactives }}</div>
-                <div class="stat-label">Inactives</div>
-              </div>
-            </ion-col>
-            <ion-col size="6" size-md="3">
-              <div class="stat-item">
-                <div class="stat-number primary">{{ stats.nouveaux_ce_mois }}</div>
-                <div class="stat-label">Ce mois</div>
-              </div>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Actions rapides -->
-    <ion-card class="actions-card">
-      <ion-card-content>
-        <ion-grid>
-          <ion-row>
-            <ion-col size="12" size-md="4">
-              <ion-button 
-                expand="block" 
-                fill="solid"
-                color="primary"
-                (click)="onCreateEntreprise()">
-                <ion-icon name="add-outline" slot="start"></ion-icon>
-                Nouvelle Entreprise
-              </ion-button>
-            </ion-col>
-            <ion-col size="12" size-md="4">
-              <ion-button 
-                expand="block" 
-                fill="outline"
-                color="warning"
-                (click)="onResetPassword()">
-                <ion-icon name="key-outline" slot="start"></ion-icon>
-                Réinitialiser Mot de Passe
-              </ion-button>
-            </ion-col>
-            <ion-col size="12" size-md="4">
-              <ion-button 
-                expand="block" 
-                fill="outline"
-                color="medium"
-                (click)="onExportData()">
-                <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
-                Export Données
-              </ion-button>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Recherche -->
-    <ion-card class="search-card">
-      <ion-card-content>
-        <ion-searchbar
-          [(ngModel)]="searchQuery"
-          placeholder="Rechercher entreprise..."
-          (ionInput)="onSearch()"
-          debounce="500">
-        </ion-searchbar>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Loading -->
-    <div *ngIf="isLoading" class="loading-container">
-      <ion-spinner></ion-spinner>
-      <p>Chargement des entreprises...</p>
-    </div>
-
-    <!-- Liste des entreprises -->
-    <ion-card *ngIf="!isLoading" class="entreprises-card">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="business-outline"></ion-icon>
-          Entreprises ({{ filteredEntreprises.length }})
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        
-        <!-- Message si aucune entreprise -->
-        <div *ngIf="filteredEntreprises.length === 0" class="empty-state">
-          <ion-icon name="business-outline" size="large"></ion-icon>
-          <h3>Aucune entreprise trouvée</h3>
-          <p>Créez votre première entreprise pour commencer.</p>
-          <ion-button fill="outline" (click)="onCreateEntreprise()">
-            <ion-icon name="add-outline" slot="start"></ion-icon>
-            Créer une entreprise
-          </ion-button>
-        </div>
-
-        <!-- Liste des entreprises -->
-        <ion-list *ngIf="filteredEntreprises.length > 0">
-          <ion-item 
-            *ngFor="let entreprise of filteredEntreprises; trackBy: trackByEntreprise"
-            class="entreprise-item">
-            
-            <div class="entreprise-content">
-              <!-- Header avec nom et statut -->
-              <div class="entreprise-header">
-                <div class="entreprise-info">
-                  <h3>{{ entreprise.nom }}</h3>
-                  <p class="entreprise-email">{{ entreprise.email }}</p>
-                </div>
-                <div class="status-section">
-                  <ion-badge 
-                    [color]="entreprise.actif ? 'success' : 'danger'"
-                    class="status-badge">
-                    {{ entreprise.actif ? 'Active' : 'Inactive' }}
-                  </ion-badge>
-                  <ion-badge 
-                    *ngIf="!entreprise.password_hash"
-                    color="warning"
-                    class="password-badge">
-                    Pas de mot de passe
-                  </ion-badge>
-                </div>
-              </div>
-
-              <!-- Détails -->
-              <div class="entreprise-details">
-                <div class="detail-row" *ngIf="entreprise.telephone">
-                  <ion-icon name="call-outline"></ion-icon>
-                  <span>{{ entreprise.telephone }}</span>
-                </div>
-                <div class="detail-row" *ngIf="entreprise.adresse">
-                  <ion-icon name="location-outline"></ion-icon>
-                  <span>{{ entreprise.adresse }}</span>
-                </div>
-                <div class="detail-row" *ngIf="entreprise.siret">
-                  <ion-icon name="card-outline"></ion-icon>
-                  <span>SIRET: {{ entreprise.siret }}</span>
-                </div>
-                <div class="detail-row" *ngIf="entreprise.responsable">
-                  <ion-icon name="person-outline"></ion-icon>
-                  <span>Responsable: {{ entreprise.responsable }}</span>
-                </div>
-                <div class="detail-row">
-                  <ion-icon name="time-outline"></ion-icon>
-                  <span>Créée le {{ formatDate(entreprise.created_at) }}</span>
-                </div>
-              </div>
-
-              <!-- Actions -->
-              <div class="entreprise-actions">
-                <ion-button 
-                  size="small" 
-                  fill="clear" 
-                  (click)="onViewDetails(entreprise)">
-                  <ion-icon name="eye-outline" slot="icon-only"></ion-icon>
-                </ion-button>
-                
-                <ion-button 
-                  size="small" 
-                  fill="clear" 
-                  color="primary"
-                  (click)="onViewConducteurs(entreprise)">
-                  <ion-icon name="people-outline" slot="icon-only"></ion-icon>
-                </ion-button>
-                
-                <ion-button 
-                  size="small" 
-                  fill="clear" 
-                  (click)="onEditEntreprise(entreprise)">
-                  <ion-icon name="create-outline" slot="icon-only"></ion-icon>
-                </ion-button>
-                
-                <ion-button 
-                  size="small" 
-                  fill="clear" 
-                  color="warning"
-                  (click)="onResetPasswordSpecific(entreprise)">
-                  <ion-icon name="key-outline" slot="icon-only"></ion-icon>
-                </ion-button>
-
-                <!-- Boutons blocage/déblocage -->
-                <ion-button 
-                  *ngIf="entreprise.actif"
-                  size="small" 
-                  fill="clear" 
-                  color="danger"
-                  (click)="onDesactiverEntreprise(entreprise)">
-                  <ion-icon name="lock-closed-outline" slot="icon-only"></ion-icon>
-                </ion-button>
-
-                <ion-button 
-                  *ngIf="!entreprise.actif"
-                  size="small" 
-                  fill="clear" 
-                  color="success"
-                  (click)="onReactiverEntreprise(entreprise)">
-                  <ion-icon name="lock-open-outline" slot="icon-only"></ion-icon>
-                </ion-button>
-                
-                <ion-toggle
-                  [checked]="entreprise.actif"
-                  (ionChange)="onToggleStatus(entreprise, $event)"
-                  color="success">
-                </ion-toggle>
-              </div>
-            </div>
-          </ion-item>
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
-
-  </div>
-
-  <!-- Modal Création/Modification Entreprise -->
-  <ion-modal [isOpen]="isCreateModalOpen" (didDismiss)="closeCreateModal()">
-    <ng-template>
-      <ion-header>
-        <ion-toolbar color="primary">
-          <ion-title>{{ editingEntreprise ? 'Modifier' : 'Créer' }} Entreprise</ion-title>
-          <ion-buttons slot="end">
-            <ion-button (click)="closeCreateModal()">
-              <ion-icon name="close-circle-outline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content class="ion-padding">
-        <div class="modal-content">
-          
-          <ion-item>
-            <ion-label position="stacked">Nom de l'entreprise *</ion-label>
-            <ion-input
-              [(ngModel)]="formData.nom"
-              placeholder="Ex: Taxi Express Conakry"
-              required>
-            </ion-input>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Email *</ion-label>
-            <ion-input
-              [(ngModel)]="formData.email"
-              type="email"
-              placeholder="contact@entreprise.com"
-              required>
-            </ion-input>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Téléphone *</ion-label>
-            <ion-input
-              [(ngModel)]="formData.telephone"
-              type="tel"
-              placeholder="+224 123 456 789"
-              required>
-            </ion-input>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Adresse *</ion-label>
-            <ion-textarea
-              [(ngModel)]="formData.adresse"
-              placeholder="Adresse complète de l'entreprise"
-              rows="3"
-              required>
-            </ion-textarea>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">SIRET (optionnel)</ion-label>
-            <ion-input
-              [(ngModel)]="formData.siret"
-              placeholder="12345678901234">
-            </ion-input>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Responsable (optionnel)</ion-label>
-            <ion-input
-              [(ngModel)]="formData.responsable"
-              placeholder="Nom du responsable">
-            </ion-input>
-          </ion-item>
-
-          <div class="modal-actions">
-            <ion-button 
-              expand="block" 
-              (click)="onSaveEntreprise()"
-              [disabled]="!isFormValid()">
-              {{ editingEntreprise ? 'Modifier' : 'Créer' }} Entreprise
-            </ion-button>
-            <ion-button 
-              expand="block" 
-              fill="outline" 
-              (click)="closeCreateModal()">
-              Annuler
-            </ion-button>
-          </div>
-        </div>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
-
-  <!-- Modal Liste Conducteurs -->
-  <ion-modal [isOpen]="isConducteursModalOpen" (didDismiss)="closeConducteursModal()" class="conducteurs-modal">
-    <ng-template>
-      <ion-header class="conducteurs-modal-header">
-        <ion-toolbar>
-          <ion-title>
-            <ion-icon name="people-outline"></ion-icon>
-            Conducteurs - {{ selectedEntreprise?.nom }}
-          </ion-title>
-          <ion-buttons slot="end">
-            <ion-button (click)="closeConducteursModal()">
-              <ion-icon name="close-outline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content class="ion-padding">
-        
-        <!-- Stats Conducteurs -->
-        <ion-card class="conducteurs-stats-card" *ngIf="conducteursList.length > 0">
-          <ion-card-content>
-            <ion-grid>
-              <ion-row>
-                <ion-col size="4">
-                  <div class="stat-mini">
-                    <div class="stat-value">{{ conducteursList.length }}</div>
-                    <div class="stat-label">Total</div>
-                  </div>
-                </ion-col>
-                <ion-col size="4">
-                  <div class="stat-mini">
-                    <div class="stat-value success">{{ conducteursActifs }}</div>
-                    <div class="stat-label">Actifs</div>
-                  </div>
-                </ion-col>
-                <ion-col size="4">
-                  <div class="stat-mini">
-                    <div class="stat-value warning">{{ conducteursInactifs }}</div>
-                    <div class="stat-label">Inactifs</div>
-                  </div>
-                </ion-col>
-              </ion-row>
-            </ion-grid>
-          </ion-card-content>
-        </ion-card>
-
-        <!-- Loading -->
-        <div *ngIf="isLoadingConducteurs" class="loading-container">
-          <ion-spinner></ion-spinner>
-          <p>Chargement des conducteurs...</p>
-        </div>
-
-        <!-- Liste vide -->
-        <div *ngIf="!isLoadingConducteurs && conducteursList.length === 0" class="empty-state">
-          <ion-icon name="people-outline" size="large"></ion-icon>
-          <h3>Aucun conducteur</h3>
-          <p>Cette entreprise n'a pas encore de conducteurs.</p>
-        </div>
-
-        <!-- Liste des conducteurs avec collapse -->
-        <div *ngIf="!isLoadingConducteurs && conducteursList.length > 0">
-          <div *ngFor="let conducteur of conducteursList" class="conducteur-item">
-            <!-- Header du conducteur (clickable) -->
-            <div class="conducteur-header" 
-                 [class.expanded]="isExpanded(conducteur.id)"
-                 (click)="toggleConducteur(conducteur)">
-              <div class="conducteur-main">
-                <div class="conducteur-info">
-                  <ion-avatar>
-                    <div class="avatar-placeholder">{{ getInitials(conducteur) }}</div>
-                  </ion-avatar>
-                  <div class="info-text">
-                    <h3>{{ conducteur.prenom }} {{ conducteur.nom }}</h3>
-                    <div class="info-line">
-                      <ion-icon name="call-outline"></ion-icon>
-                      {{ conducteur.telephone }}
-                    </div>
-                    <div class="info-line">
-                      <ion-icon name="car-outline"></ion-icon>
-                      {{ getVehicleTypeLabel(conducteur.vehicle_type) }}
-                      <span *ngIf="conducteur.vehicle_marque"> - {{ conducteur.vehicle_marque }}</span>
-                    </div>
-                    <div class="info-line" *ngIf="conducteur.note_moyenne">
-                      <ion-icon name="star"></ion-icon>
-                      {{ conducteur.note_moyenne }}/5 - {{ conducteur.nombre_courses }} courses
-                    </div>
-                  </div>
-                </div>
-                <div class="conducteur-actions">
-                  <div class="status-badges">
-                    <ion-badge [color]="conducteur.actif ? 'success' : 'danger'">
-                      {{ getMotifBlocage(conducteur) }}
-                    </ion-badge>
-                    <ion-badge [color]="!conducteur.hors_ligne ? 'primary' : 'medium'" *ngIf="conducteur.actif">
-                      {{ !conducteur.hors_ligne ? 'En ligne' : 'Hors ligne' }}
-                    </ion-badge>
-                  </div>
-
-                  <!-- Boutons d'action conducteur -->
-                  <div class="conducteur-action-buttons">
-                    <ion-button 
-                      *ngIf="conducteur.actif"
-                      size="small" 
-                      fill="clear" 
-                      color="danger"
-                      (click)="onBloquerConducteur(conducteur); $event.stopPropagation()">
-                      <ion-icon name="ban-outline" slot="icon-only"></ion-icon>
-                    </ion-button>
-
-                    <ion-button 
-                      *ngIf="canDebloquerConducteur(conducteur)"
-                      size="small" 
-                      fill="clear" 
-                      color="success"
-                      (click)="onDebloquerConducteur(conducteur); $event.stopPropagation()">
-                      <ion-icon name="shield-outline" slot="icon-only"></ion-icon>
-                    </ion-button>
-                  </div>
-
-                  <ion-icon name="chevron-down-outline" 
-                           class="expand-icon" 
-                           [class.rotated]="isExpanded(conducteur.id)"></ion-icon>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Section réservations (collapse) -->
-            <div class="conducteur-reservations" [class.expanded]="isExpanded(conducteur.id)">
-              <div class="reservations-content">
-                <div class="reservations-header">
-                  <h4>Réservations récentes</h4>
-                  <span class="reservation-count">
-                    {{ getReservationsCount(conducteur.id) }} réservation(s)
-                  </span>
-                </div>
-                
-                <!-- Loading réservations -->
-                <div *ngIf="loadingReservations.has(conducteur.id)" class="ion-text-center ion-padding">
-                  <ion-spinner name="crescent"></ion-spinner>
-                </div>
-                
-                <!-- Liste des réservations -->
-                <div *ngIf="!loadingReservations.has(conducteur.id)">
-                  <div *ngFor="let reservation of getReservations(conducteur.id)" class="reservation-item">
-                    <!-- Header avec statut et prix -->
-                    <div class="reservation-header">
-                      <div class="reservation-status">
-                        <span class="status-badge" [ngClass]="reservation.statut">
-                          {{ getStatusLabel(reservation.statut) }}
-                        </span>
-                        <span class="reservation-date">
-                          {{ formatRelativeTime(reservation.created_at) }}
-                        </span>
-                      </div>
-                      <div class="reservation-price">
-                        {{ formatCurrency(reservation.prix_total) }}
-                      </div>
-                    </div>
-                    
-                    <!-- Timeline départ/destination -->
-                    <div class="reservation-timeline">
-                      <div class="timeline-point departure">
-                        <div class="point-label">Départ</div>
-                        <div class="point-value">
-                          <ion-icon name="location"></ion-icon>
-                          {{ reservation.depart_nom || extractLocationName(reservation.position_depart) || 'Position non définie' }}
-                        </div>
-                      </div>
-                      
-                      <div class="timeline-point destination">
-                        <div class="point-label">Destination</div>
-                        <div class="point-value">
-                          <ion-icon name="flag"></ion-icon>
-                          {{ reservation.destination_nom || 'Destination non définie' }}
-                        </div>
-                        <div class="point-distance" *ngIf="reservation.distance_km">
-                          <ion-icon name="speedometer-outline"></ion-icon>
-                          {{ reservation.distance_km }} km
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <!-- Footer avec infos client et note -->
-                    <div class="reservation-footer">
-                      <div class="client-info">
-                        <ion-icon name="person-outline"></ion-icon>
-                        {{ reservation.client_phone }}
-                      </div>
-                      <div class="reservation-note" *ngIf="reservation.note_conducteur">
-                        <ion-icon name="star"></ion-icon>
-                        <span>{{ reservation.note_conducteur }}/5</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div *ngIf="getReservations(conducteur.id).length === 0" class="no-reservations">
-                    Aucune réservation trouvée
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="modal-actions" *ngIf="!isLoadingConducteurs && conducteursList.length > 0">
-          <ion-button expand="block" fill="outline" (click)="exportConducteursList()">
-            <ion-icon name="download-outline" slot="start"></ion-icon>
-            Exporter la liste
-          </ion-button>
-        </div>
-
-      </ion-content>
-    </ng-template>
-  </ion-modal>
-
-</ion-content>
-  `,
+  templateUrl: './entreprises-management.page.html',
   styleUrls: ['./entreprises-management.page.scss'],
   standalone: true,
   imports: [
@@ -743,13 +172,28 @@ export class EntreprisesManagementPage implements OnInit {
   conducteursReservations: Map<string, any[]> = new Map();
   loadingReservations: Set<string> = new Set();
 
+  // Modal ajout conducteur
+  isAddConducteurModalOpen = false;
+  selectedEntrepriseForAdd: Entreprise | null = null;
+  isAddingConducteur = false;
+  addConducteurForm = {
+    nom: '',
+    prenom: '',
+    telephone: '',
+    vehicle_type: 'voiture',
+    vehicle_marque: '',
+    vehicle_modele: '',
+    vehicle_plaque: ''
+  };
+
   constructor(
     private entrepriseService: EntrepriseManagementService,
     private router: Router,
     private loadingController: LoadingController,
     private toastController: ToastController,
     private alertController: AlertController,
-    private blocageService: BlockageService
+    private blocageService: BlockageService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     // Ajouter les icônes
     addIcons({
@@ -784,7 +228,10 @@ export class EntreprisesManagementPage implements OnInit {
       lockOpenOutline,
       warningOutline,
       banOutline,
-      shieldOutline
+      shieldOutline,
+      personAddOutline,
+      colorPaletteOutline,
+      checkmarkOutline
     });
   }
 
@@ -1099,6 +546,38 @@ Cette action va:
     }
   }
 
+  onAddConducteur(entreprise: Entreprise) {
+    this.selectedEntrepriseForAdd = entreprise;
+    this.resetAddConducteurForm();
+    this.isAddConducteurModalOpen = true;
+  }
+
+
+  async reloadConducteursCurrentEntreprise() {
+    if (!this.selectedEntreprise) return;
+    
+    this.isLoadingConducteurs = true;
+    
+    try {
+      console.log(`🔄 Rechargement des conducteurs pour l'entreprise ${this.selectedEntreprise.nom}`);
+      
+      const { data, error } = await this.entrepriseService.getConducteursByEntreprise(this.selectedEntreprise.id);
+      
+      if (error) {
+        throw error;
+      }
+
+      this.conducteursList = data || [];
+      console.log(`✅ ${this.conducteursList.length} conducteur(s) rechargé(s)`);
+
+    } catch (error) {
+      console.error('❌ Erreur rechargement conducteurs:', error);
+      this.showError('Erreur lors du rechargement des conducteurs');
+    } finally {
+      this.isLoadingConducteurs = false;
+    }
+  }
+
   closeConducteursModal() {
     this.isConducteursModalOpen = false;
     this.selectedEntreprise = null;
@@ -1106,6 +585,81 @@ Cette action va:
     this.expandedConducteurs.clear();
     this.conducteursReservations.clear();
     this.loadingReservations.clear();
+  }
+
+  resetAddConducteurForm() {
+    this.addConducteurForm = {
+      nom: '',
+      prenom: '',
+      telephone: '',
+      vehicle_type: 'voiture',
+      vehicle_marque: '',
+      vehicle_modele: '',
+      vehicle_plaque: ''
+    };
+  }
+
+  closeAddConducteurModal() {
+    this.isAddConducteurModalOpen = false;
+    this.selectedEntrepriseForAdd = null;
+    this.resetAddConducteurForm();
+  }
+
+  addConducteurFormValid(): boolean {
+    return !!(
+      this.addConducteurForm.nom &&
+      this.addConducteurForm.prenom &&
+      this.addConducteurForm.telephone &&
+      this.addConducteurForm.vehicle_type
+    );
+  }
+
+  async onConducteurCreated() {
+    if (!this.selectedEntrepriseForAdd) return;
+
+    // Validation
+    if (!this.addConducteurFormValid()) {
+      this.showError('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    this.isAddingConducteur = true;
+
+    try {
+      // Préparer les données du conducteur
+      const conducteurData = {
+        nom: this.addConducteurForm.nom.trim(),
+        prenom: this.addConducteurForm.prenom.trim(),
+        telephone: this.addConducteurForm.telephone.trim(),
+        vehicle_type: this.addConducteurForm.vehicle_type,
+        vehicle_marque: this.addConducteurForm.vehicle_marque?.trim() || null,
+        vehicle_modele: this.addConducteurForm.vehicle_modele?.trim() || null,
+        vehicle_plaque: this.addConducteurForm.vehicle_plaque?.trim() || null,
+        entreprise_id: this.selectedEntrepriseForAdd.id,
+        actif: true,
+        first_login: true
+      };
+
+      console.log(`➕ Ajout conducteur pour l'entreprise ${this.selectedEntrepriseForAdd.nom}:`, conducteurData);
+
+      const { success, error } = await this.entrepriseService.addConducteur(conducteurData);
+
+      if (!success) {
+        throw error || new Error('Erreur lors de l\'ajout du conducteur');
+      }
+
+      this.showSuccess(`Conducteur ${this.addConducteurForm.nom} ${this.addConducteurForm.prenom} ajouté avec succès`);
+      this.closeAddConducteurModal();
+      
+      // Recharger les données
+      await this.loadData();
+
+    } catch (error: any) {
+      console.error('❌ Erreur ajout conducteur:', error);
+      this.showError(error.message || 'Erreur lors de l\'ajout du conducteur');
+    } finally {
+      this.isAddingConducteur = false;
+    }
   }
 
   // Toggle collapse conducteur
@@ -1632,6 +1186,70 @@ Sélectionnez la raison du blocage:`,
 
   getMotifBlocage(conducteur: any): string {
     return BlocageUtils.getMotifBlocage(conducteur);
+  }
+
+  async onSupprimerConducteur(conducteur: any) {
+    const alert = await this.alertController.create({
+      header: 'Supprimer Conducteur',
+      subHeader: `${conducteur.nom} ${conducteur.prenom}`,
+      message: `⚠️ Êtes-vous sûr de vouloir supprimer ce conducteur ?
+
+Cette action va :
+• Désactiver définitivement le conducteur
+• L'empêcher de recevoir de nouvelles réservations
+• Conserver l'historique de ses courses
+
+Cette action est irréversible.`,
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel',
+          cssClass: 'medium'
+        },
+        {
+          text: 'Supprimer',
+          cssClass: 'danger',
+          handler: () => {
+            this.confirmerSuppressionConducteur(conducteur);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  private async confirmerSuppressionConducteur(conducteur: any) {
+    const loading = await this.loadingController.create({
+      message: 'Suppression en cours...'
+    });
+    await loading.present();
+
+    try {
+      const { success, error } = await this.entrepriseService.supprimerConducteur(conducteur.id);
+
+      if (!success) {
+        throw error || new Error('Erreur lors de la suppression du conducteur');
+      }
+
+      this.showSuccess(`Conducteur "${conducteur.nom} ${conducteur.prenom}" supprimé avec succès`);
+      
+      // Fermer le détail du conducteur s'il était ouvert
+      if (this.expandedConducteurs.has(conducteur.id)) {
+        this.expandedConducteurs.delete(conducteur.id);
+      }
+
+      // Recharger la liste des conducteurs si la modal est ouverte
+      if (this.isConducteursModalOpen && this.selectedEntreprise) {
+        await this.reloadConducteursCurrentEntreprise();
+      }
+
+    } catch (error: any) {
+      console.error('❌ Erreur suppression conducteur:', error);
+      this.showError(error.message || 'Erreur lors de la suppression du conducteur');
+    } finally {
+      await loading.dismiss();
+    }
   }
 
   canDebloquerConducteur(conducteur: any): boolean {

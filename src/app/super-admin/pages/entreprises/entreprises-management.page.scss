@@ -2,6 +2,151 @@
  * STYLES PAGE GESTION ENTREPRISES SUPER-ADMIN
  */
 
+// ==================== MODAL AJOUT CONDUCTEUR ====================
+
+.add-conducteur-modal {
+  --width: 90%;
+  --max-width: 500px;
+  --height: auto;
+  --max-height: 90vh;
+
+  ::ng-deep {
+    .modal-wrapper {
+      border-radius: 12px;
+      overflow: hidden;
+    }
+  }
+
+  .form-section {
+    margin-bottom: 24px;
+
+    h3 {
+      color: var(--ion-color-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      padding-left: 4px;
+      
+      &:not(:first-child) {
+        margin-top: 32px;
+      }
+    }
+
+    ion-item {
+      --padding-start: 0;
+      --padding-end: 0;
+      --inner-padding-end: 0;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      --background: var(--ion-color-light);
+
+      ion-label {
+        font-weight: 500;
+        color: var(--ion-color-dark);
+        margin-bottom: 4px;
+      }
+
+      ion-input,
+      ion-select {
+        --padding-start: 12px;
+        --padding-end: 12px;
+        font-size: 0.95rem;
+      }
+
+      ion-select {
+        --placeholder-color: var(--ion-color-medium);
+      }
+    }
+  }
+
+  .form-actions {
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    ion-button {
+      --border-radius: 8px;
+      height: 48px;
+      font-weight: 600;
+
+      &[color="medium"] {
+        --color: var(--ion-color-medium-shade);
+        --border-color: var(--ion-color-medium);
+      }
+
+      &[color="primary"] {
+        --background: var(--ion-color-primary);
+        --color: white;
+        
+        &:hover {
+          --background: var(--ion-color-primary-shade);
+        }
+      }
+
+      ion-spinner {
+        --color: white;
+        margin-right: 8px;
+      }
+
+      ion-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+
+  // Header avec couleur primaire
+  ion-header {
+    ion-toolbar[color="primary"] {
+      --background: var(--ion-color-primary);
+      --color: white;
+
+      ion-title {
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        ion-icon {
+          font-size: 1.2rem;
+        }
+      }
+
+      ion-button[fill="clear"] {
+        --color: white;
+        --color-hover: rgba(255, 255, 255, 0.8);
+      }
+    }
+  }
+
+  // Content padding
+  ion-content {
+    --padding-top: 20px;
+    --padding-bottom: 20px;
+    --padding-start: 16px;
+    --padding-end: 16px;
+  }
+
+  // Responsive design
+  @media (max-width: 768px) {
+    --width: 95%;
+    --max-height: 95vh;
+
+    .form-section {
+      margin-bottom: 20px;
+
+      h3 {
+        font-size: 1rem;
+        margin-bottom: 12px;
+      }
+    }
+
+    .form-actions {
+      margin-top: 24px;
+    }
+  }
+}
+
 .page-container {
   padding: 16px;
   max-width: 1200px;
@@ -436,6 +581,125 @@
     }
   }
 
+  // Modal moderne épurée de blocage conducteur
+  .custom-alert-blocage-conducteur-moderne {
+    --width: 85%;
+    --max-width: 450px;
+    
+    .alert-wrapper {
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+      overflow: hidden;
+      background: white;
+      
+      .alert-head {
+        background: var(--ion-color-primary) !important;
+        padding: 20px;
+        text-align: center;
+        
+        .alert-title {
+          color: white !important;
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin: 0 !important;
+          letter-spacing: 0.3px;
+        }
+        
+        .alert-sub-title {
+          color: rgba(255, 255, 255, 0.9) !important;
+          font-size: 0.9rem;
+          font-weight: 500;
+          margin: 6px 0 0 0 !important;
+        }
+      }
+      
+      .alert-message {
+        padding: 20px;
+        background: white;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        color: var(--ion-color-medium-shade);
+        text-align: center;
+        border-bottom: 1px solid var(--ion-color-light);
+      }
+      
+      .alert-input-group {
+        padding: 16px 0;
+        background: white;
+        
+        .alert-radio-group {
+          .alert-radio-label {
+            font-size: 0.9rem;
+            line-height: 1.3;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(var(--ion-color-light-rgb), 0.5);
+            transition: all 0.2s ease;
+            margin: 0;
+            color: var(--ion-color-dark);
+            display: flex;
+            align-items: center;
+            
+            &:hover {
+              background: rgba(var(--ion-color-primary-rgb), 0.03);
+              border-left: 3px solid var(--ion-color-primary);
+              padding-left: 17px;
+            }
+            
+            &:last-child {
+              border-bottom: none;
+            }
+          }
+          
+          .alert-radio-button {
+            margin-right: 14px !important;
+          }
+        }
+      }
+      
+      .alert-button-group {
+        padding: 16px 20px;
+        background: rgba(var(--ion-color-light-rgb), 0.3);
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        
+        .alert-button {
+          border-radius: 8px;
+          font-weight: 500;
+          font-size: 0.9rem;
+          padding: 12px 28px;
+          min-height: 44px;
+          transition: all 0.2s ease;
+          border: none;
+          flex: 1;
+          max-width: 140px;
+          
+          &.button-cancel {
+            background: var(--ion-color-light);
+            color: var(--ion-color-medium-shade);
+            
+            &:hover {
+              background: var(--ion-color-medium);
+              color: white;
+              transform: translateY(-1px);
+            }
+          }
+          
+          &.button-primary, &.button-danger {
+            background: var(--ion-color-primary);
+            color: white;
+            
+            &:hover {
+              background: var(--ion-color-primary-shade);
+              transform: translateY(-1px);
+              box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.3);
+            }
+          }
+        }
+      }
+    }
+  }
+
   // Styles pour toutes les alertes avec headers primary
   ion-alert {
     .alert-wrapper {
@@ -457,146 +721,7 @@
   // STYLES MODALS BLOCAGE CONDUCTEUR MODERNES
   // ===============================================
   
-  // Modal étape 1: Sélection de la raison
-  .custom-alert-blocage-conducteur-moderne {
-    --width: 90%;
-    --max-width: 500px;
-    
-    .alert-wrapper {
-      border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-      overflow: hidden;
-      
-      .alert-head {
-        background: linear-gradient(135deg, 
-          var(--ion-color-primary) 0%, 
-          var(--ion-color-primary-shade) 100%);
-        padding: 24px;
-        text-align: center;
-        
-        .alert-title {
-          color: white !important;
-          font-size: 1.4rem;
-          font-weight: 700;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-          margin-bottom: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          
-          &::before {
-            content: '🚫';
-            font-size: 1.2rem;
-          }
-        }
-        
-        .alert-sub-title {
-          color: rgba(255, 255, 255, 0.95) !important;
-          font-size: 1rem;
-          font-weight: 600;
-          background: rgba(255, 255, 255, 0.1);
-          padding: 8px 16px;
-          border-radius: 20px;
-          display: inline-block;
-          backdrop-filter: blur(10px);
-        }
-      }
-      
-      .alert-message {
-        padding: 24px;
-        background: var(--ion-color-light-tint);
-        font-size: 0.95rem;
-        line-height: 1.5;
-        color: var(--ion-color-dark);
-        text-align: center;
-        white-space: pre-line;
-        border-bottom: 1px solid var(--ion-color-light);
-      }
-      
-      .alert-input-group {
-        padding: 20px;
-        background: white;
-        
-        .alert-radio-group {
-          .alert-radio-label {
-            font-size: 0.95rem;
-            line-height: 1.4;
-            padding: 14px 12px;
-            border-bottom: 1px solid var(--ion-color-light);
-            transition: all 0.2s;
-            border-radius: 8px;
-            margin-bottom: 4px;
-            
-            &:hover {
-              background: var(--ion-color-primary-tint);
-              border-color: var(--ion-color-primary);
-            }
-            
-            &:last-child {
-              border-bottom: none;
-              margin-bottom: 0;
-            }
-          }
-        }
-      }
-      
-      .alert-button-group {
-        padding: 16px 20px;
-        background: var(--ion-color-light-tint);
-        display: flex;
-        gap: 12px;
-        justify-content: space-between;
-        
-        .alert-button {
-          border-radius: 10px;
-          font-weight: 600;
-          font-size: 0.95rem;
-          padding: 14px 24px;
-          min-height: 48px;
-          transition: all 0.2s;
-          flex: 1;
-          
-          &.button-cancel {
-            background: var(--ion-color-light);
-            color: var(--ion-color-medium);
-            border: 2px solid var(--ion-color-medium);
-            
-            &:hover {
-              background: var(--ion-color-medium);
-              color: white;
-            }
-          }
-          
-          &.button-primary {
-            background: linear-gradient(135deg, 
-              var(--ion-color-primary) 0%, 
-              var(--ion-color-primary-shade) 100%);
-            color: white;
-            box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.3);
-            
-            &:hover {
-              transform: translateY(-2px);
-              box-shadow: 0 6px 16px rgba(var(--ion-color-primary-rgb), 0.4);
-            }
-          }
-          
-          &.button-danger {
-            background: linear-gradient(135deg, 
-              var(--ion-color-danger) 0%, 
-              var(--ion-color-danger-shade) 100%);
-            color: white;
-            box-shadow: 0 4px 12px rgba(var(--ion-color-danger-rgb), 0.3);
-            
-            &:hover {
-              transform: translateY(-2px);
-              box-shadow: 0 6px 16px rgba(var(--ion-color-danger-rgb), 0.4);
-            }
-          }
-        }
-      }
-    }
-  }
+  // Modal moderne épurée de blocage conducteur - DÉPLACÉE DANS :host ::ng-deep
 
   // Modal étape 2: Saisie du motif
   .custom-alert-motif-moderne {
@@ -929,6 +1054,126 @@
         
         &:hover {
           background: rgba(255, 255, 255, 0.1);
+        }
+      }
+    }
+  }
+
+  // Modal moderne d'ajout de conducteur
+  ion-modal.add-conducteur-modal {
+    --width: 90%;
+    --max-width: 600px;
+    --height: 90%;
+    --border-radius: 12px;
+    --box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    
+    ion-header ion-toolbar {
+      --background: var(--ion-color-primary);
+      --color: white;
+      
+      ion-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        
+        ion-icon {
+          margin-right: 8px;
+          font-size: 1.2rem;
+        }
+        
+        &[size="small"] {
+          font-size: 0.9rem;
+          opacity: 0.9;
+        }
+      }
+      
+      ion-button {
+        --color: white;
+      }
+    }
+    
+    ion-content {
+      --background: var(--ion-color-light-tint);
+      
+      ion-card {
+        margin: 16px 0;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        
+        ion-card-header {
+          padding-bottom: 8px;
+          
+          ion-card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--ion-color-primary);
+            
+            ion-icon {
+              font-size: 1.2rem;
+            }
+          }
+        }
+        
+        ion-card-content {
+          padding: 0;
+          
+          ion-item {
+            --padding-start: 16px;
+            --padding-end: 16px;
+            --inner-padding-start: 0;
+            --inner-padding-end: 0;
+            margin-bottom: 1px;
+            
+            ion-input, ion-select {
+              --padding-start: 12px;
+              font-size: 0.95rem;
+              
+              &::placeholder {
+                color: var(--ion-color-medium);
+                opacity: 0.7;
+              }
+            }
+            
+            ion-icon[slot="start"] {
+              margin-right: 12px;
+              color: var(--ion-color-primary);
+              font-size: 1.1rem;
+            }
+            
+            // Style spécial pour le select
+            ion-select {
+              --placeholder-color: var(--ion-color-medium);
+              --placeholder-opacity: 0.7;
+            }
+          }
+        }
+      }
+      
+      .modal-actions {
+        padding: 24px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        
+        ion-button {
+          height: 48px;
+          font-weight: 500;
+          border-radius: 8px;
+          
+          ion-icon {
+            margin-right: 8px;
+            font-size: 1.1rem;
+          }
+          
+          ion-spinner {
+            margin-right: 8px;
+          }
+          
+          &[fill="outline"] {
+            --border-width: 2px;
+          }
         }
       }
     }

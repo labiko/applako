@@ -453,6 +453,30 @@ export class EntrepriseManagementService {
   }
 
   /**
+   * Ajouter un conducteur à une entreprise
+   */
+  async addConducteur(conducteurData: any): Promise<{ success: boolean, error?: any }> {
+    try {
+      console.log('➕ Ajout nouveau conducteur:', conducteurData);
+
+      const { error } = await this.supabase.client
+        .from('conducteurs')
+        .insert([conducteurData]);
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('✅ Conducteur ajouté avec succès');
+      return { success: true };
+
+    } catch (error) {
+      console.error('❌ Erreur ajout conducteur:', error);
+      return { success: false, error };
+    }
+  }
+
+  /**
    * Récupérer les conducteurs d'une entreprise
    */
   async getConducteursByEntreprise(entrepriseId: string): Promise<{ data: any[] | null, error: any }> {
@@ -477,7 +501,10 @@ export class EntrepriseManagementService {
           nombre_courses,
           date_inscription,
           derniere_activite,
-          entreprise_id
+          entreprise_id,
+          motif_blocage,
+          bloque_par,
+          date_blocage
         `)
         .eq('entreprise_id', entrepriseId)
         .order('date_inscription', { ascending: false });
@@ -535,6 +562,72 @@ export class EntrepriseManagementService {
     } catch (error) {
       console.error('❌ Erreur récupération réservations:', error);
       return { data: null, error };
+    }
+  }
+
+  /**
+   * Supprimer un conducteur (DELETE réel si aucune réservation)
+   */
+  async supprimerConducteur(conducteurId: string): Promise<{ success: boolean, error?: any }> {
+    try {
+      console.log('🗑️ [DEBUG] Début suppression conducteur:', conducteurId);
+
+      // Vérifier s'il y a des réservations pour ce conducteur (toutes les réservations, pas seulement en cours)
+      const { data: reservations, error: reservationsError } = await this.supabase.client
+        .from('reservations')
+        .select('id, statut, created_at')
+        .eq('conducteur_id', conducteurId);
+
+      if (reservationsError) {
+        console.error('❌ [DEBUG] Erreur récupération réservations:', reservationsError);
+        throw reservationsError;
+      }
+
+      console.log(`🔍 [DEBUG] Réservations trouvées pour conducteur ${conducteurId}:`, reservations);
+
+      if (reservations && reservations.length > 0) {
+        // Si le conducteur a des réservations, faire un soft delete
+        console.log(`📋 [DEBUG] ${reservations.length} réservation(s) trouvée(s), soft delete...`);
+        console.log('📋 [DEBUG] Détail des réservations:', reservations.map(r => `${r.id} (${r.statut})`));
+        
+        const { error } = await this.supabase.client
+          .from('conducteurs')
+          .update({
+            actif: false,
+            motif_blocage: 'Supprimé par super-admin',
+            bloque_par: 'super-admin',
+            date_blocage: new Date().toISOString()
+          })
+          .eq('id', conducteurId);
+
+        if (error) {
+          console.error('❌ [DEBUG] Erreur soft delete:', error);
+          throw error;
+        }
+
+        console.log('✅ [DEBUG] Conducteur désactivé (avec historique)');
+      } else {
+        // Si aucune réservation, supprimer complètement
+        console.log('🗑️ [DEBUG] Aucune réservation, suppression complète...');
+        
+        const { error } = await this.supabase.client
+          .from('conducteurs')
+          .delete()
+          .eq('id', conducteurId);
+
+        if (error) {
+          console.error('❌ [DEBUG] Erreur hard delete:', error);
+          throw error;
+        }
+
+        console.log('✅ [DEBUG] Conducteur supprimé définitivement de la base de données');
+      }
+
+      return { success: true };
+
+    } catch (error) {
+      console.error('❌ [DEBUG] Erreur suppression conducteur:', error);
+      return { success: false, error };
     }
   }
 }

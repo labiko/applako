@@ -683,3 +683,125 @@ ion-title {
   
   // Style app-open-reminder supprimé
 }
+
+// Styles pour l'alerte Position GPS
+.position-alert-container {
+  margin: 16px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.position-alert-card {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  border: 1px solid #f39c12;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.2);
+  margin: 0;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f39c12, #e67e22);
+  }
+  
+  ion-card-content {
+    padding: 16px;
+  }
+}
+
+.position-alert-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  
+  .alert-icon {
+    ion-icon {
+      font-size: 2rem;
+      animation: pulse 2s infinite;
+    }
+  }
+  
+  .alert-text {
+    flex: 1;
+    
+    h3 {
+      margin: 0 0 4px 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #e67e22;
+    }
+    
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #8e5c00;
+      line-height: 1.3;
+    }
+  }
+  
+  .alert-action {
+    ion-button {
+      --border-radius: 12px;
+      --box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+      font-weight: 600;
+      
+      &:hover {
+        --box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+        transform: translateY(-1px);
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+// Responsive pour l'alerte
+@media (max-width: 576px) {
+  .position-alert-content {
+    gap: 12px;
+    
+    .alert-icon ion-icon {
+      font-size: 1.5rem;
+    }
+    
+    .alert-text h3 {
+      font-size: 1rem;
+    }
+    
+    .alert-text p {
+      font-size: 0.85rem;
+    }
+    
+    .alert-action ion-button {
+      --padding-start: 12px;
+      --padding-end: 12px;
+      font-size: 0.85rem;
+    }
+  }
+}

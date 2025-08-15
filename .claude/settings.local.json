@@ -44,8 +44,10 @@
       "Bash(adb shell pm uninstall:*)",
       "Bash(grep:*)",
       "Bash(ionic capacitor:*)",
-      "Bash(adb:*)"
+      "Bash(adb:*)",
+      "Bash(del srcappsuper-adminpagesentreprisesentreprises-management.page.ts.backup)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   }
 }

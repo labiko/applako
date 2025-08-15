@@ -17,6 +17,10 @@ export const routes: Routes = [
     loadComponent: () => import('./entreprise/create-password/create-password.page').then(m => m.CreatePasswordPage)
   },
   {
+    path: 'reset-password',
+    loadComponent: () => import('./auth/reset-password/reset-password.page').then(m => m.ResetPasswordPage)
+  },
+  {
     path: '',
     redirectTo: '/user-type-selection',
     pathMatch: 'full'

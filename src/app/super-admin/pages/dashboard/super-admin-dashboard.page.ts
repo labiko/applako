@@ -182,6 +182,18 @@ import { SuperAdminUser } from '../../models/super-admin.model';
             <ion-col size="12" size-md="6">
               <ion-button 
                 expand="block" 
+                fill="outline" 
+                color="danger"
+                (click)="onManageConducteurs()">
+                <ion-icon name="people-outline" slot="start"></ion-icon>
+                Gestion Conducteurs
+              </ion-button>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <ion-button 
+                expand="block" 
                 fill="clear" 
                 color="medium"
                 (click)="onRefreshSession()">
@@ -351,6 +363,11 @@ export class SuperAdminDashboardPage implements OnInit {
   async onManageEntreprises() {
     console.log('🚀 Navigation vers Gestion Entreprises');
     await this.router.navigate(['/super-admin/entreprises']);
+  }
+
+  async onManageConducteurs() {
+    console.log('🚀 Navigation vers Gestion Conducteurs');
+    await this.router.navigate(['/super-admin/conducteurs']);
   }
 
   async onFinancialManagement() {

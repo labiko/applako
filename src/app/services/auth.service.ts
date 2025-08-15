@@ -29,6 +29,8 @@ export interface Conducteur {
   accuracy?: number; // Précision GPS en mètres
   date_inscription?: string; // Date d'inscription du conducteur
   rayon_km_reservation?: number; // Rayon de recherche personnalisé en km
+  first_login?: boolean; // Indicateur de première connexion (réinitialisation password)
+  password?: string; // Mot de passe
 }
 
 @Injectable({
@@ -43,53 +45,91 @@ export class AuthService {
   }
 
   private loadStoredConducteur() {
+    console.log('🔄 loadStoredConducteur() - Vérification cache au démarrage...');
     try {
       if (typeof Storage !== 'undefined') {
         const stored = localStorage.getItem('currentConducteur');
+        console.log('🗂️ localStorage currentConducteur:', stored ? 'TROUVÉ' : 'VIDE');
         if (stored) {
           const conducteur = JSON.parse(stored);
+          console.log('👤 Conducteur rechargé depuis cache:', conducteur.prenom, conducteur.nom, conducteur.id);
           this.currentConducteurSubject.next(conducteur);
+          console.log('✅ currentConducteurSubject restauré depuis cache');
+        } else {
+          console.log('✅ Aucun cache trouvé - démarrage propre');
         }
       }
     } catch (error) {
-      console.error('Error loading stored conducteur:', error);
+      console.error('❌ Erreur chargement cache conducteur:', error);
       try {
         localStorage.removeItem('currentConducteur');
+        console.log('🧹 Cache corrompu supprimé');
       } catch (e) {
-        // Ignore localStorage errors
+        console.error('❌ Impossible de supprimer cache corrompu:', e);
       }
     }
   }
 
-  async login(telephone: string, password: string): Promise<boolean | { blocked: true, motif: string, bloque_par: string }> {
+  async login(telephone: string, password: string): Promise<boolean | { blocked: true, motif: string, bloque_par: string } | { requirePasswordReset: true, conducteurId: string, message: string }> {
     try {
-      const conducteur = await this.supabaseService.authenticateConducteur(telephone, password);
+      // Récupérer le conducteur avec ses infos de connexion
+      const { data: conducteur, error } = await this.supabaseService.client
+        .from('conducteurs')
+        .select('*')
+        .eq('telephone', telephone)
+        .single();
+
+      if (error || !conducteur) {
+        console.log('❌ Conducteur non trouvé:', telephone);
+        return false;
+      }
+
+      // Vérifier si c'est une première connexion après réinitialisation
+      if (conducteur.first_login || !conducteur.password) {
+        console.log('🔒 Première connexion détectée pour:', telephone);
+        return {
+          requirePasswordReset: true,
+          conducteurId: conducteur.id,
+          message: conducteur.first_login 
+            ? 'Votre mot de passe a été réinitialisé. Veuillez créer un nouveau mot de passe.'
+            : 'Veuillez définir votre mot de passe pour votre première connexion.'
+        };
+      }
+
+      // Authentification normale avec le mot de passe
+      console.log('🔐 Tentative authentification pour:', telephone);
+      const authenticatedConducteur = await this.supabaseService.authenticateConducteur(telephone, password);
+      console.log('👤 Conducteur authentifié:', authenticatedConducteur);
       
-      if (conducteur) {
+      if (authenticatedConducteur) {
         // Vérifier si le conducteur est bloqué AVANT de l'authentifier
-        if (!conducteur.actif) {
-          console.log('🚫 Tentative de connexion conducteur bloqué:', conducteur);
-          console.log('🔍 Motif de blocage:', conducteur.motif_blocage);
-          console.log('🔍 Bloqué par:', conducteur.bloque_par);
+        if (!authenticatedConducteur.actif) {
+          console.log('🚫 Tentative de connexion conducteur bloqué:', authenticatedConducteur);
+          console.log('🔍 Motif de blocage:', authenticatedConducteur.motif_blocage);
+          console.log('🔍 Bloqué par:', authenticatedConducteur.bloque_par);
           
           // Retourner les informations de blocage pour affichage
           return {
             blocked: true,
-            motif: conducteur.motif_blocage || 'Non spécifié',
-            bloque_par: conducteur.bloque_par || 'Administration'
+            motif: authenticatedConducteur.motif_blocage || 'Non spécifié',
+            bloque_par: authenticatedConducteur.bloque_par || 'Administration'
           };
         }
         
-        this.currentConducteurSubject.next(conducteur);
+        console.log('💾 Sauvegarde nouveau conducteur dans cache...');
+        this.currentConducteurSubject.next(authenticatedConducteur);
+        console.log('✅ currentConducteurSubject mis à jour');
         
         try {
           if (typeof Storage !== 'undefined') {
-            localStorage.setItem('currentConducteur', JSON.stringify(conducteur));
+            localStorage.setItem('currentConducteur', JSON.stringify(authenticatedConducteur));
+            console.log('✅ localStorage mis à jour avec nouveau conducteur');
           }
         } catch (storageError) {
-          console.warn('Could not save to localStorage:', storageError);
+          console.warn('❌ Erreur sauvegarde localStorage:', storageError);
         }
         
+        console.log('✅ LOGIN RÉUSSI pour:', authenticatedConducteur.prenom, authenticatedConducteur.nom);
         return true;
       }
       
@@ -100,15 +140,29 @@ export class AuthService {
     }
   }
 
-  logout() {
+  async logout() {
+    console.log('🚪 DÉBUT LOGOUT - Conducteur actuel:', this.currentConducteurSubject.value);
+    console.log('🗂️ localStorage AVANT clear:', Object.keys(localStorage));
+    
+    // 1. Vider le cache Observable
     this.currentConducteurSubject.next(null);
+    console.log('✅ currentConducteurSubject vidé');
+    
+    // 2. Vider localStorage complètement
+    localStorage.clear();
+    console.log('✅ localStorage vidé');
+    console.log('🗂️ localStorage APRÈS clear:', Object.keys(localStorage));
+    
+    // 3. Déconnexion Supabase
     try {
-      if (typeof Storage !== 'undefined') {
-        localStorage.removeItem('currentConducteur');
-      }
+      await this.supabaseService.client.auth.signOut();
+      console.log('✅ Session Supabase fermée');
     } catch (error) {
-      console.warn('Could not clear localStorage:', error);
+      console.error('❌ Erreur fermeture session Supabase:', error);
     }
+    
+    console.log('🚪 FIN LOGOUT - Conducteur actuel:', this.currentConducteurSubject.value);
+    console.log('🔍 isLoggedIn():', this.isLoggedIn());
   }
 
   isLoggedIn(): boolean {
@@ -127,5 +181,46 @@ export class AuthService {
   getCurrentConducteurPosition(): string | null {
     const conducteur = this.getCurrentConducteur();
     return conducteur ? conducteur.position_actuelle || null : null;
+  }
+
+  // Créer un nouveau mot de passe après réinitialisation
+  async createNewPassword(conducteurId: string, newPassword: string): Promise<{ success: boolean; error?: any }> {
+    try {
+      // Récupérer le conducteur pour vérifier qu'il est en first_login
+      const { data: conducteur, error: fetchError } = await this.supabaseService.client
+        .from('conducteurs')
+        .select('*')
+        .eq('id', conducteurId)
+        .single();
+
+      if (fetchError || !conducteur) {
+        throw new Error('Conducteur non trouvé');
+      }
+
+      if (!conducteur.first_login && conducteur.password) {
+        throw new Error('Ce conducteur n\'est pas en première connexion');
+      }
+
+      // Mettre à jour le conducteur avec le nouveau mot de passe
+      const { error: updateError } = await this.supabaseService.client
+        .from('conducteurs')
+        .update({
+          password: newPassword,
+          first_login: false,
+          derniere_activite: new Date().toISOString()
+        })
+        .eq('id', conducteurId);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      console.log('✅ Nouveau mot de passe créé avec succès pour:', conducteur.telephone);
+      return { success: true };
+
+    } catch (error) {
+      console.error('❌ Erreur création nouveau mot de passe:', error);
+      return { success: false, error };
+    }
   }
 }

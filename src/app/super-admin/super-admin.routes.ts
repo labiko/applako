@@ -58,5 +58,11 @@ export const SUPER_ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./pages/entreprises/entreprises-management.page').then(m => m.EntreprisesManagementPage),
     canActivate: [SuperAdminGuard],
     title: 'Super Admin - Gestion Entreprises'
+  },
+  {
+    path: 'conducteurs',
+    loadComponent: () => import('./pages/conducteurs/conducteurs-management.page').then(m => m.ConducteursManagementPage),
+    canActivate: [SuperAdminGuard],
+    title: 'Super Admin - Gestion Conducteurs'
   }
 ];

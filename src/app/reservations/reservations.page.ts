@@ -83,6 +83,9 @@ export class ReservationsPage implements OnInit, OnDestroy {
   allReservations: Reservation[] = []; // Toutes les réservations récupérées
   scheduledReservations: Reservation[] = []; // Réservations planifiées assignées
   
+  // Alerte position GPS manquante
+  showPositionAlert: boolean = false;
+  
   // État du rafraîchissement automatique
   refreshState: RefreshState | null = null;
   private refreshStateSubscription: Subscription | null = null;
@@ -118,13 +121,8 @@ export class ReservationsPage implements OnInit, OnDestroy {
   ngOnInit() {
     console.log('🚀 ngOnInit - Initialisation unique du composant');
     
-    // Initialiser le statut en ligne basé sur les données du conducteur
-    const conducteur = this.authService.getCurrentConducteur();
-    if (conducteur) {
-      // Si hors_ligne n'est pas défini, considérer comme en ligne par défaut
-      const horsLigne = conducteur.hors_ligne ?? false;
-      this.isOnline = !horsLigne;
-    }
+    // ✅ IMPORTANT : Synchroniser d'abord avec la base de données
+    this.syncConducteurStatusOnInit();
     
     // Arrêt du spinner pour affichage instantané
     this.isLoading = false;
@@ -204,6 +202,58 @@ export class ReservationsPage implements OnInit, OnDestroy {
       }
     } catch (error) {
       console.error('Erreur lors de la synchronisation du statut:', error);
+    }
+  }
+
+  // ✅ NOUVEAU : Synchronisation au démarrage (ngOnInit)
+  async syncConducteurStatusOnInit() {
+    console.log('🔄 Synchronisation statut conducteur au démarrage...');
+    
+    const conducteurId = this.authService.getCurrentConducteurId();
+    if (!conducteurId) {
+      // Fallback sur cache local si pas d'ID
+      const conducteur = this.authService.getCurrentConducteur();
+      if (conducteur) {
+        const horsLigne = conducteur.hors_ligne ?? false;
+        this.isOnline = !horsLigne;
+        console.log('📱 Statut local:', this.isOnline ? 'EN LIGNE' : 'HORS LIGNE');
+      }
+      return;
+    }
+
+    try {
+      const status = await this.supabaseService.getConducteurStatus(conducteurId);
+      if (status) {
+        const newIsOnline = !status.hors_ligne;
+        
+        // Vérifier si changement nécessaire
+        if (this.isOnline !== newIsOnline) {
+          console.log(`🔄 Mise à jour statut: ${this.isOnline ? 'EN LIGNE' : 'HORS LIGNE'} → ${newIsOnline ? 'EN LIGNE' : 'HORS LIGNE'}`);
+          this.isOnline = newIsOnline;
+          this.cdr.detectChanges(); // Force la détection de changement pour le toggle
+        } else {
+          console.log('✅ Statut déjà synchronisé:', this.isOnline ? 'EN LIGNE' : 'HORS LIGNE');
+        }
+        
+        // Mettre à jour les données locales
+        const conducteur = this.authService.getCurrentConducteur();
+        if (conducteur) {
+          conducteur.hors_ligne = status.hors_ligne;
+          conducteur.derniere_activite = status.derniere_activite;
+          (this.authService as any).currentConducteurSubject.next(conducteur);
+        }
+        
+      }
+    } catch (error) {
+      console.error('❌ Erreur synchronisation statut au démarrage:', error);
+      
+      // Fallback sur cache local en cas d'erreur
+      const conducteur = this.authService.getCurrentConducteur();
+      if (conducteur) {
+        const horsLigne = conducteur.hors_ligne ?? false;
+        this.isOnline = !horsLigne;
+        console.log('📱 Fallback sur cache local:', this.isOnline ? 'EN LIGNE' : 'HORS LIGNE');
+      }
     }
   }
 
@@ -350,6 +400,15 @@ export class ReservationsPage implements OnInit, OnDestroy {
   async loadReservations() {
     this.isLoading = true;
     try {
+      // Vérifier si position GPS manquante pour conducteur connecté
+      const conducteur = this.authService.getCurrentConducteur();
+      if (conducteur && !conducteur.position_actuelle) {
+        this.showPositionAlert = true;
+        console.log('🚨 Position GPS manquante - affichage alerte');
+      } else {
+        this.showPositionAlert = false;
+      }
+      
       // Charger les nouvelles réservations (pending et scheduled non assignées)
       this.allReservations = await this.supabaseService.getPendingReservations();
       
@@ -1016,6 +1075,14 @@ Accepter cette réservation planifiée ?`,
       if (success) {
         this.isOnline = isOnline;
         
+        // ✅ IMPORTANT : Mettre à jour les données locales du conducteur EN PREMIER
+        const conducteur = this.authService.getCurrentConducteur();
+        if (conducteur) {
+          conducteur.hors_ligne = !isOnline;
+          conducteur.derniere_activite = new Date().toISOString();
+          (this.authService as any).currentConducteurSubject.next(conducteur);
+        }
+        
         // ✅ NOUVEAU : Mettre à jour le statut OneSignal (appel simple)
         this.oneSignalService.updateConducteurOnlineStatus(isOnline);
         
@@ -1023,19 +1090,24 @@ Accepter cette réservation planifiée ?`,
         if (isOnline) {
           // Passer en ligne : démarrer le tracking GPS et l'auto-refresh
           await this.geolocationService.startLocationTracking();
+          
+          // ✅ AJOUT : Force une mise à jour GPS immédiate pour garantir la position
+          console.log('🔄 Force GPS update après passage en ligne...');
+          await this.geolocationService.forceUpdateLocation();
+          
           this.startAutoRefresh();
+          
+          // ✅ AJOUT : Recharger les réservations après passage en ligne
+          console.log('🔄 Rechargement des réservations après passage en ligne...');
+          await this.loadReservations();
         } else {
           // Passer hors ligne : arrêter le tracking GPS et l'auto-refresh
           this.geolocationService.stopLocationTracking();
           this.autoRefreshService.stopAutoRefresh();
-        }
-        
-        // Mettre à jour les données locales du conducteur
-        const conducteur = this.authService.getCurrentConducteur();
-        if (conducteur) {
-          conducteur.hors_ligne = !isOnline;
-          conducteur.derniere_activite = new Date().toISOString();
-          (this.authService as any).currentConducteurSubject.next(conducteur);
+          
+          // ✅ AJOUT : Recharger les réservations après passage hors ligne (vider la liste)
+          console.log('🔄 Rechargement des réservations après passage hors ligne...');
+          await this.loadReservations();
         }
 
         // Afficher message de confirmation
@@ -1255,6 +1327,30 @@ Accepter cette réservation planifiée ?`,
     if (this.resumeListener) {
       this.resumeListener.remove();
       this.resumeListener = null;
+    }
+  }
+
+  // Activer la position GPS automatiquement (pour l'alerte)
+  async activatePosition() {
+    if (this.isOnline) {
+      // Déjà en ligne, juste forcer une mise à jour GPS
+      console.log('🔄 Conducteur déjà en ligne - Force GPS update...');
+      await this.geolocationService.forceUpdateLocation();
+      this.showPositionAlert = false;
+      this.presentToast('Position GPS mise à jour', 'success');
+    } else {
+      // Passer automatiquement en ligne
+      console.log('🚀 Activation automatique du mode en ligne...');
+      
+      // Simuler un toggle pour passer en ligne
+      const mockEvent = {
+        detail: { checked: true }
+      };
+      
+      await this.onStatusToggle(mockEvent);
+      
+      // Masquer l'alerte après activation
+      this.showPositionAlert = false;
     }
   }
 

@@ -105,7 +105,7 @@ export class LoginPage implements OnInit {
           
           // Connexion réussie
           this.router.navigate(['/tabs']);
-        } else if (typeof result === 'object' && result.blocked) {
+        } else if (typeof result === 'object' && 'blocked' in result && result.blocked) {
           // Conducteur bloqué - afficher le message
           console.log('🚫 Données de blocage reçues:', result);
           this.blockedInfo = {
@@ -115,6 +115,12 @@ export class LoginPage implements OnInit {
           };
           this.errorMessage = '';
           console.log('🚫 BlockedInfo assigné:', this.blockedInfo);
+        } else if (typeof result === 'object' && 'requirePasswordReset' in result && result.requirePasswordReset) {
+          // Rediriger vers la page de réinitialisation de mot de passe
+          this.router.navigate(['/reset-password'], {
+            queryParams: { conducteurId: result.conducteurId },
+            state: { message: result.message }
+          });
         } else {
           this.errorMessage = 'Numéro de téléphone ou mot de passe incorrect';
         }

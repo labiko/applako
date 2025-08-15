@@ -56,7 +56,7 @@ export class SupabaseService {
     }
   }
 
-  // Authenticate conducteur
+  // Authenticate conducteur (méthode simplifiée sans bcrypt)
   async authenticateConducteur(telephone: string, password: string): Promise<Conducteur | null> {
     const { data, error } = await this.supabase
       .from('conducteurs')
@@ -185,7 +185,7 @@ export class SupabaseService {
       // Récupérer les données complètes du conducteur avec rayon_km_reservation
       const { data: conducteurData, error: conducteurError } = await this.supabase
         .from('conducteurs')
-        .select('rayon_km_reservation, position_actuelle')
+        .select('rayon_km_reservation, position_actuelle, hors_ligne')
         .eq('id', currentConducteur.id)
         .single();
 
@@ -206,10 +206,10 @@ export class SupabaseService {
         statut_filter: 'pending'
       });
 
-      // Si pas de position conducteur, fallback sans filtrage distance
-      if (!conducteurData.position_actuelle) {
-        console.warn('Position conducteur manquante, filtrage sans distance');
-        return this.getPendingAndScheduledReservationsLegacy();
+      // Si pas de position conducteur OU conducteur hors ligne, pas de réservations
+      if (!conducteurData.position_actuelle || conducteurData.hors_ligne) {
+        console.warn('Position conducteur manquante OU conducteur hors ligne - aucune réservation affichée');
+        return [];
       }
 
       // Filtrage PENDING avec distance PostGIS

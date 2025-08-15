@@ -50,7 +50,12 @@
   </ion-header>
 
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
-    <ion-refresher-content></ion-refresher-content>
+    <ion-refresher-content 
+      [attr.pulling-text]="isOnline ? 'Tirez vers le bas pour actualiser' : 'Activez le mode en ligne d\'abord'"
+      [attr.refreshing-text]="isOnline ? 'Actualisation...' : 'Assurez-vous d\'être en ligne d\'abord'"
+      pulling-icon="chevron-down-circle-outline"
+      refreshing-spinner="crescent">
+    </ion-refresher-content>
   </ion-refresher>
 
   <!-- Status Switch -->
@@ -73,6 +78,33 @@
             [color]="isOnline ? 'success' : 'medium'"
             class="status-switch">
           </ion-toggle>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Alerte Position GPS Manquante -->
+  <div class="position-alert-container" *ngIf="showPositionAlert">
+    <ion-card class="position-alert-card">
+      <ion-card-content>
+        <div class="position-alert-content">
+          <div class="alert-icon">
+            <ion-icon name="location-outline" color="warning"></ion-icon>
+          </div>
+          <div class="alert-text">
+            <h3>Position GPS requise</h3>
+            <p>Activez votre position pour voir les réservations autour de vous</p>
+          </div>
+          <div class="alert-action">
+            <ion-button 
+              size="small" 
+              fill="solid" 
+              color="primary"
+              (click)="activatePosition()">
+              <ion-icon name="power-outline" slot="start"></ion-icon>
+              Passer en ligne
+            </ion-button>
+          </div>
         </div>
       </ion-card-content>
     </ion-card>
