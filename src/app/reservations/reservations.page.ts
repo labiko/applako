@@ -375,7 +375,9 @@ export class ReservationsPage implements OnInit, OnDestroy {
     console.log('🔄 Chargement en arrière-plan - pas de spinner');
     try {
       // Charger les nouvelles réservations (pending et scheduled non assignées)
-      this.allReservations = await this.supabaseService.getPendingReservations();
+      // ✅ NOUVEAU : Récupérer mode test depuis localStorage
+      const testMode = this.getTestMode();
+      this.allReservations = await this.supabaseService.getPendingReservations(undefined, testMode);
       
       // Charger les réservations planifiées assignées au conducteur connecté
       await this.loadScheduledReservations();
@@ -410,7 +412,9 @@ export class ReservationsPage implements OnInit, OnDestroy {
       }
       
       // Charger les nouvelles réservations (pending et scheduled non assignées)
-      this.allReservations = await this.supabaseService.getPendingReservations();
+      // ✅ NOUVEAU : Récupérer mode test depuis localStorage
+      const testMode = this.getTestMode();
+      this.allReservations = await this.supabaseService.getPendingReservations(undefined, testMode);
       
       
       // Charger les réservations planifiées assignées au conducteur connecté
@@ -481,13 +485,50 @@ export class ReservationsPage implements OnInit, OnDestroy {
     
     // Créer une copie pour éviter les références
     if (this.selectedSegment === 'nouvelles') {
-      this.reservations = [...this.allReservations];
+      // ✅ NOUVEAU : Filtrer les réservations des 2 derniers jours + statut pending/scheduled
+      this.reservations = [...this.allReservations].filter(reservation => 
+        this.isWithinLastTwoDays(reservation.created_at) &&
+        (reservation.statut === 'pending' || reservation.statut === 'scheduled')
+      );
     } else if (this.selectedSegment === 'planifiees') {
       this.reservations = [...this.scheduledReservations];
     }
     
     // Forcer la mise à jour de l'affichage
     this.cdr.detectChanges();
+  }
+
+  // ✅ NOUVEAU : Vérifier si une réservation est dans les 2 derniers jours
+  private isWithinLastTwoDays(dateString: string): boolean {
+    if (!dateString) return false;
+    
+    const reservationDate = new Date(dateString);
+    const now = new Date();
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(now.getDate() - 2);
+    
+    return reservationDate >= twoDaysAgo;
+  }
+
+  // ✅ NOUVEAU : Obtenir le count filtré pour l'onglet Nouvelles
+  getFilteredNouvellesCount(): number {
+    return this.allReservations.filter(reservation => 
+      this.isWithinLastTwoDays(reservation.created_at) &&
+      (reservation.statut === 'pending' || reservation.statut === 'scheduled')
+    ).length;
+  }
+
+  // ✅ NOUVEAU : Récupérer le mode test depuis localStorage
+  private getTestMode(): boolean {
+    try {
+      if (typeof Storage !== 'undefined') {
+        const savedTestMode = localStorage.getItem('testMode');
+        return savedTestMode ? JSON.parse(savedTestMode) : false;
+      }
+    } catch (error) {
+      console.warn('Erreur chargement testMode:', error);
+    }
+    return false;
   }
 
   async handleRefresh(event: any) {
@@ -1148,8 +1189,9 @@ Accepter cette réservation planifiée ?`,
         console.log('🔄 Rafraîchissement automatique en cours...');
         
         // Charger les réservations sans bloquer l'interface
+        const testMode = this.getTestMode();
         await Promise.all([
-          this.supabaseService.getPendingReservations().then(res => {
+          this.supabaseService.getPendingReservations(undefined, testMode).then(res => {
             this.allReservations = res;
           }),
           this.loadScheduledReservations()

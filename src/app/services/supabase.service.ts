@@ -160,7 +160,7 @@ export class SupabaseService {
   }
 
   // Get pending reservations within custom radius of current conducteur
-  async getPendingReservations(conducteurId?: string) {
+  async getPendingReservations(conducteurId?: string, testMode: boolean = false) {
     try {
       // Si conducteurId fourni, utiliser l'ancienne méthode (pour historique assigné)
       if (conducteurId) {
@@ -205,6 +205,33 @@ export class SupabaseService {
         vehicle_type_filter: currentConducteur.vehicle_type,
         statut_filter: 'pending'
       });
+
+      // ✅ NOUVEAU : Mode test - ignorer position et statut hors ligne
+      if (testMode) {
+        console.warn('🐛 MODE TEST ACTIVÉ - Affichage de TOUTES les réservations sans filtre géographique');
+        
+        // Récupérer TOUTES les réservations pending et scheduled sans filtre de distance
+        const { data: allPendingData, error: allPendingError } = await this.supabase
+          .from('reservations')
+          .select('*')
+          .eq('statut', 'pending')
+          .order('created_at', { ascending: false });
+
+        const { data: allScheduledData, error: allScheduledError } = await this.supabase
+          .from('reservations')
+          .select('*')
+          .eq('statut', 'scheduled')
+          .order('created_at', { ascending: false });
+
+        if (allPendingError || allScheduledError) {
+          console.error('Erreur récupération réservations mode test:', allPendingError || allScheduledError);
+          return [];
+        }
+
+        const allReservations = [...(allPendingData || []), ...(allScheduledData || [])];
+        console.log(`🐛 MODE TEST: ${allReservations.length} réservations récupérées`);
+        return allReservations;
+      }
 
       // Si pas de position conducteur OU conducteur hors ligne, pas de réservations
       if (!conducteurData.position_actuelle || conducteurData.hors_ligne) {

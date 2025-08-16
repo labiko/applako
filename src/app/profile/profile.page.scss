@@ -208,3 +208,30 @@ ion-title {
     }
   }
 }
+
+// ✅ NOUVEAU : Styles pour le mode test
+.test-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ion-color-light);
+  text-align: center;
+  
+  .test-button {
+    margin: 8px auto;
+    --border-radius: 20px;
+    font-size: 0.9rem;
+    
+    &:hover {
+      transform: scale(1.02);
+    }
+  }
+  
+  ion-text {
+    margin-top: 8px;
+    
+    p {
+      margin: 4px 0;
+      font-style: italic;
+    }
+  }
+}

@@ -189,6 +189,22 @@
                 </p>
               </ion-text>
             </div>
+            
+            <!-- ✅ NOUVEAU : Bouton Test pour voir toutes les réservations -->
+            <div class="test-section">
+              <ion-button 
+                fill="outline" 
+                color="warning" 
+                size="small"
+                (click)="toggleTestMode()"
+                class="test-button">
+                <ion-icon name="bug" slot="start"></ion-icon>
+                {{ testMode ? 'Désactiver' : 'Activer' }} mode test
+              </ion-button>
+              <ion-text color="medium" *ngIf="testMode">
+                <p><small>⚠️ Mode test activé - toutes les réservations visibles</small></p>
+              </ion-text>
+            </div>
           </div>
         </div>
       </ion-card-content>

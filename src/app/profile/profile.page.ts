@@ -20,10 +20,11 @@ import {
   IonListHeader,
   IonRange,
   IonChip,
+  IonButton,
   ToastController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { person, call, mail, car, star, settings, logOut, personCircleOutline, business, colorPalette, idCard, speedometer, location, navigateCircle, informationCircle } from 'ionicons/icons';
+import { person, call, mail, car, star, settings, logOut, personCircleOutline, business, colorPalette, idCard, speedometer, location, navigateCircle, informationCircle, bug } from 'ionicons/icons';
 import { AuthService } from '../services/auth.service';
 import { SupabaseService } from '../services/supabase.service';
 import { OneSignalService } from '../services/onesignal.service';
@@ -51,11 +52,13 @@ import { OneSignalService } from '../services/onesignal.service';
     IonListHeader,
     IonRange,
     IonChip,
+    IonButton,
     CommonModule,
     FormsModule,
   ],
 })
 export class ProfilePage implements OnInit {
+  testMode = false; // ✅ NOUVEAU : Mode test pour voir toutes les réservations
 
   driver: any = {
     name: 'Jean Dupont',
@@ -74,10 +77,22 @@ export class ProfilePage implements OnInit {
     private router: Router,
     private toastController: ToastController
   ) {
-    addIcons({ person, call, mail, car, star, settings, logOut, personCircleOutline, business, colorPalette, idCard, speedometer, location, navigateCircle, informationCircle });
+    addIcons({ person, call, mail, car, star, settings, logOut, personCircleOutline, business, colorPalette, idCard, speedometer, location, navigateCircle, informationCircle, bug });
   }
 
   ngOnInit() {
+    // ✅ Charger l'état du mode test depuis localStorage
+    try {
+      if (typeof Storage !== 'undefined') {
+        const savedTestMode = localStorage.getItem('testMode');
+        if (savedTestMode) {
+          this.testMode = JSON.parse(savedTestMode);
+        }
+      }
+    } catch (error) {
+      console.warn('Erreur chargement testMode:', error);
+    }
+
     // ✅ S'abonner aux changements de conducteur
     this.authService.currentConducteur$.subscribe(conducteur => {
       if (conducteur) {
@@ -205,5 +220,29 @@ export class ProfilePage implements OnInit {
       }]
     });
     await toast.present();
+  }
+
+  // ✅ NOUVEAU : Toggle du mode test
+  async toggleTestMode() {
+    this.testMode = !this.testMode;
+    
+    // Sauvegarder l'état dans localStorage (RadiusChangeDetectionService le détectera automatiquement)
+    try {
+      if (typeof Storage !== 'undefined') {
+        localStorage.setItem('testMode', JSON.stringify(this.testMode));
+        console.log('✅ Mode test:', this.testMode ? 'ACTIVÉ' : 'DÉSACTIVÉ');
+        console.log('🔄 RadiusChangeDetectionService détectera le changement au prochain ionViewWillEnter');
+      }
+    } catch (error) {
+      console.warn('Erreur sauvegarde testMode:', error);
+    }
+    
+    // Afficher toast de confirmation
+    await this.showToast(
+      this.testMode ? 
+        '🐛 Mode test activé - retournez aux réservations pour voir l\'effet' : 
+        '✅ Mode test désactivé - filtrage normal restauré', 
+      this.testMode ? 'warning' : 'success'
+    );
   }
 }

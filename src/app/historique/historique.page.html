@@ -34,9 +34,10 @@
     </div>
 
     <div *ngIf="!isLoading && reservations.length === 0" class="empty-state">
+      <ion-icon name="time-outline" class="empty-icon"></ion-icon>
       <ion-text color="medium">
         <h3>Aucun historique</h3>
-        <p>Les réservations traitées apparaîtront ici</p>
+        <p>Vos réservations traitées apparaîtront ici</p>
       </ion-text>
     </div>
 

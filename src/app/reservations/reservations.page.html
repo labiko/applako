@@ -118,7 +118,7 @@
                           [class.segment-active]="selectedSegment === 'nouvelles'">
         <ion-label>
           Nouvelles
-          <ion-badge color="primary" class="segment-badge">{{ allReservations.length }}</ion-badge>
+          <ion-badge color="primary" class="segment-badge">{{ getFilteredNouvellesCount() }}</ion-badge>
         </ion-label>
       </ion-segment-button>
       <ion-segment-button value="planifiees" 
