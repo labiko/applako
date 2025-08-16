@@ -75,11 +75,24 @@ export class LoginPage implements OnInit {
     this.showPassword = !this.showPassword;
   }
 
+  // ✅ NOUVEAU : Validation personnalisée du formulaire
+  isFormValid(): boolean {
+    if (this.userType === 'conducteur') {
+      // Pour les conducteurs : seul le téléphone est obligatoire
+      return !!(this.credentials.phone && this.credentials.phone.trim());
+    } else {
+      // Pour les entreprises : email obligatoire
+      return !!(this.credentials.email && this.credentials.email.trim());
+    }
+  }
+
   async onLogin() {
     // Validation des champs selon le type d'utilisateur
     if (this.userType === 'conducteur') {
-      if (!this.credentials.phone || !this.credentials.password) {
-        this.errorMessage = 'Veuillez remplir tous les champs';
+      // ✅ NOUVEAU : Seulement le téléphone est obligatoire pour les conducteurs
+      // Le mot de passe peut être vide pour la première connexion
+      if (!this.credentials.phone) {
+        this.errorMessage = 'Veuillez saisir votre numéro de téléphone';
         return;
       }
     } else {
@@ -97,7 +110,9 @@ export class LoginPage implements OnInit {
 
     try {
       if (this.userType === 'conducteur') {
-        const result = await this.authService.login(this.credentials.phone, this.credentials.password);
+        // ✅ NOUVEAU : Utiliser mot de passe vide si non saisi (pour première connexion)
+        const passwordToUse = this.credentials.password || '';
+        const result = await this.authService.login(this.credentials.phone, passwordToUse);
         
         if (result === true) {
           // ✅ NOUVEAU : Initialiser OneSignal après connexion conducteur réussie

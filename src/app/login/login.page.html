@@ -93,15 +93,14 @@
               <div class="input-label">Email entreprise</div>
             </div>
 
-            <!-- Password input (required only for conducteur and existing entreprise) -->
+            <!-- Password input (optional for conducteur - may be null in database) -->
             <div class="modern-input-group" *ngIf="userType === 'conducteur'">
               <div class="input-wrapper">
                 <input 
                   [type]="showPassword ? 'text' : 'password'"
                   [(ngModel)]="credentials.password" 
                   name="password"
-                  required
-                  placeholder="Mot de passe"
+                  placeholder="Mot de passe (optionnel si première connexion)"
                   class="modern-input">
                 <div class="input-suffix">
                   <ion-button 
@@ -141,7 +140,7 @@
           <div class="button-container">
             <button 
               type="submit" 
-              [disabled]="!loginForm.form.valid || isLoading"
+              [disabled]="!isFormValid() || isLoading"
               class="modern-login-button"
               [class.loading]="isLoading">
               
