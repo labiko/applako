@@ -188,6 +188,20 @@ export class HistoriquePage implements OnInit {
     });
   }
 
+  // ✅ NOUVEAU : Format date validation sans conversion timezone  
+  formatValidationDate(dateString?: string): string {
+    if (!dateString) return 'Date non spécifiée';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'GMT'  // Force GMT+0 pour date_code_validation uniquement
+    });
+  }
+
   // Formatage date de réservation planifiée
   formatScheduledDate(dateString?: string): string {
     if (!dateString) return 'Date non spécifiée';

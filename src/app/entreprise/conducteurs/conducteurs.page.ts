@@ -468,4 +468,137 @@ export class ConducteursPage implements OnInit {
   trackByReservation(index: number, reservation: any): string {
     return reservation.id || index.toString();
   }
+
+  formatDateUpdatePosition(dateString: string): string {
+    if (!dateString) return 'Position inconnue';
+    
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMinutes = Math.floor(diffMs / (1000 * 60));
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      
+      if (diffMinutes < 1) {
+        return 'À l\'instant';
+      } else if (diffMinutes < 60) {
+        return `Il y a ${diffMinutes}min`;
+      } else if (diffHours < 24) {
+        return `Il y a ${diffHours}h`;
+      } else if (diffDays < 7) {
+        return `Il y a ${diffDays}j`;
+      } else {
+        return date.toLocaleDateString('fr-FR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+      }
+    } catch (error) {
+      console.error('Erreur formatage date position:', error);
+      return 'Date invalide';
+    }
+  }
+
+  openPositionInMaps(position: string) {
+    const mapsUrl = this.formatGPSToMapsLink(position, true);
+    console.log('🗺️ Opening navigation to position:', { position, url: mapsUrl });
+    window.open(mapsUrl, '_system');
+  }
+
+  formatGPSToMapsLink(position: string, useNavigation: boolean = true): string {
+    if (!position) return '';
+    
+    console.log('🗺️ Formatting GPS link for position:', position);
+    
+    // Vérifier si c'est un format POINT(lon lat)
+    const pointMatch = position.match(/POINT\(([\-\d\.]+)\s+([\-\d\.]+)\)/);
+    if (pointMatch) {
+      const lon = pointMatch[1];
+      const lat = pointMatch[2];
+      
+      console.log('📍 POINT format detected:', { lat, lon });
+      
+      if (useNavigation) {
+        return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=driving`;
+      } else {
+        return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+      }
+    }
+    
+    // Vérifier si c'est un format WKB
+    if (position.length >= 50 && 
+        position.match(/^[0-9A-F]+$/i) && 
+        position.toUpperCase().startsWith('0101000020E6100000')) {
+      
+      console.log('📍 WKB format detected, decoding...');
+      const coords = this.decodeWKB(position);
+      
+      if (coords) {
+        console.log('📍 WKB decoded coordinates:', coords);
+        
+        if (useNavigation) {
+          return `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}&travelmode=driving`;
+        } else {
+          return `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`;
+        }
+      }
+    }
+    
+    // Si c'est déjà une adresse texte
+    console.log('📍 Text format detected, using as address');
+    const encodedAddress = encodeURIComponent(position + ', Conakry, Guinée');
+    
+    if (useNavigation) {
+      return `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}&travelmode=driving`;
+    } else {
+      return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+    }
+  }
+
+  decodeWKB(wkbHex: string): {lat: number, lng: number} | null {
+    try {
+      console.log('🔍 Decoding WKB:', wkbHex);
+      
+      if (wkbHex.length >= 50) {
+        const geometryType = wkbHex.substring(2, 10);
+        const srid = wkbHex.substring(10, 18);
+        
+        if (geometryType.toUpperCase() === '01000020' && srid.toUpperCase() === 'E6100000') {
+          const xHex = wkbHex.substring(18, 34);
+          const yHex = wkbHex.substring(34, 50);
+          
+          const lng = this.hexToFloat64LittleEndian(xHex);
+          const lat = this.hexToFloat64LittleEndian(yHex);
+          
+          if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+            return { lat, lng };
+          }
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error decoding WKB:', error);
+      return null;
+    }
+  }
+
+  hexToFloat64LittleEndian(hexStr: string): number {
+    try {
+      const buffer = new ArrayBuffer(8);
+      const view = new DataView(buffer);
+      
+      for (let i = 0; i < 8; i++) {
+        const byte = parseInt(hexStr.substr(i * 2, 2), 16);
+        view.setUint8(i, byte);
+      }
+      
+      return view.getFloat64(0, true);
+    } catch (error) {
+      console.error('Error converting hex to float64:', error);
+      return 0;
+    }
+  }
 }

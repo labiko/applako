@@ -122,12 +122,31 @@
                 <ion-icon name="calendar"></ion-icon>
                 Créé le {{ formatDateCreation(conducteur.date_inscription) }}
               </p>
-              <ion-badge 
-                [color]="getStatusColor(conducteur.statut, conducteur.hors_ligne)"
-                class="status-badge">
-                <ion-icon name="ellipse" class="status-dot"></ion-icon>
-                {{ getStatusText(conducteur.statut, conducteur.hors_ligne) }}
-              </ion-badge>
+              <div class="status-with-location">
+                <ion-badge 
+                  [color]="getStatusColor(conducteur.statut, conducteur.hors_ligne)"
+                  class="status-badge">
+                  <ion-icon name="ellipse" class="status-dot"></ion-icon>
+                  {{ getStatusText(conducteur.statut, conducteur.hors_ligne) }}
+                </ion-badge>
+                
+                <!-- Position et date update pour les conducteurs disponibles -->
+                <div class="location-info" *ngIf="conducteur.statut === 'disponible' && !conducteur.hors_ligne">
+                  <p class="position-update" *ngIf="conducteur.date_update_position">
+                    <ion-icon name="location" class="location-icon"></ion-icon>
+                    <span class="update-time">{{ formatDateUpdatePosition(conducteur.date_update_position) }}</span>
+                  </p>
+                  <ion-button 
+                    *ngIf="conducteur.position_actuelle"
+                    fill="clear" 
+                    size="small"
+                    (click)="openPositionInMaps(conducteur.position_actuelle)"
+                    class="position-btn">
+                    <ion-icon name="map" slot="start"></ion-icon>
+                    Voir position actuelle
+                  </ion-button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

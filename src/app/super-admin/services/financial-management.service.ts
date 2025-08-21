@@ -721,6 +721,63 @@ export class FinancialManagementService {
   }
 
   // ===============================================
+  // SUPPRESSION PERIODE COMPLETE
+  // ===============================================
+
+  /**
+   * Supprime complètement une période et toutes les données liées
+   * ATTENTION: Cette action est irréversible !
+   */
+  async deletePeriodeComplete(periodeId: string): Promise<{ success: boolean, error?: any }> {
+    try {
+      console.log(`🗑️ Suppression complète de la période ${periodeId}...`);
+
+      // 1. Supprimer tous les paiements liés
+      console.log('🗑️ Suppression des paiements...');
+      const { error: paiementsError } = await this.supabase.client
+        .from('paiements_commissions')
+        .delete()
+        .eq('periode_id', periodeId);
+
+      if (paiementsError) {
+        console.error('❌ Erreur suppression paiements:', paiementsError);
+        throw paiementsError;
+      }
+
+      // 2. Supprimer toutes les commissions détaillées
+      console.log('🗑️ Suppression des commissions...');
+      const { error: commissionsError } = await this.supabase.client
+        .from('commissions_detail')
+        .delete()
+        .eq('periode_id', periodeId);
+
+      if (commissionsError) {
+        console.error('❌ Erreur suppression commissions:', commissionsError);
+        throw commissionsError;
+      }
+
+      // 3. Supprimer la période elle-même
+      console.log('🗑️ Suppression de la période...');
+      const { error: periodeError } = await this.supabase.client
+        .from('facturation_periodes')
+        .delete()
+        .eq('id', periodeId);
+
+      if (periodeError) {
+        console.error('❌ Erreur suppression période:', periodeError);
+        throw periodeError;
+      }
+
+      console.log(`✅ Période ${periodeId} et toutes ses données supprimées avec succès`);
+      return { success: true };
+
+    } catch (error) {
+      console.error('❌ Erreur deletePeriodeComplete:', error);
+      return { success: false, error };
+    }
+  }
+
+  // ===============================================
   // UTILITAIRES
   // ===============================================
 

@@ -511,6 +511,71 @@ export class EntrepriseReservationsPage implements OnInit {
     });
   }
 
+  calculateDurationSinceAcceptation(createdAt: string, validationDate: string): string {
+    if (!createdAt || !validationDate) return '';
+    
+    try {
+      // Parser les dates en forçant l'interprétation UTC pour éviter les problèmes de timezone
+      // Si created_at n'a pas de timezone, on l'interprète comme UTC
+      const createdAtUTC = createdAt.includes('T') && !createdAt.includes('+') && !createdAt.includes('Z') 
+        ? createdAt + 'Z' 
+        : createdAt;
+      
+      const startDate = new Date(createdAtUTC);
+      const endDate = new Date(validationDate);
+      
+      // Vérifier que les dates sont valides
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        console.error('❌ Dates invalides:', { createdAt, validationDate });
+        return 'Dates invalides';
+      }
+      
+      // Calculer la différence en millisecondes
+      const diffMs = endDate.getTime() - startDate.getTime();
+      
+      // Si la différence est négative, il y a un problème
+      if (diffMs < 0) {
+        console.error('❌ Durée négative:', diffMs);
+        return 'Durée négative';
+      }
+      
+      // Convertir en secondes et minutes
+      const diffSeconds = Math.floor(diffMs / 1000);
+      const diffMinutes = Math.floor(diffMs / (1000 * 60));
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      
+      // Retourner le format le plus approprié
+      if (diffDays > 0) {
+        const remainingHours = diffHours % 24;
+        if (remainingHours > 0) {
+          return `${diffDays}j ${remainingHours}h`;
+        }
+        return `${diffDays}j`;
+      } else if (diffHours > 0) {
+        const remainingMinutes = diffMinutes % 60;
+        if (remainingMinutes > 0) {
+          return `${diffHours}h ${remainingMinutes}min`;
+        }
+        return `${diffHours}h`;
+      } else if (diffMinutes > 0) {
+        const remainingSeconds = diffSeconds % 60;
+        if (remainingSeconds > 30) {
+          // Arrondir à la minute supérieure si plus de 30 secondes
+          return `${diffMinutes + 1}min`;
+        }
+        return `${diffMinutes}min`;
+      } else if (diffSeconds > 0) {
+        return `${diffSeconds}s`;
+      } else {
+        return 'Instantané';
+      }
+    } catch (error) {
+      console.error('❌ Erreur calcul durée:', error);
+      return 'Erreur calcul';
+    }
+  }
+
   canValidate(reservation: any): boolean {
     return reservation.statut === 'accepted' && 
            reservation.code_validation && 

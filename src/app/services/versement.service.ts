@@ -216,21 +216,24 @@ export class VersementService {
           note_conducteur,
           date_add_commentaire,
           versement_id,
-          depart_nom,
-          conducteurs!inner (
-            id,
-            nom,
-            prenom,
-            telephone,
-            entreprise_id,
-            created_at
-          )
+          depart_nom
         `)
         .in('conducteur_id', conducteurIds)
-        .eq('conducteurs.entreprise_id', entrepriseId)
         .eq('statut', 'completed')
         .not('date_code_validation', 'is', null)
-        .is('versement_id', null); // Pas encore versées
+        .is('versement_id', null) // Pas encore versées
+        .gt('prix_total', 0); // Prix supérieur à 0
+
+      console.log('🔍 Critères de recherche des réservations à verser:', {
+        entrepriseId,
+        nombreConducteurs: conducteurIds.length,
+        criteres: {
+          statut: 'completed',
+          date_code_validation: 'NOT NULL',
+          versement_id: 'NULL',
+          prix_total: '> 0'
+        }
+      });
 
       if (error) {
         console.error('❌ Erreur récupération réservations:', error);
@@ -239,15 +242,62 @@ export class VersementService {
 
 
       console.log(`📊 ${reservations?.length || 0} réservation(s) à verser trouvée(s)`);
+      
+      if (reservations && reservations.length > 0) {
+        console.log('📋 Aperçu des réservations trouvées:', 
+          reservations.slice(0, 3).map(r => ({
+            id: r.id.substring(0, 8),
+            conducteur_id: r.conducteur_id,
+            prix: r.prix_total,
+            date_validation: r.date_code_validation,
+            versement_id: r.versement_id
+          }))
+        );
+      }
+
+      // Récupérer les informations des conducteurs
+      const { data: conducteursDetails, error: conducteurError } = await this.supabaseService.client
+        .from('conducteurs')
+        .select(`
+          id, 
+          nom, 
+          prenom, 
+          telephone, 
+          entreprise_id,
+          vehicle_type,
+          vehicle_marque,
+          vehicle_modele,
+          vehicle_couleur,
+          vehicle_plaque,
+          statut,
+          note_moyenne,
+          nombre_courses,
+          derniere_activite,
+          hors_ligne,
+          position_actuelle,
+          date_update_position,
+          date_inscription,
+          actif
+        `)
+        .in('id', conducteurIds)
+        .eq('entreprise_id', entrepriseId);
+
+      if (conducteurError) {
+        console.error('❌ Erreur récupération détails conducteurs:', conducteurError);
+        throw conducteurError;
+      }
+
+      // Créer un map des conducteurs pour accès rapide
+      const conducteursMap = new Map(conducteursDetails?.map(c => [c.id, c]) || []);
 
       // Grouper par conducteur
       const groupedByConducteur = this.groupReservationsByConducteur(reservations || []);
+      console.log(`👥 ${groupedByConducteur.size} conducteur(s) avec des montants à verser`);
       
       const result: ConducteurVersement[] = [];
 
       for (const [conducteurId, reservationsList] of groupedByConducteur.entries()) {
-        const conducteur = reservationsList[0].conducteurs;
-        // Pas besoin de vérifier entreprise_id car déjà filtré dans la requête
+        const conducteur = conducteursMap.get(conducteurId);
         if (!conducteur) continue;
 
         const montantTotal = reservationsList.reduce((sum, r) => sum + (r.prix_total || 0), 0);
@@ -271,6 +321,20 @@ export class VersementService {
           priorite: 'normal',
           anomalies
         });
+      }
+
+      console.log(`✅ Résultat final: ${result.length} conducteur(s) à verser pour un montant total de:`, 
+        result.reduce((sum, c) => sum + c.montantTotal, 0).toLocaleString() + ' GNF'
+      );
+      
+      if (result.length > 0) {
+        console.log('📋 Détail des conducteurs à verser:', 
+          result.map(c => ({
+            conducteur: c.conducteur.nom + ' ' + c.conducteur.prenom,
+            montant: c.montantTotal,
+            courses: c.nombreCourses
+          }))
+        );
       }
 
       return result.sort((a, b) => b.montantTotal - a.montantTotal);

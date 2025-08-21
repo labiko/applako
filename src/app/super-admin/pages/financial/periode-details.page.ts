@@ -70,6 +70,25 @@ import {
   CommissionDetail 
 } from '../../services/financial-management.service';
 
+// Interface pour un groupe de conducteur avec ses réservations
+interface ConducteurGroup {
+  conducteur: {
+    id: string;
+    nom: string;
+    prenom: string;
+    telephone: string;
+    entreprise?: {
+      id: string;
+      nom: string;
+    };
+  };
+  reservations: ReservationDetail[];
+  totalCA: number;
+  totalCommission: number;
+  tauxCommission: number;
+  isExpanded: boolean;
+}
+
 // Interface pour une réservation avec détails
 interface ReservationDetail {
   id: string;
@@ -87,6 +106,7 @@ interface ReservationDetail {
   date_code_validation?: string | null; // Date de validation du code
   code_validation?: string; // Code de validation
   conducteur?: {
+    id: string;
     nom: string;
     telephone: string;
     entreprise?: {
@@ -303,18 +323,24 @@ interface ReservationDetail {
         </ion-card-header>
         <ion-card-content>
           
-          <!-- Onglets Validées / En attente -->
+          <!-- Onglets Validées / En attente / Par Conducteur -->
           <ion-segment [(ngModel)]="reservationTab" (ionChange)="onReservationTabChange()">
             <ion-segment-button value="validees">
               <ion-label>
-                Validées ({{ reservationsValidees.length }})
+                Validées ({{ filteredValidees.length }})
                 <ion-icon name="checkmark-circle-outline"></ion-icon>
               </ion-label>
             </ion-segment-button>
             <ion-segment-button value="attente">
               <ion-label>
-                En attente ({{ reservationsEnAttente.length }})
+                En attente ({{ filteredEnAttente.length }})
                 <ion-icon name="time-outline"></ion-icon>
+              </ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="conducteurs">
+              <ion-label>
+                Par Conducteur ({{ conducteursGrouped.length }})
+                <ion-icon name="person-outline"></ion-icon>
               </ion-label>
             </ion-segment-button>
           </ion-segment>
@@ -330,6 +356,12 @@ interface ReservationDetail {
             <ion-chip color="warning">
               <ion-icon name="warning-outline"></ion-icon>
               <ion-label>Ces réservations ne sont PAS comptées dans les commissions</ion-label>
+            </ion-chip>
+          </div>
+          <div class="tab-info" *ngIf="reservationTab === 'conducteurs'">
+            <ion-chip color="primary">
+              <ion-icon name="person-outline"></ion-icon>
+              <ion-label>Réservations regroupées par conducteur avec calcul des commissions</ion-label>
             </ion-chip>
           </div>
           
@@ -433,6 +465,103 @@ interface ReservationDetail {
             </div>
           </div>
 
+          <!-- Vue Par Conducteur avec Accordéons -->
+          <div *ngIf="reservationTab === 'conducteurs'" class="conducteurs-view">
+            <div 
+              *ngFor="let conducteurGroup of conducteursGrouped; trackBy: trackByConducteur"
+              class="conducteur-accordion">
+              
+              <!-- En-tête de l'accordéon -->
+              <div class="accordion-header" (click)="toggleConducteurAccordion(conducteurGroup.conducteur.id)">
+                <div class="conducteur-info">
+                  <div class="conducteur-avatar">
+                    <ion-icon name="person-circle-outline"></ion-icon>
+                  </div>
+                  <div class="conducteur-details">
+                    <h3>{{ conducteurGroup.conducteur.nom }} {{ conducteurGroup.conducteur.prenom }}</h3>
+                    <p class="conducteur-id">{{ conducteurGroup.conducteur.id }}</p>
+                    <div class="conducteur-stats">
+                      <ion-chip color="success" outline>
+                        <ion-icon name="car-outline"></ion-icon>
+                        <ion-label>{{ conducteurGroup.reservations.length }} courses</ion-label>
+                      </ion-chip>
+                      <ion-chip color="primary" outline>
+                        <ion-icon name="wallet-outline"></ion-icon>
+                        <ion-label>{{ formatPrice(conducteurGroup.totalCommission) }} commission</ion-label>
+                      </ion-chip>
+                    </div>
+                  </div>
+                </div>
+                <ion-icon 
+                  [name]="conducteurGroup.isExpanded ? 'chevron-up-outline' : 'chevron-down-outline'"
+                  class="accordion-icon">
+                </ion-icon>
+              </div>
+
+              <!-- Contenu de l'accordéon -->
+              <div class="accordion-content" [class.expanded]="conducteurGroup.isExpanded">
+                <ion-list>
+                  <ion-item 
+                    *ngFor="let reservation of conducteurGroup.reservations; trackBy: trackByReservation"
+                    class="reservation-item-conducteur">
+                    
+                    <div class="reservation-content-conducteur">
+                      <div class="reservation-header-conducteur">
+                        <div class="client-info">
+                          <h4>{{ reservation.client_phone }}</h4>
+                          <span class="reservation-id">{{ reservation.id.substring(0, 8) }}</span>
+                        </div>
+                        <div class="price-commission">
+                          <div class="prix">{{ formatPrice(reservation.prix_total) }}</div>
+                          <div class="commission">Commission: {{ formatPrice(calculateReservationCommission(reservation.prix_total)) }}</div>
+                        </div>
+                      </div>
+                      
+                      <div class="reservation-details-conducteur">
+                        <p class="trajet">
+                          <ion-icon name="location-outline"></ion-icon>
+                          {{ reservation.pickup_location }} → {{ reservation.destination }}
+                        </p>
+                        <p class="datetime">
+                          <ion-icon name="calendar-outline"></ion-icon>
+                          {{ formatDateTime(reservation.pickup_date, reservation.pickup_time) }}
+                        </p>
+                        <p class="distance" *ngIf="reservation.distance_km">
+                          <ion-icon name="speedometer-outline"></ion-icon>
+                          {{ reservation.distance_km }} km
+                        </p>
+                        <p class="validation" *ngIf="reservation.date_code_validation">
+                          <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+                          Validé le {{ formatDate(reservation.date_code_validation) }}
+                        </p>
+                      </div>
+                    </div>
+                  </ion-item>
+                </ion-list>
+                
+                <!-- Résumé du conducteur -->
+                <div class="conducteur-summary">
+                  <div class="summary-item">
+                    <ion-icon name="car-outline"></ion-icon>
+                    <span>{{ conducteurGroup.reservations.length }} réservations</span>
+                  </div>
+                  <div class="summary-item">
+                    <ion-icon name="cash-outline"></ion-icon>
+                    <span>{{ formatPrice(conducteurGroup.totalCA) }} CA total</span>
+                  </div>
+                  <div class="summary-item">
+                    <ion-icon name="wallet-outline"></ion-icon>
+                    <span>{{ formatPrice(conducteurGroup.totalCommission) }} commission totale</span>
+                  </div>
+                  <div class="summary-item">
+                    <ion-icon name="stats-chart-outline"></ion-icon>
+                    <span>{{ conducteurGroup.tauxCommission }}% taux moyen</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- État vide -->
           <div *ngIf="filteredReservations.length === 0" class="empty-state">
             <ion-icon name="car-outline" size="large"></ion-icon>
@@ -501,7 +630,10 @@ export class PeriodeDetailsPage implements OnInit {
   searchTerm = '';
   selectedEntreprise: string | null = null;
   viewMode: 'list' | 'grid' = 'list';
-  reservationTab: 'validees' | 'attente' = 'validees'; // Onglet actif
+  reservationTab: 'validees' | 'attente' | 'conducteurs' = 'validees'; // Onglet actif
+
+  // Regroupement par conducteur
+  conducteursGrouped: ConducteurGroup[] = [];
 
   // ID de la période
   periodeId: string | null = null;
@@ -598,6 +730,9 @@ export class PeriodeDetailsPage implements OnInit {
     this.filteredReservations = this.reservationTab === 'validees' 
       ? this.filteredValidees 
       : this.filteredEnAttente;
+      
+    // Regrouper par conducteur (uniquement les validées pour les commissions)
+    this.groupReservationsByConducteur();
   }
 
   // Filtres et recherche
@@ -637,6 +772,9 @@ export class PeriodeDetailsPage implements OnInit {
       this.filteredEnAttente = filtered;
       this.filteredReservations = this.filteredEnAttente;
     }
+    
+    // Regrouper par conducteur avec les données filtrées
+    this.groupReservationsByConducteur();
   }
 
   filterByEntreprise(entrepriseId: string) {
@@ -777,6 +915,75 @@ export class PeriodeDetailsPage implements OnInit {
   goBack() {
     this.router.navigate(['/super-admin/financial']);
   }
+
+  // ==================== GESTION PAR CONDUCTEUR ====================
+
+  /**
+   * Regroupe les réservations validées par conducteur
+   */
+  private groupReservationsByConducteur() {
+    const conducteurMap = new Map<string, ConducteurGroup>();
+
+    // Regrouper uniquement les réservations validées filtrées
+    this.filteredValidees.forEach(reservation => {
+      if (!reservation.conducteur) return;
+
+      const conducteurId = reservation.conducteur.id;
+      
+      if (!conducteurMap.has(conducteurId)) {
+        conducteurMap.set(conducteurId, {
+          conducteur: {
+            id: conducteurId,
+            nom: reservation.conducteur.nom,
+            prenom: '', // Pas de prénom dans ReservationDetail
+            telephone: reservation.conducteur.telephone,
+            entreprise: reservation.conducteur.entreprise
+          },
+          reservations: [],
+          totalCA: 0,
+          totalCommission: 0,
+          tauxCommission: 15, // Taux par défaut
+          isExpanded: false
+        });
+      }
+
+      const group = conducteurMap.get(conducteurId)!;
+      group.reservations.push(reservation);
+      group.totalCA += reservation.prix_total;
+      group.totalCommission += this.calculateReservationCommission(reservation.prix_total);
+    });
+
+    // Convertir en tableau et trier par commission décroissante
+    this.conducteursGrouped = Array.from(conducteurMap.values())
+      .sort((a, b) => b.totalCommission - a.totalCommission);
+
+    console.log('👥 Conducteurs regroupés:', this.conducteursGrouped.length);
+  }
+
+  /**
+   * Calcule la commission pour une réservation
+   */
+  calculateReservationCommission(prixTotal: number, tauxCommission: number = 15): number {
+    return (prixTotal * tauxCommission) / 100;
+  }
+
+  /**
+   * Toggle l'accordéon d'un conducteur
+   */
+  toggleConducteurAccordion(conducteurId: string) {
+    const group = this.conducteursGrouped.find(g => g.conducteur.id === conducteurId);
+    if (group) {
+      group.isExpanded = !group.isExpanded;
+    }
+  }
+
+  /**
+   * TrackBy function pour les groupes de conducteurs
+   */
+  trackByConducteur(index: number, group: ConducteurGroup): string {
+    return group.conducteur.id;
+  }
+
 
   // Utilitaires
   getPeriodeStatusText(statut: string): string {

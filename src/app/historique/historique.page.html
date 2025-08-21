@@ -127,7 +127,7 @@
 
             <div class="detail-item timestamp">
               <ion-text color="medium">
-                <small>Traité le {{ formatDateTime(reservation.updated_at) }}</small>
+                <small>Crée le {{ formatDateTime(reservation.created_at) }}</small>
               </ion-text>
             </div>
 
@@ -135,7 +135,7 @@
             <div class="detail-item validation-date" *ngIf="reservation.date_code_validation">
               <ion-icon name="checkmark-circle" color="success"></ion-icon>
               <ion-text color="success">
-                <strong>Validé le:</strong> {{ formatDateTime(reservation.date_code_validation) }}
+                <strong>Validé le:</strong> {{ formatValidationDate(reservation.date_code_validation) }}
               </ion-text>
             </div>
           </div>

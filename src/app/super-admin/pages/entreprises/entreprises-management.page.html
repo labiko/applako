@@ -361,7 +361,7 @@
   <ion-modal [isOpen]="isConducteursModalOpen" (didDismiss)="closeConducteursModal()" class="conducteurs-modal">
     <ng-template>
       <ion-header class="conducteurs-modal-header">
-        <ion-toolbar>
+        <ion-toolbar color="primary">
           <ion-title>
             <ion-icon name="people-outline"></ion-icon>
             Conducteurs - {{ selectedEntreprise?.nom }}
@@ -439,9 +439,9 @@
                       {{ getVehicleTypeLabel(conducteur.vehicle_type) }}
                       <span *ngIf="conducteur.vehicle_marque"> - {{ conducteur.vehicle_marque }}</span>
                     </div>
-                    <div class="info-line" *ngIf="conducteur.note_moyenne">
+                    <div class="info-line">
                       <ion-icon name="star"></ion-icon>
-                      {{ conducteur.note_moyenne }}/5 - {{ conducteur.nombre_courses }} courses
+                      {{ conducteur.note_moyenne || 5 }}/5 - {{ getReservationsCount(conducteur.id) }} courses
                     </div>
                   </div>
                 </div>
@@ -510,55 +510,90 @@
                 
                 <!-- Liste des réservations -->
                 <div *ngIf="!loadingReservations.has(conducteur.id)">
-                  <div *ngFor="let reservation of getReservations(conducteur.id)" class="reservation-item">
-                    <!-- Header avec statut et prix -->
-                    <div class="reservation-header">
-                      <div class="reservation-status">
-                        <span class="status-badge" [ngClass]="reservation.statut">
-                          {{ getStatusLabel(reservation.statut) }}
-                        </span>
-                        <span class="reservation-date">
-                          {{ formatRelativeTime(reservation.created_at) }}
-                        </span>
+                  <div *ngFor="let reservation of getReservations(conducteur.id)" class="reservation-item-entreprise">
+                    <!-- Header avec destination et statut moderne -->
+                    <div class="reservation-header-entreprise">
+                      <div class="header-top">
+                        <h4 class="destination-title">{{ reservation.destination_nom || 'Destination non définie' }}</h4>
+                        <div class="status-section">
+                          <span class="status-badge-primary" [ngClass]="'status-' + reservation.statut">
+                            {{ getStatusLabel(reservation.statut) }}
+                          </span>
+                          <span class="price-badge">
+                            <ion-icon name="cash"></ion-icon>
+                            {{ formatCurrency(reservation.prix_total) }}
+                          </span>
+                        </div>
                       </div>
-                      <div class="reservation-price">
-                        {{ formatCurrency(reservation.prix_total) }}
+                      <div class="header-bottom">
+                        <div class="reservation-id">
+                          <ion-icon name="id-card-outline"></ion-icon>
+                          <span class="id-text">ID: {{ reservation.id }}</span>
+                        </div>
+                        <div class="date-info">
+                          <ion-icon name="calendar-outline"></ion-icon>
+                          <span class="date-text">Créée: {{ formatReservationDate(reservation.created_at) }}</span>
+                        </div>
+                        <div class="validation-info" *ngIf="reservation.date_code_validation">
+                          <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+                          <span class="validation-text">Validée: {{ formatReservationDate(reservation.date_code_validation) }}</span>
+                        </div>
+                        <div class="duration-info" *ngIf="reservation.date_code_validation">
+                          <ion-icon name="time-outline" color="warning"></ion-icon>
+                          <span class="duration-text">Durée: {{ calculateDurationSinceAcceptation(reservation.created_at, reservation.date_code_validation) }}</span>
+                        </div>
+                        <div class="scheduled-info" *ngIf="reservation.date_reservation">
+                          <ion-icon name="calendar-number-outline" color="primary"></ion-icon>
+                          <span class="scheduled-text">Planifiée: {{ formatScheduledDate(reservation.date_reservation, reservation.heure_reservation, reservation.minute_reservation) }}</span>
+                        </div>
                       </div>
                     </div>
                     
-                    <!-- Timeline départ/destination -->
-                    <div class="reservation-timeline">
-                      <div class="timeline-point departure">
-                        <div class="point-label">Départ</div>
-                        <div class="point-value">
-                          <ion-icon name="location"></ion-icon>
-                          {{ reservation.depart_nom || extractLocationName(reservation.position_depart) || 'Position non définie' }}
+                    <!-- Départ avec icône et adresse cliquable -->
+                    <div class="location-row">
+                      <ion-icon name="location" class="location-icon departure-icon"></ion-icon>
+                      <div class="location-content">
+                        <div class="location-label">Départ</div>
+                        <div class="location-address clickable-location" (click)="openPositionInMaps(reservation.position_depart)">
+                          {{ reservation.depart_nom || 'Position non spécifiée' }}
+                          <ion-icon name="navigate-outline" class="navigate-icon"></ion-icon>
                         </div>
                       </div>
-                      
-                      <div class="timeline-point destination">
-                        <div class="point-label">Destination</div>
-                        <div class="point-value">
-                          <ion-icon name="flag"></ion-icon>
+                    </div>
+                    
+                    <!-- Destination avec icône et adresse cliquable -->
+                    <div class="location-row">
+                      <ion-icon name="flag" class="location-icon destination-icon"></ion-icon>
+                      <div class="location-content">
+                        <div class="location-label">Destination</div>
+                        <div class="location-address clickable-location" (click)="openPositionInMaps(reservation.position_arrivee)">
                           {{ reservation.destination_nom || 'Destination non définie' }}
-                        </div>
-                        <div class="point-distance" *ngIf="reservation.distance_km">
-                          <ion-icon name="speedometer-outline"></ion-icon>
-                          {{ reservation.distance_km }} km
+                          <ion-icon name="navigate-outline" class="navigate-icon"></ion-icon>
                         </div>
                       </div>
                     </div>
                     
-                    <!-- Footer avec infos client et note -->
-                    <div class="reservation-footer">
-                      <div class="client-info">
-                        <ion-icon name="person-outline"></ion-icon>
-                        {{ reservation.client_phone }}
+                    <!-- Footer avec infos client, distance et prix -->
+                    <div class="reservation-footer-entreprise">
+                      <div class="footer-left">
+                        <ion-icon name="call" class="phone-icon"></ion-icon>
+                        <span class="client-phone clickable-phone" (click)="callClient(reservation.client_phone, $event)">
+                          {{ reservation.client_phone }}
+                        </span>
+                        <span class="distance-info" *ngIf="reservation.distance_km">
+                          {{ reservation.distance_km }} km
+                        </span>
                       </div>
-                      <div class="reservation-note" *ngIf="reservation.note_conducteur">
-                        <ion-icon name="star"></ion-icon>
-                        <span>{{ reservation.note_conducteur }}/5</span>
+                      <div class="footer-right">
+                        <ion-icon name="cash" class="price-icon"></ion-icon>
+                        <span class="price-text">{{ formatCurrency(reservation.prix_total) }}</span>
                       </div>
+                    </div>
+                    
+                    <!-- Info validation si présente -->
+                    <div class="validation-info" *ngIf="reservation.date_code_validation">
+                      <ion-icon name="checkmark-circle" color="success"></ion-icon>
+                      <span>cool trajet réalisé</span>
                     </div>
                   </div>
                   
@@ -670,6 +705,149 @@
             (click)="closeAddConducteurModal()">
             Annuler
           </ion-button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <!-- Modal de détails de réservation (copié depuis entreprise/reservations) -->
+  <ion-modal [isOpen]="isDetailsModalOpen" (didDismiss)="closeDetailsModal()" class="details-modal">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar class="modal-toolbar">
+          <ion-title>Détails de la réservation</ion-title>
+          <ion-button slot="end" fill="clear" (click)="closeDetailsModal()">
+            <ion-icon name="close" style="font-size: 1.5rem;"></ion-icon>
+          </ion-button>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding" *ngIf="selectedReservationDetails">
+        <div class="modal-content">
+          <!-- En-tête avec statut -->
+          <div class="modal-header">
+            <h2 class="modal-title">{{ selectedReservationDetails.destination_nom || 'Destination non spécifiée' }}</h2>
+            <ion-badge [color]="getStatusColor(selectedReservationDetails.statut)" class="modal-status">
+              {{ getStatusText(selectedReservationDetails.statut) }}
+            </ion-badge>
+          </div>
+
+          <!-- Informations du conducteur -->
+          <div class="info-section">
+            <h3 class="section-title">
+              <ion-icon name="person"></ion-icon>
+              Conducteur
+            </h3>
+            <div class="info-content">
+              <p class="info-item">
+                {{ selectedReservationDetails.conducteur?.prenom }} {{ selectedReservationDetails.conducteur?.nom }}
+              </p>
+              <p class="info-item" *ngIf="selectedReservationDetails.conducteur?.telephone">
+                <strong>Téléphone:</strong> {{ selectedReservationDetails.conducteur?.telephone }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Informations du client -->
+          <div class="info-section">
+            <h3 class="section-title">
+              <ion-icon name="call"></ion-icon>
+              Client
+            </h3>
+            <div class="info-content">
+              <p class="info-item">
+                <strong>Téléphone:</strong> {{ selectedReservationDetails.client_phone || 'N/A' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Localisation -->
+          <div class="info-section">
+            <h3 class="section-title">
+              <ion-icon name="location"></ion-icon>
+              Trajets
+            </h3>
+            <div class="info-content">
+              <div class="location-block">
+                <p class="location-type">Position de départ:</p>
+                <div class="location-with-map" (click)="openPositionInMaps(selectedReservationDetails.position_depart)">
+                  <p class="location-text">{{ selectedReservationDetails.depart_nom || 'Non spécifiée' }}</p>
+                  <ion-icon name="map" class="map-link-icon"></ion-icon>
+                </div>
+              </div>
+              <div class="location-block" *ngIf="selectedReservationDetails.destination_nom">
+                <p class="location-type">Destination:</p>
+                <div class="location-with-map" (click)="openPositionInMaps(selectedReservationDetails.position_arrivee)">
+                  <p class="location-text">{{ selectedReservationDetails.destination_nom }}</p>
+                  <ion-icon name="map" class="map-link-icon"></ion-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Détails de la course -->
+          <div class="info-section">
+            <h3 class="section-title">
+              <ion-icon name="car"></ion-icon>
+              Détails de la course
+            </h3>
+            <div class="info-content">
+              <div class="detail-grid">
+                <div class="detail-card">
+                  <ion-icon name="speedometer" class="detail-card-icon"></ion-icon>
+                  <div class="detail-card-content">
+                    <p class="detail-label">Distance</p>
+                    <p class="detail-value">{{ formatDistance(selectedReservationDetails.distance_km) }}</p>
+                  </div>
+                </div>
+                <div class="detail-card">
+                  <ion-icon name="cash" class="detail-card-icon"></ion-icon>
+                  <div class="detail-card-content">
+                    <p class="detail-label">Prix total</p>
+                    <p class="detail-value">{{ formatCurrency(selectedReservationDetails.prix_total) }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dates -->
+          <div class="info-section">
+            <h3 class="section-title">
+              <ion-icon name="calendar"></ion-icon>
+              Dates
+            </h3>
+            <div class="info-content">
+              <p class="info-item">
+                <strong>Créée le:</strong> {{ formatDate(selectedReservationDetails.created_at) }}
+              </p>
+              <p class="info-item" *ngIf="selectedReservationDetails.date_code_validation">
+                <strong>Validée le:</strong> {{ formatDate(selectedReservationDetails.date_code_validation) }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Commentaire et notation -->
+          <div class="info-section" *ngIf="selectedReservationDetails.commentaire || selectedReservationDetails.note_conducteur">
+            <h3 class="section-title">
+              <ion-icon name="chatbubble-ellipses"></ion-icon>
+              Évaluation
+            </h3>
+            <div class="info-content">
+              <div class="rating-section" *ngIf="selectedReservationDetails.note_conducteur">
+                <p class="info-item"><strong>Note:</strong></p>
+                <div class="stars">
+                  <ion-icon name="star" *ngFor="let star of getRatingStars(selectedReservationDetails.note_conducteur)" class="star-filled"></ion-icon>
+                  <span class="rating-value">({{ selectedReservationDetails.note_conducteur }}/5)</span>
+                </div>
+              </div>
+              <div class="comment-section" *ngIf="selectedReservationDetails.commentaire">
+                <p class="info-item"><strong>Commentaire:</strong></p>
+                <div class="comment-box">
+                  {{ selectedReservationDetails.commentaire }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </ion-content>
     </ng-template>

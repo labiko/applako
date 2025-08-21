@@ -45,7 +45,8 @@
       "Bash(grep:*)",
       "Bash(ionic capacitor:*)",
       "Bash(adb:*)",
-      "Bash(del srcappsuper-adminpagesentreprisesentreprises-management.page.ts.backup)"
+      "Bash(del srcappsuper-adminpagesentreprisesentreprises-management.page.ts.backup)",
+      "Bash(npx ng build:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

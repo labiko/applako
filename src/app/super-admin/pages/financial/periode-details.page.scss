@@ -484,6 +484,257 @@
 }
 
 // ===============================================
+// VUE PAR CONDUCTEUR - ACCORDÉONS
+// ===============================================
+
+.conducteurs-view {
+  margin-top: 16px;
+}
+
+.conducteur-accordion {
+  margin-bottom: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  background: white;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: var(--lako-green);
+    box-shadow: 0 2px 12px rgba(193, 241, 29, 0.15);
+  }
+
+  // En-tête de l'accordéon
+  .accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #e0e0e0;
+    transition: background 0.3s ease;
+
+    &:hover {
+      background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    }
+
+    .conducteur-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+
+      .conducteur-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--lako-green) 0%, #a8e01d 100%);
+        color: white;
+
+        ion-icon {
+          font-size: 1.5rem;
+        }
+      }
+
+      .conducteur-details {
+        flex: 1;
+
+        h3 {
+          margin: 0 0 4px 0;
+          color: var(--lako-dark);
+          font-size: 1.1rem;
+          font-weight: 600;
+        }
+        
+        .conducteur-id {
+          margin: 0 0 8px 0;
+          font-size: 0.8rem;
+          color: var(--lako-gray);
+          opacity: 0.7;
+          font-family: monospace;
+        }
+
+        .conducteur-stats {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+
+          ion-chip {
+            --background: rgba(255, 255, 255, 0.9);
+            --color: var(--lako-dark);
+            font-size: 0.75rem;
+            font-weight: 500;
+            height: 28px;
+
+            ion-icon {
+              font-size: 0.9rem;
+              margin-right: 4px;
+            }
+
+            &[color="success"] {
+              --background: rgba(76, 175, 80, 0.1);
+              --color: #4CAF50;
+            }
+
+            &[color="primary"] {
+              --background: rgba(193, 241, 29, 0.2);
+              --color: var(--lako-dark);
+            }
+          }
+        }
+      }
+    }
+
+    .accordion-icon {
+      font-size: 1.2rem;
+      color: var(--lako-green);
+      transition: transform 0.3s ease;
+    }
+  }
+
+  // Contenu de l'accordéon
+  .accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+
+    &.expanded {
+      max-height: 2000px; // Hauteur suffisante pour le contenu
+    }
+
+    ion-list {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+    }
+
+    .reservation-item-conducteur {
+      --padding-start: 0;
+      --padding-end: 0;
+      --inner-padding-start: 20px;
+      --inner-padding-end: 20px;
+      --border-width: 0 0 1px 0;
+      --border-color: #f0f0f0;
+
+      &:last-child {
+        --border-width: 0;
+      }
+
+      .reservation-content-conducteur {
+        width: 100%;
+        padding: 16px 0;
+
+        .reservation-header-conducteur {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 12px;
+          gap: 16px;
+
+          .client-info {
+            flex: 1;
+
+            h4 {
+              margin: 0 0 4px 0;
+              font-size: 1rem;
+              font-weight: 600;
+              color: var(--lako-dark);
+            }
+
+            .reservation-id {
+              font-size: 0.75rem;
+              color: #666;
+              font-family: 'Courier New', monospace;
+              font-weight: 500;
+            }
+          }
+
+          .price-commission {
+            text-align: right;
+            flex-shrink: 0;
+
+            .prix {
+              font-size: 1rem;
+              font-weight: 700;
+              color: var(--lako-green);
+              margin-bottom: 2px;
+            }
+
+            .commission {
+              font-size: 0.8rem;
+              color: #666;
+              font-weight: 500;
+              font-style: italic;
+            }
+          }
+        }
+
+        .reservation-details-conducteur {
+          p {
+            margin: 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--lako-gray);
+
+            ion-icon {
+              font-size: 0.9rem;
+              color: var(--lako-green);
+              flex-shrink: 0;
+            }
+
+            &.validation {
+              color: #4CAF50;
+              font-weight: 500;
+            }
+          }
+
+          .trajet {
+            font-weight: 500;
+            color: var(--lako-dark);
+          }
+        }
+      }
+    }
+
+    // Résumé du conducteur
+    .conducteur-summary {
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-top: 1px solid #e0e0e0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+
+      .summary-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: white;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 500;
+
+        ion-icon {
+          font-size: 1rem;
+          color: var(--lako-green);
+        }
+
+        span {
+          color: var(--lako-dark);
+        }
+      }
+    }
+  }
+}
+
+// ===============================================
 // ÉTATS ET UTILITAIRES
 // ===============================================
 

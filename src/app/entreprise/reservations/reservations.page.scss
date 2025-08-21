@@ -1022,6 +1022,29 @@
   }
 }
 
+// Durée info
+.duration-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 8px;
+  border-left: 3px solid #4CAF50;
+  
+  .duration-icon {
+    color: #4CAF50;
+    font-size: 1rem;
+  }
+  
+  .duration-text {
+    font-size: 0.85rem;
+    color: var(--lako-dark);
+    font-weight: 500;
+  }
+}
+
 // Action de carte
 .card-action {
   margin-top: 1rem;
@@ -1063,9 +1086,16 @@
     
     .reservation-meta {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
+      justify-content: space-between;
       gap: 1rem;
       flex-wrap: wrap;
+      
+      .date-and-id {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
       
       .reservation-date {
         display: flex;
@@ -1076,6 +1106,22 @@
         
         ion-icon {
           font-size: 0.9rem;
+        }
+      }
+      
+      .reservation-id-complete {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.7rem;
+        color: var(--lako-gray);
+        opacity: 0.6;
+        font-family: monospace;
+        margin: 0;
+        
+        ion-icon {
+          font-size: 0.8rem;
+          opacity: 0.7;
         }
       }
       

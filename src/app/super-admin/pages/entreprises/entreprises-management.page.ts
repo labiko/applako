@@ -186,6 +186,10 @@ export class EntreprisesManagementPage implements OnInit {
     vehicle_plaque: ''
   };
 
+  // Modal détails réservation
+  isDetailsModalOpen = false;
+  selectedReservationDetails: any = null;
+
   constructor(
     private entrepriseService: EntrepriseManagementService,
     private router: Router,
@@ -859,13 +863,6 @@ Cette action va:
     );
   }
 
-  formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
-  }
 
   trackByEntreprise(index: number, entreprise: Entreprise): string {
     return entreprise.id;
@@ -1255,6 +1252,416 @@ Cette action est irréversible.`,
   canDebloquerConducteur(conducteur: any): boolean {
     // Super-admin peut débloquer tous les conducteurs inactifs
     return !conducteur.actif;
+  }
+
+  // Méthode pour ouvrir une position dans Google Maps
+  openInMaps(position: string, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    
+    if (!position) {
+      console.warn('Position non définie');
+      return;
+    }
+    
+    // Si c'est une position GPS (format WKB ou coordonnées)
+    if (position.startsWith('0x') || position.includes('POINT')) {
+      const coords = this.extractCoordinates(position);
+      if (coords) {
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}`;
+        window.open(url, '_blank');
+      }
+    } else {
+      // Si c'est une adresse textuelle
+      const encodedAddress = encodeURIComponent(position);
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+      window.open(url, '_blank');
+    }
+  }
+
+  // Extraire les coordonnées d'une position WKB
+  extractCoordinates(position: string): {lat: number, lng: number} | null {
+    try {
+      // Logique pour extraire les coordonnées du format WKB
+      // Cette méthode doit être adaptée selon le format exact
+      console.log('Extraction des coordonnées de:', position);
+      return null; // À implémenter selon le format
+    } catch (error) {
+      console.error('Erreur extraction coordonnées:', error);
+      return null;
+    }
+  }
+
+  // Appeler un client
+  callClient(phone: string, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    
+    if (!phone) {
+      console.warn('Numéro de téléphone non défini');
+      return;
+    }
+    
+    // Ouvrir l'application téléphone avec le numéro
+    window.location.href = `tel:${phone}`;
+  }
+
+  // Formater la date de validation
+  formatValidationDate(dateString?: string): string {
+    if (!dateString) return 'Non validée';
+    
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'GMT'
+      });
+    } catch (error) {
+      return 'Date invalide';
+    }
+  }
+
+  // Formater la date de réservation (style A77)
+  formatReservationDate(dateString: string): string {
+    if (!dateString) return '';
+    
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return '';
+    }
+  }
+
+  // Formater la date de réservation planifiée
+  formatScheduledDate(dateReservation: string, heureReservation: number, minuteReservation: number): string {
+    if (!dateReservation) return '';
+    
+    try {
+      const date = new Date(dateReservation);
+      const heure = heureReservation || 0;
+      const minute = minuteReservation || 0;
+      
+      // Formater la date
+      const dateFormatted = date.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+      
+      // Formater l'heure avec zéros de remplissage
+      const heureFormatted = heure.toString().padStart(2, '0');
+      const minuteFormatted = minute.toString().padStart(2, '0');
+      
+      return `${dateFormatted} à ${heureFormatted}:${minuteFormatted}`;
+    } catch (error) {
+      console.error('Erreur formatage date planifiée:', error);
+      return 'Date invalide';
+    }
+  }
+
+  // Calculer la durée entre created_at et date_code_validation
+  calculateDurationSinceAcceptation(createdAt: string, validationDate: string): string {
+    if (!createdAt || !validationDate) return '';
+    
+    try {
+      console.log('=== CALCUL DURÉE DEBUG ===');
+      console.log('🕐 created_at BRUT:', createdAt);
+      console.log('🕐 date_code_validation BRUT:', validationDate);
+      
+      // Parser les dates en forçant l'interprétation UTC pour éviter les problèmes de timezone
+      // Si created_at n'a pas de timezone, on l'interprète comme UTC
+      const createdAtUTC = createdAt.includes('T') && !createdAt.includes('+') && !createdAt.includes('Z') 
+        ? createdAt + 'Z' 
+        : createdAt;
+      
+      console.log('🕐 created_at CORRIGÉ (UTC):', createdAtUTC);
+      
+      const startDate = new Date(createdAtUTC);
+      const endDate = new Date(validationDate);
+      
+      console.log('🕐 Start Date timestamp:', startDate.getTime());
+      console.log('🕐 End Date timestamp:', endDate.getTime());
+      console.log('🕐 Start Date ISO:', startDate.toISOString());
+      console.log('🕐 End Date ISO:', endDate.toISOString());
+      console.log('🕐 Start Date local:', startDate.toString());
+      console.log('🕐 End Date local:', endDate.toString());
+      
+      // Vérifier que les dates sont valides
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        console.error('❌ Dates invalides:', { createdAt, validationDate });
+        return 'Dates invalides';
+      }
+      
+      // Calculer la différence en millisecondes
+      const diffMs = endDate.getTime() - startDate.getTime();
+      console.log('🕐 Différence en ms:', diffMs);
+      console.log('🕐 Différence en secondes:', diffMs / 1000);
+      console.log('🕐 Différence en minutes:', diffMs / (1000 * 60));
+      console.log('🕐 Différence en heures:', diffMs / (1000 * 60 * 60));
+      
+      // Si la différence est négative, il y a un problème
+      if (diffMs < 0) {
+        console.error('❌ Durée négative:', diffMs);
+        return 'Durée négative';
+      }
+      
+      // Convertir en secondes et minutes
+      const diffSeconds = Math.floor(diffMs / 1000);
+      const diffMinutes = Math.floor(diffMs / (1000 * 60));
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      
+      console.log('🕐 RÉSULTATS FLOOR:');
+      console.log('  - Secondes:', diffSeconds);
+      console.log('  - Minutes:', diffMinutes);
+      console.log('  - Heures:', diffHours);
+      console.log('  - Jours:', diffDays);
+      
+      // Test manuel pour votre exemple
+      console.log('🧮 TEST MANUEL:');
+      const manualStartMs = new Date('2025-08-17T21:12:11.439Z').getTime();
+      const manualEndMs = new Date('2025-08-17T21:15:50.291Z').getTime();
+      const manualDiffMs = manualEndMs - manualStartMs;
+      const manualMinutes = Math.floor(manualDiffMs / (1000 * 60));
+      console.log('  - Manual diff ms:', manualDiffMs);
+      console.log('  - Manual minutes:', manualMinutes);
+      
+      // Retourner le format le plus approprié
+      if (diffDays > 0) {
+        const remainingHours = diffHours % 24;
+        if (remainingHours > 0) {
+          return `${diffDays}j ${remainingHours}h`;
+        }
+        return `${diffDays}j`;
+      } else if (diffHours > 0) {
+        const remainingMinutes = diffMinutes % 60;
+        if (remainingMinutes > 0) {
+          return `${diffHours}h ${remainingMinutes}min`;
+        }
+        return `${diffHours}h`;
+      } else if (diffMinutes > 0) {
+        const remainingSeconds = diffSeconds % 60;
+        if (remainingSeconds > 30) {
+          // Arrondir à la minute supérieure si plus de 30 secondes
+          return `${diffMinutes + 1}min`;
+        }
+        return `${diffMinutes}min`;
+      } else if (diffSeconds > 0) {
+        return `${diffSeconds}s`;
+      } else {
+        return 'Instantané';
+      }
+    } catch (error) {
+      console.error('❌ Erreur calcul durée:', error);
+      return 'Erreur calcul';
+    }
+  }
+
+  // Ouvrir les détails d'une réservation (réutilisation de la logique entreprise)
+  openReservationDetails(reservation: any) {
+    this.selectedReservationDetails = reservation;
+    this.isDetailsModalOpen = true;
+  }
+
+  // Fermer le modal de détails
+  closeDetailsModal() {
+    this.isDetailsModalOpen = false;
+    this.selectedReservationDetails = null;
+  }
+
+  // Formater la distance
+  formatDistance(distance: number): string {
+    if (!distance) return 'N/A';
+    return `${distance.toFixed(2)} km`;
+  }
+
+  // Obtenir les étoiles de notation
+  getRatingStars(note: number): number[] {
+    if (!note) return [];
+    return Array(Math.floor(note)).fill(0);
+  }
+
+  // Formater la date complète
+  formatDate(dateString: string): string {
+    if (!dateString) return '';
+    
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return '';
+    }
+  }
+
+  // Obtenir la couleur du statut
+  getStatusColor(status: string): string {
+    switch (status) {
+      case 'completed': return 'success';
+      case 'accepted': return 'warning';
+      case 'pending': return 'primary';
+      case 'refused': return 'danger';
+      case 'canceled': return 'medium';
+      default: return 'medium';
+    }
+  }
+
+  // Obtenir le texte du statut
+  getStatusText(status: string): string {
+    switch (status) {
+      case 'completed': return 'Terminée';
+      case 'accepted': return 'Acceptée';
+      case 'pending': return 'En attente';
+      case 'refused': return 'Refusée';
+      case 'canceled': return 'Annulée';
+      default: return status;
+    }
+  }
+
+  // Ouvrir une position dans Google Maps (dupliqué depuis entreprise/reservations)
+  openPositionInMaps(position: string) {
+    const mapsUrl = this.formatGPSToMapsLink(position, true); // true pour navigation directe
+    console.log('🗺️ Opening navigation from current location to:', { position, url: mapsUrl });
+    window.open(mapsUrl, '_system');
+  }
+
+  // Formater GPS vers lien Maps (dupliqué depuis entreprise/reservations)
+  formatGPSToMapsLink(position: string, useNavigation: boolean = true): string {
+    if (!position) return '';
+    
+    console.log('🗺️ Formatting GPS link for position:', position);
+    
+    // Vérifier si c'est un format POINT(lon lat)
+    const pointMatch = position.match(/POINT\(([\-\d\.]+)\s+([\-\d\.]+)\)/);
+    if (pointMatch) {
+      const lon = pointMatch[1];
+      const lat = pointMatch[2];
+      
+      console.log('📍 POINT format detected:', { lat, lon });
+      
+      if (useNavigation) {
+        // Navigation directe vers les coordonnées
+        return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=driving`;
+      } else {
+        // Simple recherche
+        return `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+      }
+    }
+    
+    // Vérifier si c'est un format WKB (commence par 0101000020E6100000)
+    if (position.length >= 50 && 
+        position.match(/^[0-9A-F]+$/i) && 
+        position.toUpperCase().startsWith('0101000020E6100000')) {
+      
+      console.log('📍 WKB format detected, decoding...');
+      const coords = this.decodeWKB(position);
+      
+      if (coords) {
+        console.log('📍 WKB decoded coordinates:', coords);
+        
+        if (useNavigation) {
+          // Navigation directe vers les coordonnées
+          return `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}&travelmode=driving`;
+        } else {
+          // Simple recherche
+          return `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`;
+        }
+      }
+    }
+    
+    // Si ce n'est ni POINT ni WKB, traiter comme une adresse
+    if (position && position.trim()) {
+      const encodedAddress = encodeURIComponent(position.trim());
+      
+      if (useNavigation) {
+        // Navigation directe vers l'adresse
+        return `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}&travelmode=driving`;
+      } else {
+        // Simple recherche
+        return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+      }
+    }
+    
+    return '';
+  }
+
+  // Décoder WKB (dupliqué depuis entreprise/reservations)
+  decodeWKB(wkbHex: string): {lat: number, lng: number} | null {
+    try {
+      console.log('🔍 Decoding WKB:', wkbHex);
+      
+      if (wkbHex.length >= 50) { // Au minimum 25 bytes = 50 caractères hex
+        // Vérifier que c'est bien un POINT avec SRID 4326
+        const geometryType = wkbHex.substring(2, 10); // 01000020
+        const srid = wkbHex.substring(10, 18); // E6100000
+        
+        console.log('Geometry type:', geometryType);
+        console.log('SRID:', srid);
+        
+        if (geometryType.toUpperCase() === '01000020' && srid.toUpperCase() === 'E6100000') {
+          // Extraire les coordonnées (little-endian)
+          const lonHex = wkbHex.substring(18, 34);
+          const latHex = wkbHex.substring(34, 50);
+          
+          console.log('Lon hex:', lonHex);
+          console.log('Lat hex:', latHex);
+          
+          // Convertir de little-endian hex vers double
+          const lon = this.hexToDouble(lonHex);
+          const lat = this.hexToDouble(latHex);
+          
+          console.log('Decoded coordinates:', { lat, lon });
+          
+          // Vérifier que les coordonnées sont valides
+          if (!isNaN(lat) && !isNaN(lon) && 
+              lat >= -90 && lat <= 90 && 
+              lon >= -180 && lon <= 180) {
+            return { lat, lng: lon };
+          }
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('❌ Erreur décodage WKB:', error);
+      return null;
+    }
+  }
+
+  // Convertir hex little-endian vers double (dupliqué depuis entreprise/reservations)
+  private hexToDouble(hex: string): number {
+    // Inverser les bytes (little-endian vers big-endian)
+    const reversedHex = hex.match(/.{2}/g)?.reverse().join('') || '';
+    
+    // Convertir vers buffer et lire comme double
+    const buffer = new ArrayBuffer(8);
+    const view = new DataView(buffer);
+    
+    for (let i = 0; i < 8; i++) {
+      const byte = parseInt(reversedHex.substr(i * 2, 2), 16);
+      view.setUint8(i, byte);
+    }
+    
+    return view.getFloat64(0, false); // false = big-endian
   }
 
   // ==================== VALIDATION ET MESSAGES ====================

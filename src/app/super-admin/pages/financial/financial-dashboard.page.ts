@@ -51,7 +51,8 @@ import {
   walletOutline,
   trendingUpOutline,
   calendarOutline,
-  returnUpBackOutline
+  returnUpBackOutline,
+  trashOutline
 } from 'ionicons/icons';
 
 import { 
@@ -225,11 +226,21 @@ import {
                 <div class="periode-dates">
                   <strong>{{ formatDate(periode.periode_debut) }} - {{ formatDate(periode.periode_fin) }}</strong>
                 </div>
-                <ion-badge 
-                  [color]="getPeriodeStatusColor(periode.statut)"
-                  class="status-badge">
-                  {{ getPeriodeStatusText(periode.statut) }}
-                </ion-badge>
+                <div class="periode-actions">
+                  <ion-badge 
+                    [color]="getPeriodeStatusColor(periode.statut)"
+                    class="status-badge">
+                    {{ getPeriodeStatusText(periode.statut) }}
+                  </ion-badge>
+                  <ion-button
+                    fill="clear"
+                    size="small"
+                    color="danger"
+                    (click)="onDeletePeriode(periode, $event)"
+                    title="Supprimer cette période">
+                    <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </div>
               </div>
 
               <!-- Détails financiers -->
@@ -370,7 +381,8 @@ export class FinancialDashboardPage implements OnInit {
       walletOutline,
       trendingUpOutline,
       calendarOutline,
-      returnUpBackOutline
+      returnUpBackOutline,
+      trashOutline
     });
   }
 
@@ -479,20 +491,39 @@ export class FinancialDashboardPage implements OnInit {
       return;
     }
     
+    // Calculer automatiquement le premier et dernier jour du mois
+    const dateDebut = new Date(annee, mois - 1, 1); // Premier jour du mois
+    const dateFin = new Date(annee, mois, 0); // Dernier jour du mois (0 = dernier jour du mois précédent)
+    
     if (annee < 2020 || annee > 2030) {
       this.showError('L\'année doit être entre 2020 et 2030');
       return;
     }
 
     // Calculer les dates de début et fin du mois
-    const debut = new Date(annee, mois - 1, 1, 0, 0, 0); // 1er du mois à 00:00:00
-    const fin = new Date(annee, mois, 0, 23, 59, 59); // Dernier jour du mois à 23:59:59
+    const debut = new Date(annee, mois - 1, 1); // 1er du mois
+    const fin = new Date(annee, mois, 0); // Dernier jour du mois
 
-    const debutISO = debut.toISOString();
-    const finISO = fin.toISOString();
-
+    // Forcer le format YYYY-MM-DD pour éviter les problèmes de timezone
+    const debutISO = `${annee}-${mois.toString().padStart(2, '0')}-01`;
+    const finISO = `${annee}-${mois.toString().padStart(2, '0')}-${fin.getDate().toString().padStart(2, '0')}`;
+    
     console.log(`🗓️ Création période: ${this.formatMonth(mois)} ${annee}`);
     console.log(`📅 Du ${debutISO} au ${finISO}`);
+    console.log(`📅 Debug - Input: mois=${mois}, annee=${annee}`);
+    console.log(`📅 Debug - Calcul: debut=${debut.toISOString()}, fin=${fin.toISOString()}`);
+    console.log(`📅 Debug - Final: debutISO=${debutISO}, finISO=${finISO}`);
+    
+    // Test spécifique pour août 2025
+    if (mois === 8 && annee === 2025) {
+      console.log('🔍 Test spécifique AOÛT 2025:');
+      console.log('Expected: 2025-08-01 to 2025-08-31');
+      console.log(`Actual: ${debutISO} to ${finISO}`);
+      console.log('Date objects:', { 
+        debutObj: new Date(2025, 7, 1), 
+        finObj: new Date(2025, 8, 0) 
+      });
+    }
 
     // Vérifier si une période identique existe déjà
     const periodeExistante = this.periodes.find(p => {
@@ -526,7 +557,7 @@ export class FinancialDashboardPage implements OnInit {
         throw error;
       }
 
-      this.showSuccess(`✅ Période créée avec succès !\\n${this.formatMonth(mois)} ${annee}\\nDu ${debut.toLocaleDateString('fr-FR')} au ${fin.toLocaleDateString('fr-FR')}`);
+      this.showSuccess(`✅ Période créée avec succès !\\n${this.formatMonth(mois)} ${annee}\\nDu ${debutISO} au ${finISO}\\nSauvegardé en base: ${data?.periode_debut} → ${data?.periode_fin}`);
       await this.loadPeriodes();
 
     } catch (error) {
@@ -750,6 +781,57 @@ export class FinancialDashboardPage implements OnInit {
 
   async onGererRelances() {
     this.router.navigate(['/super-admin/financial/relances']);
+  }
+
+  async onDeletePeriode(periode: FacturationPeriode, event: Event) {
+    // Empêcher la propagation du clic vers l'item parent
+    event.stopPropagation();
+    
+    const alert = await this.alertController.create({
+      header: '🗑️ Supprimer la Période',
+      message: `⚠️ ATTENTION: Cette action est irréversible!\n\nVous êtes sur le point de supprimer :\n• Période : ${this.formatDate(periode.periode_debut)} - ${this.formatDate(periode.periode_fin)}\n• Statut : ${this.getPeriodeStatusText(periode.statut)}\n• Commissions : ${this.formatPrice(periode.total_commissions || 0)}\n• Entreprises : ${periode.nombre_entreprises || 0}\n\nTOUTES les données de facturation liées seront définitivement supprimées :\n• Détails des commissions\n• Paiements enregistrés\n• Historique de la période\n\nÊtes-vous absolument certain(e) ?`,
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel',
+          cssClass: 'secondary'
+        },
+        {
+          text: 'Supprimer Définitivement',
+          cssClass: 'danger',
+          handler: async () => {
+            await this.deletePeriodeWithConfirmation(periode);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  private async deletePeriodeWithConfirmation(periode: FacturationPeriode) {
+    const loading = await this.loadingController.create({
+      message: 'Suppression de la période et des données liées...'
+    });
+    await loading.present();
+
+    try {
+      // Appel au service pour supprimer la période et toutes les données liées
+      const { success, error } = await this.financialService.deletePeriodeComplete(periode.id);
+
+      if (!success) {
+        throw error;
+      }
+
+      this.showSuccess(`Période supprimée avec succès !\n${this.formatDate(periode.periode_debut)} - ${this.formatDate(periode.periode_fin)}`);
+      await this.loadFinancialData(); // Recharger les données
+
+    } catch (error) {
+      console.error('❌ Erreur suppression période:', error);
+      this.showError('Erreur lors de la suppression de la période. Vérifiez les logs.');
+    } finally {
+      await loading.dismiss();
+    }
   }
 
   goBack() {

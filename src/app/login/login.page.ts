@@ -8,6 +8,7 @@ import { carSport, call, eye, eyeOff, logIn, alertCircle, business, mail, arrowB
 import { AuthService } from '../services/auth.service';
 import { EntrepriseAuthService } from '../services/entreprise-auth.service';
 import { OneSignalService } from '../services/onesignal.service';
+import { APP_VERSION } from '../constants/version';
 
 @Component({
   selector: 'app-login',
@@ -18,6 +19,7 @@ import { OneSignalService } from '../services/onesignal.service';
 })
 export class LoginPage implements OnInit {
   userType: 'conducteur' | 'entreprise' = 'conducteur';
+  appVersion = APP_VERSION; // ✅ NOUVEAU : Version de l'application
   
   credentials = {
     phone: '',

@@ -54,6 +54,14 @@
       <ion-card-content>
         <ion-list>
           <ion-item>
+            <ion-icon name="id-card" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <h3>ID Conducteur</h3>
+              <p>{{ driver.id }}</p>
+            </ion-label>
+          </ion-item>
+          
+          <ion-item>
             <ion-icon name="call" slot="start" color="primary"></ion-icon>
             <ion-label>
               <h3>Téléphone</h3>
@@ -253,5 +261,12 @@
         </ion-list>
       </ion-card-content>
     </ion-card>
+
+    <!-- ✅ NOUVEAU : Affichage version -->
+    <div class="version-info">
+      <ion-text color="medium">
+        <p>Version {{ appVersion }}</p>
+      </ion-text>
+    </div>
   </div>
 </ion-content>

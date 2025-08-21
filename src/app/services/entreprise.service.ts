@@ -41,6 +41,7 @@ export interface ConducteurStats {
   derniere_activite: string;
   hors_ligne: boolean;
   position_actuelle?: any; // Type geography dans la DB
+  date_update_position?: string; // Date de dernière mise à jour de position GPS
   date_inscription?: string;
   actif?: boolean;
   password?: string;

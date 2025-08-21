@@ -26,6 +26,7 @@ import {
 import { addIcons } from 'ionicons';
 import { person, call, mail, car, star, settings, logOut, personCircleOutline, business, colorPalette, idCard, speedometer, location, navigateCircle, informationCircle, bug } from 'ionicons/icons';
 import { AuthService } from '../services/auth.service';
+import { APP_VERSION } from '../constants/version';
 import { SupabaseService } from '../services/supabase.service';
 import { OneSignalService } from '../services/onesignal.service';
 
@@ -59,15 +60,22 @@ import { OneSignalService } from '../services/onesignal.service';
 })
 export class ProfilePage implements OnInit {
   testMode = false; // ✅ NOUVEAU : Mode test pour voir toutes les réservations
+  appVersion = APP_VERSION; // ✅ NOUVEAU : Version de l'application
 
   driver: any = {
-    name: 'Jean Dupont',
-    phone: '+33 6 12 34 56 78',
-    email: 'jean.dupont@email.com',
-    vehicle: 'Mercedes Classe E',
-    rating: 4.8,
-    totalRides: 142,
-    memberSince: '2023'
+    id: '',
+    name: '',
+    phone: '',
+    email: '',
+    vehicle_type: '',
+    vehicle_marque: '',
+    vehicle_modele: '',
+    vehicle_couleur: '',
+    vehicle_plaque: '',
+    rating: 0,
+    totalRides: 0,
+    memberSince: '',
+    rayon_km_reservation: 5
   };
 
   constructor(
@@ -114,6 +122,7 @@ export class ProfilePage implements OnInit {
       }
 
       this.driver = {
+        id: conducteur.id || '',
         name: `${conducteur.prenom || ''} ${conducteur.nom || ''}`.trim() || 'Conducteur',
         phone: conducteur.telephone || '',
         email: conducteur.email || '',

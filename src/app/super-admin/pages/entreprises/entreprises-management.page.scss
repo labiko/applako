@@ -2,6 +2,277 @@
  * STYLES PAGE GESTION ENTREPRISES SUPER-ADMIN
  */
 
+// ==================== STYLES RÉSERVATIONS (STYLE A77) ====================
+
+.reservation-item-entreprise {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  .reservation-header-entreprise {
+    margin-bottom: 16px;
+    border-radius: 8px;
+    padding: 12px;
+    
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+      
+      .destination-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+        flex: 1;
+      }
+      
+      .status-section {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        align-items: flex-end;
+        
+        .status-badge-primary {
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          
+          &.status-completed {
+            background: #4CAF50;
+            color: white;
+          }
+          
+          &.status-accepted {
+            background: #FF9800;
+            color: white;
+          }
+          
+          &.status-pending {
+            background: #2196F3;
+            color: white;
+          }
+          
+          &.status-refused,
+          &.status-canceled {
+            background: #F44336;
+            color: white;
+          }
+        }
+        
+        .price-badge {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 1rem;
+          font-weight: 700;
+          color: #4CAF50;
+          
+          ion-icon {
+            font-size: 1.1rem;
+          }
+        }
+      }
+    }
+    
+    .header-bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.85rem;
+      
+      .reservation-id,
+      .date-info,
+      .validation-info,
+      .duration-info,
+      .scheduled-info {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #666;
+        
+        ion-icon {
+          font-size: 1rem;
+        }
+      }
+      
+      .reservation-id {
+        color: #888;
+        font-weight: 500;
+      }
+      
+      .validation-info {
+        color: #4CAF50;
+      }
+      
+      .duration-info {
+        color: #FF9800;
+        font-weight: 500;
+      }
+      
+      .scheduled-info {
+        color: #2196F3;
+        font-weight: 500;
+        background: rgba(33, 150, 243, 0.1);
+        padding: 4px 8px;
+        border-radius: 4px;
+        border-left: 3px solid #2196F3;
+      }
+    }
+  }
+  
+  .location-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.3);
+    padding: 12px;
+    border-radius: 8px;
+    
+    .location-icon {
+      font-size: 1.5rem;
+      margin-top: 2px;
+      
+      &.departure-icon {
+        color: #2196F3;
+      }
+      
+      &.destination-icon {
+        color: #4CAF50;
+      }
+    }
+    
+    .location-content {
+      flex: 1;
+      
+      .location-label {
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 4px;
+        font-weight: 500;
+      }
+      
+      .location-address {
+        font-size: 1rem;
+        color: #000;
+        font-weight: 500;
+        
+        &.clickable-location {
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          
+          &:hover {
+            color: #2196F3;
+          }
+          
+          .navigate-icon {
+            font-size: 1.2rem;
+            color: #666;
+            margin-left: auto;
+          }
+        }
+      }
+    }
+  }
+  
+  .reservation-footer-entreprise {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    margin-top: 12px;
+    
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      .phone-icon {
+        color: #FF9800;
+        font-size: 1.2rem;
+      }
+      
+      .client-phone {
+        font-weight: 500;
+        color: #000;
+        
+        &.clickable-phone {
+          cursor: pointer;
+          
+          &:hover {
+            color: #2196F3;
+            text-decoration: underline;
+          }
+        }
+      }
+      
+      .distance-info {
+        margin-left: 12px;
+        color: #666;
+        font-size: 0.9rem;
+      }
+    }
+    
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      
+      .price-icon {
+        color: #4CAF50;
+        font-size: 1.2rem;
+      }
+      
+      .price-text {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #000;
+      }
+    }
+  }
+  
+  .validation-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 6px;
+    color: #4CAF50;
+    font-size: 0.9rem;
+    font-style: italic;
+    
+    ion-icon {
+      font-size: 1.1rem;
+    }
+  }
+}
+
+// Styles cliquables généraux
+.clickable-phone {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    opacity: 0.8;
+  }
+  
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
 // ==================== MODAL AJOUT CONDUCTEUR ====================
 
 .add-conducteur-modal {
