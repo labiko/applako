@@ -69,6 +69,7 @@ import {
   FacturationPeriode, 
   CommissionDetail 
 } from '../../services/financial-management.service';
+import { CommissionManagementService } from '../../services/commission-management.service';
 
 // Interface pour un groupe de conducteur avec ses réservations
 interface ConducteurGroup {
@@ -509,11 +510,11 @@ interface ReservationDetail {
                       <div class="reservation-header-conducteur">
                         <div class="client-info">
                           <h4>{{ reservation.client_phone }}</h4>
-                          <span class="reservation-id">{{ reservation.id.substring(0, 8) }}</span>
+                          <span class="reservation-id">{{ reservation.id }}</span>
                         </div>
                         <div class="price-commission">
-                          <div class="prix">{{ formatPrice(reservation.prix_total) }}</div>
-                          <div class="commission">Commission: {{ formatPrice(calculateReservationCommission(reservation.prix_total)) }}</div>
+                          <div class="prix">Prix: {{ formatPrice(reservation.prix_total) }}</div>
+                          <div class="commission">Commission: {{ formatPrice(calculateReservationCommission(reservation.prix_total, conducteurGroup.tauxCommission)) }}</div>
                         </div>
                       </div>
                       
@@ -555,7 +556,7 @@ interface ReservationDetail {
                   </div>
                   <div class="summary-item">
                     <ion-icon name="stats-chart-outline"></ion-icon>
-                    <span>{{ conducteurGroup.tauxCommission }}% taux moyen</span>
+                    <span>{{ conducteurGroup.tauxCommission }}% taux commission</span>
                   </div>
                 </div>
               </div>
@@ -640,6 +641,7 @@ export class PeriodeDetailsPage implements OnInit {
 
   constructor(
     private financialService: FinancialManagementService,
+    private commissionService: CommissionManagementService,
     private route: ActivatedRoute,
     private router: Router,
     private loadingController: LoadingController,
@@ -732,11 +734,11 @@ export class PeriodeDetailsPage implements OnInit {
       : this.filteredEnAttente;
       
     // Regrouper par conducteur (uniquement les validées pour les commissions)
-    this.groupReservationsByConducteur();
+    await this.groupReservationsByConducteur();
   }
 
   // Filtres et recherche
-  filterReservations() {
+  async filterReservations() {
     // Déterminer la liste source selon l'onglet actif
     const sourceList = this.reservationTab === 'validees' 
       ? this.reservationsValidees 
@@ -774,7 +776,7 @@ export class PeriodeDetailsPage implements OnInit {
     }
     
     // Regrouper par conducteur avec les données filtrées
-    this.groupReservationsByConducteur();
+    await this.groupReservationsByConducteur();
   }
 
   filterByEntreprise(entrepriseId: string) {
@@ -921,16 +923,30 @@ export class PeriodeDetailsPage implements OnInit {
   /**
    * Regroupe les réservations validées par conducteur
    */
-  private groupReservationsByConducteur() {
+  private async groupReservationsByConducteur() {
     const conducteurMap = new Map<string, ConducteurGroup>();
 
     // Regrouper uniquement les réservations validées filtrées
-    this.filteredValidees.forEach(reservation => {
-      if (!reservation.conducteur) return;
+    for (const reservation of this.filteredValidees) {
+      if (!reservation.conducteur) continue;
 
-      const conducteurId = reservation.conducteur.id;
+      // Utiliser l'ID du conducteur, ou fallback nom+telephone si pas d'ID
+      const conducteurId = reservation.conducteur.id || 
+        `${reservation.conducteur.nom}_${reservation.conducteur.telephone}`;
       
       if (!conducteurMap.has(conducteurId)) {
+        // Récupérer le taux de commission depuis la base pour cette entreprise
+        let tauxCommission = 15; // Valeur par défaut
+        if (reservation.conducteur.entreprise?.id) {
+          try {
+            tauxCommission = await this.commissionService.getCommissionRateIsolated(
+              reservation.conducteur.entreprise.id
+            );
+          } catch (error) {
+            console.error('Erreur récupération taux commission:', error);
+          }
+        }
+
         conducteurMap.set(conducteurId, {
           conducteur: {
             id: conducteurId,
@@ -942,7 +958,7 @@ export class PeriodeDetailsPage implements OnInit {
           reservations: [],
           totalCA: 0,
           totalCommission: 0,
-          tauxCommission: 15, // Taux par défaut
+          tauxCommission: tauxCommission, // Taux récupéré depuis la base
           isExpanded: false
         });
       }
@@ -950,14 +966,36 @@ export class PeriodeDetailsPage implements OnInit {
       const group = conducteurMap.get(conducteurId)!;
       group.reservations.push(reservation);
       group.totalCA += reservation.prix_total;
-      group.totalCommission += this.calculateReservationCommission(reservation.prix_total);
-    });
+      // Utiliser le taux du groupe pour calculer la commission
+      group.totalCommission += this.calculateReservationCommission(
+        reservation.prix_total, 
+        group.tauxCommission
+      );
+    }
 
     // Convertir en tableau et trier par commission décroissante
     this.conducteursGrouped = Array.from(conducteurMap.values())
       .sort((a, b) => b.totalCommission - a.totalCommission);
 
     console.log('👥 Conducteurs regroupés:', this.conducteursGrouped.length);
+    
+    // Debug détaillé pour identifier le problème
+    this.filteredValidees.forEach(reservation => {
+      console.log('🔍 Réservation analysée:', {
+        client: reservation.client_phone,
+        id: reservation.id.substring(0, 8),
+        conducteur: reservation.conducteur,
+        conducteur_id: reservation.conducteur?.id,
+        date_validation: reservation.date_code_validation
+      });
+    });
+    
+    console.log('📊 Groupes créés:', this.conducteursGrouped.map(g => ({
+      nom: g.conducteur.nom,
+      id: g.conducteur.id,
+      reservations: g.reservations.length,
+      clients: g.reservations.map(r => r.client_phone)
+    })));
   }
 
   /**
