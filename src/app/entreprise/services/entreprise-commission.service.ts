@@ -106,6 +106,8 @@ export class EntrepriseCommissionService {
 
   /**
    * Récupère les réservations d'une période pour une entreprise
+   * IMPORTANT: Retourne TOUTES les réservations (validées ET non validées)
+   * pour permettre à l'interface de les séparer dans les onglets appropriés
    */
   private async getReservationsPeriode(
     entrepriseId: string, 
@@ -133,9 +135,8 @@ export class EntrepriseCommissionService {
           )
         `)
         .eq('conducteurs.entreprise_id', entrepriseId)
-        .not('date_code_validation', 'is', null) // Uniquement les réservations validées
         .gte('created_at', periodeDebut)
-        .lte('created_at', periodeFin)
+        .lt('created_at', new Date(periodeFin + 'T23:59:59.999Z').toISOString())
         .order('created_at', { ascending: false });
 
       if (error) {

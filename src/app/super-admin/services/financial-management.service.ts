@@ -248,6 +248,7 @@ export class FinancialManagementService {
 
       // Récupérer toutes les réservations VALIDÉES de la période avec leurs entreprises
       // IMPORTANT: Seules les réservations avec date_code_validation NOT NULL comptent pour les commissions
+      // Le statut n'est pas nécessaire car date_code_validation indique déjà que la course est validée
       const { data: reservationsAvecEntreprises, error: reservationsError } = await this.supabase.client
         .from('reservations')
         .select(`
@@ -258,9 +259,8 @@ export class FinancialManagementService {
           )
         `)
         .gte('created_at', periode.periode_debut)
-        .lte('created_at', periode.periode_fin)
-        .in('statut', ['completed', 'accepted'])
-        .not('date_code_validation', 'is', null); // ✅ UNIQUEMENT les réservations validées
+        .lt('created_at', new Date(periode.periode_fin + 'T23:59:59.999Z').toISOString())
+        .not('date_code_validation', 'is', null); // ✅ UNIQUEMENT les réservations validées (statut non nécessaire)
 
       if (reservationsError) {
         throw reservationsError;
@@ -419,8 +419,8 @@ export class FinancialManagementService {
         `)
         .eq('conducteurs.entreprise_id', entrepriseId)
         .gte('created_at', periodeDebut)
-        .lte('created_at', periodeFin)
-        .in('statut', ['completed', 'accepted']); // Seulement les courses terminées
+        .lt('created_at', new Date(periodeFin + 'T23:59:59.999Z').toISOString())
+        .not('date_code_validation', 'is', null); // Seulement les réservations validées par OTP
 
       if (reservationsError) {
         throw reservationsError;
@@ -538,6 +538,8 @@ export class FinancialManagementService {
 
   /**
    * Récupère toutes les réservations d'une période avec détails complets
+   * IMPORTANT: Retourne TOUTES les réservations (validées ET non validées) 
+   * pour permettre à l'interface de les séparer dans les onglets appropriés
    */
   async getReservationsPeriode(periodeDebut: string, periodeFin: string): Promise<{ data: any[] | null, error: any }> {
     try {
@@ -569,8 +571,7 @@ export class FinancialManagementService {
           )
         `)
         .gte('created_at', periodeDebut)
-        .lte('created_at', periodeFin)
-        .in('statut', ['completed', 'accepted'])
+        .lt('created_at', new Date(periodeFin + 'T23:59:59.999Z').toISOString())
         .order('created_at', { ascending: false });
 
       // Enrichir les données pour un accès plus facile

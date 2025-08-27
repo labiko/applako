@@ -22,11 +22,19 @@ import {
   LoadingController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline, calendar, ban } from 'ionicons/icons';
+import { location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline, calendar, ban, copy, reload } from 'ionicons/icons';
 import { SupabaseService } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
 import { CallService } from '../services/call.service';
+import { PaymentService, PaymentStatus } from '../services/payment.service';
 import { Reservation } from '../models/reservation.model';
+
+// Interface étendue pour inclure les données de paiement
+interface ReservationWithPayment extends Reservation {
+  paymentStatus?: PaymentStatus;
+  isPaymentExpired?: boolean;
+  canRetriggerPayment?: boolean;
+}
 
 @Component({
   selector: 'app-historique',
@@ -54,8 +62,9 @@ import { Reservation } from '../models/reservation.model';
     FormsModule,
   ],
 })
+
 export class HistoriquePage implements OnInit {
-  reservations: Reservation[] = [];
+  reservations: ReservationWithPayment[] = [];
   isLoading = true;
   otpCodes: { [reservationId: string]: string[] } = {};
 
@@ -63,10 +72,11 @@ export class HistoriquePage implements OnInit {
     private supabaseService: SupabaseService,
     private authService: AuthService,
     private callService: CallService,
+    private paymentService: PaymentService,
     private toastController: ToastController,
     private loadingController: LoadingController
   ) {
-    addIcons({ location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline, calendar, ban });
+    addIcons({ location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline, calendar, ban, copy, reload });
   }
 
   ngOnInit() {
@@ -81,7 +91,11 @@ export class HistoriquePage implements OnInit {
     try {
       const conducteurId = this.authService.getCurrentConducteurId();
       if (conducteurId) {
+        // Charger l'historique des réservations
         this.reservations = await this.supabaseService.getReservationHistory(conducteurId);
+        
+        // Charger le statut de paiement pour chaque réservation acceptée
+        await this.loadPaymentStatusForReservations();
       } else {
         this.reservations = [];
         this.presentToast('Erreur: Conducteur non connecté', 'danger');
@@ -97,6 +111,69 @@ export class HistoriquePage implements OnInit {
   async handleRefresh(event: any) {
     await this.loadHistory();
     event.target.complete();
+  }
+
+  /**
+   * Charge le statut de paiement pour toutes les réservations acceptées
+   */
+  private async loadPaymentStatusForReservations() {
+    for (const reservation of this.reservations) {
+      if (reservation.statut === 'accepted' || reservation.statut === 'completed') {
+        try {
+          // Récupérer le dernier paiement pour cette réservation
+          const paymentStatus = await this.paymentService.getLatestPaymentStatus(reservation.id);
+          
+          if (paymentStatus) {
+            reservation.paymentStatus = paymentStatus;
+            reservation.isPaymentExpired = this.paymentService.isPaymentExpired(paymentStatus.created_at);
+          }
+          
+          // Déterminer si on peut relancer un paiement
+          reservation.canRetriggerPayment = this.paymentService.canRetriggerPayment(reservation);
+        } catch (error) {
+          console.error(`Erreur chargement paiement pour ${reservation.id}:`, error);
+        }
+      }
+    }
+  }
+
+  /**
+   * Relance un processus de paiement pour une réservation
+   */
+  async retriggerPayment(reservation: ReservationWithPayment) {
+    // Vérifier d'abord si le paiement n'est pas déjà effectué
+    if (reservation.paymentStatus?.status === 'SUCCESS') {
+      this.presentToast('Le paiement a déjà été effectué pour cette réservation', 'warning');
+      return;
+    }
+
+    const loading = await this.loadingController.create({
+      message: 'Déclenchement du paiement...',
+    });
+    await loading.present();
+
+    try {
+      const conducteurId = this.authService.getCurrentConducteurId();
+      if (!conducteurId) {
+        throw new Error('Conducteur non connecté');
+      }
+
+      const result = await this.paymentService.triggerPayment(reservation.id, conducteurId);
+      
+      if (result.success) {
+        this.presentToast('Paiement relancé avec succès', 'success');
+        
+        // Recharger les données de paiement pour cette réservation
+        await this.loadPaymentStatusForReservations();
+      } else {
+        throw new Error(result.message || 'Erreur lors du déclenchement');
+      }
+    } catch (error: any) {
+      console.error('Erreur retriggerPayment:', error);
+      this.presentToast(`Erreur: ${error.message}`, 'danger');
+    } finally {
+      await loading.dismiss();
+    }
   }
 
   private async presentToast(message: string, color: 'success' | 'danger' | 'warning') {
@@ -288,6 +365,80 @@ export class HistoriquePage implements OnInit {
     } catch (error) {
       console.error('Error validating OTP:', error);
       this.presentToast('Erreur lors de la validation', 'danger');
+    } finally {
+      await loading.dismiss();
+    }
+  }
+
+  /**
+   * Copie l'URL de paiement dans le presse-papiers
+   */
+  async copyPaymentUrl(reservation: ReservationWithPayment) {
+    const paymentUrl = this.paymentService.getPaymentUrl(reservation.paymentStatus?.raw_json);
+    
+    if (!paymentUrl) {
+      this.presentToast('URL de paiement non disponible', 'warning');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(paymentUrl);
+      this.presentToast('URL de paiement copiée !', 'success');
+    } catch (error) {
+      console.error('Erreur copie URL:', error);
+      this.presentToast('Erreur lors de la copie', 'danger');
+    }
+  }
+
+  /**
+   * Obtient le temps restant avant expiration
+   */
+  getExpirationTime(reservation: ReservationWithPayment): string {
+    if (!reservation.paymentStatus || reservation.paymentStatus.status === 'SUCCESS' || reservation.paymentStatus.status === 'Success') {
+      return '';
+    }
+
+    const minutesLeft = this.paymentService.getMinutesUntilExpiration(reservation.paymentStatus.created_at);
+    
+    if (minutesLeft <= 0) {
+      return 'Expiré';
+    }
+    
+    return `Expire dans ${minutesLeft} min`;
+  }
+
+  /**
+   * Rafraîchit le statut de paiement pour une réservation spécifique
+   */
+  async refreshPaymentStatus(reservation: ReservationWithPayment) {
+    const loading = await this.loadingController.create({
+      message: 'Vérification du paiement...',
+    });
+    await loading.present();
+
+    try {
+      // Recharger le statut de paiement pour cette réservation
+      const paymentStatus = await this.paymentService.getLatestPaymentStatus(reservation.id);
+      
+      if (paymentStatus) {
+        reservation.paymentStatus = paymentStatus;
+        reservation.isPaymentExpired = this.paymentService.isPaymentExpired(paymentStatus.created_at);
+        reservation.canRetriggerPayment = this.paymentService.canRetriggerPayment(reservation);
+        
+        // Message selon le statut
+        if (paymentStatus.status === 'SUCCESS' || paymentStatus.status === 'Success') {
+          this.presentToast('Paiement confirmé !', 'success');
+        } else if (paymentStatus.status === 'FAILED' || paymentStatus.status === 'Failed') {
+          this.presentToast('Paiement échoué', 'warning');
+        } else {
+          this.presentToast('Statut mis à jour', 'success');
+        }
+      } else {
+        this.presentToast('Aucun paiement trouvé', 'warning');
+      }
+    } catch (error) {
+      console.error('Erreur refresh paiement:', error);
+      this.presentToast('Erreur lors de la vérification', 'danger');
     } finally {
       await loading.dismiss();
     }

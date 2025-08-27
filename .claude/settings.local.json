@@ -46,9 +46,14 @@
       "Bash(ionic capacitor:*)",
       "Bash(adb:*)",
       "Bash(del srcappsuper-adminpagesentreprisesentreprises-management.page.ts.backup)",
-      "Bash(npx ng build:*)"
+      "Bash(npx ng build:*)",
+      "Read(/C:\\Users\\diall\\Documents\\LABICOTAXI\\LOGS\\BOT-V3/**)",
+      "Read(/C:\\Users\\diall\\Documents\\LABICOTAXI\\LOGS\\BOT-V3/**)"
     ],
     "deny": [],
-    "defaultMode": "acceptEdits"
+    "defaultMode": "acceptEdits",
+    "additionalDirectories": [
+      "C:\\c\\Users\\diall\\Documents\\IonicProjects\\Claude"
+    ]
   }
 }
