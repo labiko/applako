@@ -362,6 +362,226 @@
   }
 }
 
+// Flux Financier Cards
+.flux-financier-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  
+  ion-card-header {
+    padding-bottom: 8px;
+    
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--lako-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+      
+      ion-icon {
+        color: var(--lako-green);
+        font-size: 1.3rem;
+      }
+    }
+  }
+  
+  .stat-item {
+    &.mobile-money .stat-number {
+      color: #22c55e; // Vert pour MM
+    }
+    
+    &.cash .stat-number {
+      color: #f59e0b; // Orange pour Cash
+    }
+    
+    &.reverser .stat-number {
+      color: #3b82f6; // Bleu pour reversements
+    }
+    
+    &.collecter .stat-number {
+      color: #ef4444; // Rouge pour collectes
+    }
+    
+    &.balance {
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 8px;
+      
+      &.positive {
+        background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+        .stat-number { color: #16a34a; }
+      }
+      
+      &.negative {
+        background: linear-gradient(135deg, #fef2f2, #fecaca);
+        .stat-number { color: #dc2626; }
+      }
+    }
+  }
+}
+
+.balances-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  
+  ion-card-header {
+    padding-bottom: 8px;
+    
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--lako-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+      
+      ion-icon {
+        color: var(--lako-green);
+        font-size: 1.3rem;
+      }
+    }
+  }
+  
+  ion-list {
+    background: transparent;
+  }
+  
+  ion-item {
+    --background: transparent;
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    border-bottom: 1px solid #f1f5f9;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}
+
+.balance-item {
+  width: 100%;
+  padding: 12px 0;
+  
+  .balance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    
+    strong {
+      font-size: 1rem;
+      color: var(--lako-dark);
+    }
+    
+    .balance-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      ion-badge {
+        font-weight: 600;
+        font-size: 0.85rem;
+      }
+    }
+  }
+  
+  .balance-details {
+    .balance-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+      
+      .label {
+        color: var(--lako-gray);
+        font-weight: 500;
+      }
+      
+      .value {
+        color: var(--lako-dark);
+        font-weight: 600;
+        
+        &.success {
+          color: #22c55e;
+        }
+        
+        &.warning {
+          color: #f59e0b;
+        }
+      }
+    }
+  }
+}
+
+// Sélecteur de vue
+.view-selector-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  
+  ion-segment {
+    --color: #6c757d;
+    --color-checked: #fff;
+    --background-checked: var(--lako-green);
+    --border-radius: 12px;
+    margin-bottom: 16px;
+    
+    ion-segment-button {
+      --padding-start: 16px;
+      --padding-end: 16px;
+      min-height: 44px;
+      
+      ion-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+    }
+  }
+  
+  .periode-selector {
+    margin-top: 16px;
+    
+    ion-item {
+      --background: #f8f9fa;
+      --border-radius: 12px;
+      border-radius: 12px;
+      
+      ion-label {
+        font-weight: 600;
+        color: var(--lako-dark);
+      }
+      
+      ion-select {
+        --placeholder-color: #6c757d;
+      }
+    }
+  }
+}
+
+// Badges de vue
+.view-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin-left: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  
+  &.global {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+  }
+  
+  &.periode {
+    background: linear-gradient(135deg, #fd7e14, #e05a00);
+    color: white;
+  }
+}
+
 // Responsive design
 @media (max-width: 768px) {
   .stat-item {
@@ -391,6 +611,91 @@
       ion-icon {
         font-size: 1rem;
       }
+    }
+  }
+  
+  .balance-item {
+    .balance-row {
+      font-size: 0.8rem;
+    }
+  }
+}
+
+// Styles pour le système de paiement
+.paiement-form {
+  .entreprise-info-card {
+    margin-bottom: 20px;
+    
+    .entreprise-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      
+      h2 {
+        margin: 0;
+        color: var(--ion-color-primary);
+        font-size: 1.3em;
+      }
+      
+      .balance-badge {
+        font-size: 1em;
+        padding: 8px 12px;
+      }
+    }
+    
+    .entreprise-details {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      
+      .detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 0;
+        
+        .label {
+          font-weight: 500;
+          color: var(--ion-color-medium);
+        }
+        
+        .value {
+          font-weight: bold;
+          
+          &.warning {
+            color: var(--ion-color-warning);
+          }
+        }
+      }
+    }
+  }
+  
+  .modal-actions {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+// Responsive pour mobile (paiements)
+@media (max-width: 768px) {
+  .balance-header {
+    .balance-actions {
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+  }
+  
+  .entreprise-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    
+    .balance-badge {
+      align-self: flex-end;
     }
   }
 }

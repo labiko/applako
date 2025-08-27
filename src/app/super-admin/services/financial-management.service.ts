@@ -151,18 +151,24 @@ export class FinancialManagementService {
 
   /**
    * Clôture une période et calcule les commissions
+   * ENRICHI avec flux financier Mobile Money vs Cash (optionnel pour éviter régression)
    */
-  async cloturerPeriode(periodeId: string): Promise<{ success: boolean, error?: any }> {
+  async cloturerPeriode(
+    periodeId: string, 
+    options = { 
+      calculerFluxFinancier: true // ⭐ ACTIVÉ pour test du flux financier
+    }
+  ): Promise<{ success: boolean, error?: any }> {
     try {
       console.log('🔄 Clôture de la période:', periodeId);
 
-      // 1. Calculer les commissions pour toutes les entreprises
+      // 1. EXISTANT : Calculer les commissions pour toutes les entreprises
       const calculResult = await this.calculerCommissionsPeriode(periodeId);
       if (!calculResult.success) {
         return { success: false, error: calculResult.error };
       }
 
-      // 2. Mettre à jour le statut de la période
+      // 2. EXISTANT : Mettre à jour le statut de la période
       const { error: updateError } = await this.supabase.client
         .from('facturation_periodes')
         .update({ 
@@ -176,7 +182,35 @@ export class FinancialManagementService {
         throw updateError;
       }
 
-      console.log('✅ Période clôturée avec succès');
+      console.log('✅ Période clôturée avec succès (calcul de base)');
+
+      // 3. NOUVEAU (OPTIONNEL) : Calculer le flux financier Mobile Money vs Cash
+      if (options.calculerFluxFinancier) {
+        try {
+          console.log('💰 Calcul du flux financier Mobile Money vs Cash...');
+          
+          // Importer dynamiquement le service pour éviter la dépendance circulaire
+          const { FluxFinancierService } = await import('./flux-financier.service');
+          const fluxService = new FluxFinancierService(this.supabase);
+          
+          // Calculer et enrichir les données
+          const fluxResult = await fluxService.calculerFluxFinancierPeriode(periodeId, {
+            updateDatabase: true // Mettre à jour commissions_detail avec les nouvelles colonnes
+          });
+          
+          if (fluxResult.success && fluxResult.data) {
+            // Générer les enregistrements financiers
+            await fluxService.genererEnregistrementsFinanciers(periodeId, fluxResult.data);
+            console.log('✅ Flux financier calculé avec succès');
+          } else {
+            console.warn('⚠️ Calcul flux financier échoué (non bloquant):', fluxResult.error);
+          }
+        } catch (fluxError) {
+          // Ne pas faire échouer la clôture si le nouveau flux a un problème
+          console.error('⚠️ Erreur flux financier (non bloquante):', fluxError);
+        }
+      }
+
       return { success: true };
 
     } catch (error) {
@@ -623,14 +657,15 @@ export class FinancialManagementService {
     try {
       console.log('📊 Chargement des statistiques financières...');
 
-      // Statistiques période courante
-      const { data: periodeCourante } = await this.supabase.client
+      // Statistiques période courante (peut ne pas exister)
+      const { data: periodeCouranteArray } = await this.supabase.client
         .from('facturation_periodes')
         .select('*')
         .eq('statut', 'en_cours')
         .order('periode_debut', { ascending: false })
-        .limit(1)
-        .single();
+        .limit(1);
+      
+      const periodeCourante = periodeCouranteArray?.[0] || null;
 
       const stats: StatistiquesFinancieres = {
         periode_courante: {
@@ -733,6 +768,14 @@ export class FinancialManagementService {
     try {
       console.log(`🗑️ Suppression complète de la période ${periodeId}...`);
 
+      // 0. NOUVEAU: Supprimer tous les flux financiers liés
+      console.log('🗑️ Suppression flux financier...');
+      const fluxResult = await this.deleteFluxFinancierComplet(periodeId);
+      if (!fluxResult.success) {
+        console.warn('⚠️ Erreur suppression flux financier:', fluxResult.error);
+        // Continuer quand même la suppression classique
+      }
+
       // 1. Supprimer tous les paiements liés
       console.log('🗑️ Suppression des paiements...');
       const { error: paiementsError } = await this.supabase.client
@@ -745,7 +788,7 @@ export class FinancialManagementService {
         throw paiementsError;
       }
 
-      // 2. Supprimer toutes les commissions détaillées
+      // 2. Supprimer toutes les commissions détaillées (celles qui restent)
       console.log('🗑️ Suppression des commissions...');
       const { error: commissionsError } = await this.supabase.client
         .from('commissions_detail')
@@ -775,6 +818,122 @@ export class FinancialManagementService {
     } catch (error) {
       console.error('❌ Erreur deletePeriodeComplete:', error);
       return { success: false, error };
+    }
+  }
+
+  /**
+   * Supprime tous les mouvements financiers liés à une période
+   * INCLUT: commissions_detail, balance_entreprises, reversements, collectes, mouvements
+   * USAGE: Appelé automatiquement lors de la suppression d'une période
+   */
+  async deleteFluxFinancierComplet(periodeId: string): Promise<{ success: boolean, error?: any }> {
+    try {
+      console.log(`🗑️ Suppression flux financier pour période: ${periodeId}`);
+
+      // 1. Supprimer les mouvements financiers détaillés
+      console.log('🗑️ Suppression mouvements_financiers...');
+      const { error: mouvementsError } = await this.supabase.client
+        .from('mouvements_financiers')
+        .delete()
+        .eq('periode_id', periodeId);
+
+      if (mouvementsError) {
+        console.error('❌ Erreur suppression mouvements_financiers:', mouvementsError);
+      }
+
+      // 2. Supprimer les reversements entreprises
+      console.log('🗑️ Suppression reversements_entreprises...');
+      const { error: reversementsError } = await this.supabase.client
+        .from('reversements_entreprises')
+        .delete()
+        .eq('periode_id', periodeId);
+
+      if (reversementsError) {
+        console.error('❌ Erreur suppression reversements_entreprises:', reversementsError);
+      }
+
+      // 3. Supprimer les collectes commissions cash
+      console.log('🗑️ Suppression collectes_commissions_cash...');
+      const { error: collectesError } = await this.supabase.client
+        .from('collectes_commissions_cash')
+        .delete()
+        .eq('periode_id', periodeId);
+
+      if (collectesError) {
+        console.error('❌ Erreur suppression collectes_commissions_cash:', collectesError);
+      }
+
+      // 4. Supprimer TOUTES les balances entreprises (elles sont cumulatives)
+      console.log('🗑️ Suppression balance_entreprises (toutes)...');
+      const { error: balancesError } = await this.supabase.client
+        .from('balance_entreprises')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Supprimer toutes
+
+      if (balancesError) {
+        console.error('❌ Erreur suppression balance_entreprises:', balancesError);
+      }
+
+      // 5. Supprimer les commissions detail avec flux calculé
+      console.log('🗑️ Suppression commissions_detail avec flux...');
+      const { error: commissionsError } = await this.supabase.client
+        .from('commissions_detail')
+        .delete()
+        .eq('periode_id', periodeId)
+        .eq('flux_financier_calcule', true);
+
+      if (commissionsError) {
+        console.error('❌ Erreur suppression commissions_detail:', commissionsError);
+      }
+
+      // 6. Remettre le statut de la période à 'en_cours' si elle existe
+      console.log('🔄 Remise de la période en "en_cours"...');
+      const { error: statutError } = await this.supabase.client
+        .from('facturation_periodes')
+        .update({ statut: 'en_cours' })
+        .eq('id', periodeId);
+
+      if (statutError) {
+        console.warn('⚠️ Période non trouvée ou erreur statut:', statutError);
+      }
+
+      console.log('✅ Suppression flux financier terminée avec succès');
+      return { success: true };
+
+    } catch (error) {
+      console.error('❌ Erreur deleteFluxFinancierComplet:', error);
+      return { success: false, error };
+    }
+  }
+
+  /**
+   * Récupère les commissions avec flux financier calculé
+   */
+  async getCommissionsDetailAvecFlux(): Promise<{ data: any[] | null, error: any }> {
+    try {
+      const { data, error } = await this.supabase.client
+        .from('commissions_detail')
+        .select(`
+          *,
+          entreprises!inner(nom)
+        `)
+        .eq('flux_financier_calcule', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      const enrichedData = data?.map(item => ({
+        ...item,
+        entreprise_nom: item.entreprises?.nom
+      })) || null;
+
+      return { data: enrichedData, error: null };
+
+    } catch (error) {
+      console.error('❌ Erreur getCommissionsDetailAvecFlux:', error);
+      return { data: null, error };
     }
   }
 

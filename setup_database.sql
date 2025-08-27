@@ -1,239 +1,5 @@
--- VÉRIFICATION COMPLÈTE DES RÉSERVATIONS JAKARTA TAXI EXPRESS
--- Analyser toutes les réservations (validées et non validées)
-
--- 1. ANALYSE COMPLÈTE: Toutes les réservations Jakarta en août 2025
-SELECT 
-    r.id,
-    r.statut,
-    r.prix_total,
-    r.created_at,
-    r.date_code_validation,
-    r.client_phone,
-    c.nom || ' ' || c.prenom as conducteur,
-    CASE 
-        WHEN r.date_code_validation IS NOT NULL THEN 'VALIDÉE (Commission due)'
-        ELSE 'NON VALIDÉE (Pas de commission)'
-    END as status_commission,
-    CASE 
-        WHEN r.date_code_validation IS NOT NULL THEN ROUND(r.prix_total * 0.11, 0)
-        ELSE 0
-    END as commission_calculee
-FROM reservations r
-JOIN conducteurs c ON r.conducteur_id = c.id  
-JOIN entreprises e ON c.entreprise_id = e.id
-WHERE e.nom = 'jakarta taxi express'
-    AND r.created_at >= '2025-08-01 00:00:00'
-    AND r.created_at < '2025-09-01 00:00:00'
-ORDER BY r.created_at DESC;
-
--- 2. RÉSUMÉ PAR STATUS DE VALIDATION
-SELECT 
-    CASE 
-        WHEN r.date_code_validation IS NOT NULL THEN 'VALIDÉES'
-        ELSE 'NON VALIDÉES'
-    END as type_reservation,
-    COUNT(*) as nombre,
-    COALESCE(SUM(r.prix_total), 0) as ca_total,
-    CASE 
-        WHEN r.date_code_validation IS NOT NULL THEN ROUND(COALESCE(SUM(r.prix_total * 0.11), 0), 0)
-        ELSE 0
-    END as commission_totale
-FROM reservations r
-JOIN conducteurs c ON r.conducteur_id = c.id  
-JOIN entreprises e ON c.entreprise_id = e.id
-WHERE e.nom = 'jakarta taxi express'
-    AND r.created_at >= '2025-08-01 00:00:00'
-    AND r.created_at < '2025-09-01 00:00:00'
-GROUP BY CASE WHEN r.date_code_validation IS NOT NULL THEN 'VALIDÉES' ELSE 'NON VALIDÉES' END
-ORDER BY type_reservation DESC;
-
 -- WARNING: This schema is for context only and is not meant to be run.
 -- Table order and constraints may not be valid for execution.
-
--- DIAGNOSTIC APPROFONDI: Reproduire exactement la logique du calcul des commissions
--- Comprendre pourquoi 4 réservations au lieu de 6 validées
-
--- ÉTAPE 1: Vérifier les dates exactes de la période en base
-SELECT 
-    id,
-    periode_debut,
-    periode_fin,
-    statut,
-    'PÉRIODE_EN_BASE' as info
-FROM facturation_periodes 
-WHERE periode_debut >= '2025-08-01' 
-    AND periode_fin <= '2025-08-31'
-ORDER BY periode_debut;
-
--- ÉTAPE 2: Détail des 6 réservations validées avec test de filtrage période
-SELECT 
-    r.id,
-    r.statut,
-    r.prix_total,
-    r.created_at,
-    r.date_code_validation,
-    fp.periode_debut,
-    fp.periode_fin,
-    CASE 
-        WHEN r.created_at >= fp.periode_debut 
-             AND r.created_at <= fp.periode_fin
-             AND r.statut IN ('completed', 'accepted')
-             AND r.date_code_validation IS NOT NULL 
-        THEN 'INCLUSE_CALCUL' 
-        ELSE 'EXCLUE_CALCUL' 
-    END as inclusion_status,
-    CASE 
-        WHEN r.created_at < fp.periode_debut THEN 'AVANT_PERIODE'
-        WHEN r.created_at > fp.periode_fin THEN 'APRÈS_PERIODE'
-        WHEN r.statut NOT IN ('completed', 'accepted') THEN 'STATUT_INVALIDE'
-        WHEN r.date_code_validation IS NULL THEN 'NON_VALIDÉE'
-        ELSE 'CONDITIONS_OK'
-    END as raison_exclusion
-FROM reservations r
-JOIN conducteurs c ON r.conducteur_id = c.id  
-JOIN entreprises e ON c.entreprise_id = e.id
-CROSS JOIN facturation_periodes fp  -- Test avec toutes les périodes août
-WHERE e.nom = 'jakarta taxi express'
-    AND r.created_at >= '2025-08-01 00:00:00'
-    AND r.created_at <= '2025-08-31 23:59:59'
-    AND r.date_code_validation IS NOT NULL
-    AND fp.periode_debut >= '2025-08-01'
-    AND fp.periode_fin <= '2025-08-31'
-ORDER BY r.created_at DESC, fp.periode_debut;
-
--- ÉTAPE 3: ANALYSE DÉTAILLÉE - Toutes les réservations (même non validées)
-SELECT 
-    r.id,
-    r.statut,
-    r.prix_total,
-    r.created_at,
-    r.date_code_validation,
-    r.client_phone,
-    c.nom || ' ' || c.prenom as conducteur,
-    e.nom as entreprise,
-    CASE 
-        WHEN r.date_code_validation IS NOT NULL THEN 'OUI'
-        ELSE 'NON'
-    END as validee
-FROM reservations r
-JOIN conducteurs c ON r.conducteur_id = c.id  
-JOIN entreprises e ON c.entreprise_id = e.id
-WHERE e.nom = 'jakarta taxi express'
-    AND r.created_at >= '2025-08-01 00:00:00'
-    AND r.created_at <= '2025-08-31 23:59:59'
-ORDER BY r.created_at DESC;
-
--- 1. RÉSUMÉ PAR STATUT: Compter les réservations par statut
-SELECT 
-    r.statut,
-    COUNT(*) as nombre,
-    SUM(r.prix_total) as total_ca,
-    SUM(r.prix_total * 0.11) as total_commission
-FROM reservations r
-JOIN conducteurs c ON r.conducteur_id = c.id  
-JOIN entreprises e ON c.entreprise_id = e.id
-WHERE e.nom = 'jakarta taxi express'
-    AND r.created_at >= '2025-08-01 00:00:00'
-    AND r.created_at <= '2025-08-31 23:59:59'
-GROUP BY r.statut
-ORDER BY nombre DESC;
-
--- 2. REPRODUIRE LA LOGIQUE EXACTE DU CALCUL DES COMMISSIONS
--- Simuler exactement ce que fait calculerCommissionsPeriode()
-SELECT 
-    'logique_calcul_commissions' as source,
-    COUNT(*) as nombre_reservations,
-    SUM(r.prix_total) as chiffre_affaire_brut,
-    SUM(r.prix_total * 0.11) as montant_commission,
-    fp.periode_debut,
-    fp.periode_fin
-FROM reservations r
-JOIN conducteurs c ON r.conducteur_id = c.id  
-JOIN entreprises e ON c.entreprise_id = e.id
-JOIN facturation_periodes fp ON fp.periode_debut = '2025-08-01' AND fp.periode_fin = '2025-08-31'
-WHERE e.nom = 'jakarta taxi express'
-    AND r.created_at >= fp.periode_debut 
-    AND r.created_at <= fp.periode_fin
-    AND r.statut IN ('completed', 'accepted')
-    AND r.date_code_validation IS NOT NULL  -- Condition clé !
-GROUP BY fp.periode_debut, fp.periode_fin
-
-UNION ALL
-
--- 3. COMPARAISON: Toutes les réservations validées sans filtre de période
-SELECT 
-    'toutes_validees_aout' as source,
-    COUNT(*) as nombre_reservations,
-    SUM(r.prix_total) as chiffre_affaire_brut,
-    SUM(r.prix_total * 0.11) as montant_commission,
-    '2025-08-01'::date as periode_debut,
-    '2025-08-31'::date as periode_fin
-FROM reservations r
-JOIN conducteurs c ON r.conducteur_id = c.id  
-JOIN entreprises e ON c.entreprise_id = e.id
-WHERE e.nom = 'jakarta taxi express'
-    AND r.created_at >= '2025-08-01 00:00:00'
-    AND r.created_at <= '2025-08-31 23:59:59'
-    AND r.statut IN ('completed', 'accepted')
-    AND r.date_code_validation IS NOT NULL
-
-UNION ALL
-
--- 4. DIAGNOSTIC: Voir la différence entre commissions_detail et calcul temps réel
-SELECT 
-    'commissions_detail' as source,
-    cd.chiffre_affaire_brut,
-    cd.montant_commission,
-    cd.nombre_reservations
-FROM commissions_detail cd
-JOIN entreprises e ON cd.entreprise_id = e.id  
-WHERE e.nom ILIKE '%jakarta%'
-
-UNION ALL
-
-SELECT 
-    'calcul_temps_reel' as source,
-    SUM(r.prix_total) as chiffre_affaire_brut,
-    SUM(r.prix_total * 0.11) as montant_commission,
-    COUNT(*) as nombre_reservations
-FROM reservations r
-JOIN conducteurs c ON r.conducteur_id = c.id  
-JOIN entreprises e ON c.entreprise_id = e.id
-WHERE e.nom = 'jakarta taxi express'
-    AND r.statut = 'completed'
-    AND r.created_at >= '2025-08-01 00:00:00'
-    AND r.created_at <= '2025-08-31 23:59:59';
-
--- 2. CORRECTION: Mettre à jour commissions_detail avec les vraies données
--- IMPORTANT: Utiliser les dates exactes de la période (début à fin août)
-UPDATE commissions_detail cd
-SET 
-    nombre_reservations = subquery.real_count,
-    chiffre_affaire_brut = subquery.real_ca,
-    montant_commission = subquery.real_commission,
-    updated_at = now()
-FROM (
-    SELECT 
-        cd_inner.periode_id,
-        e.id as entreprise_id,
-        COUNT(*) as real_count,
-        SUM(r.prix_total) as real_ca,
-        SUM(r.prix_total * 0.11) as real_commission
-    FROM reservations r
-    JOIN conducteurs c ON r.conducteur_id = c.id  
-    JOIN entreprises e ON c.entreprise_id = e.id
-    JOIN commissions_detail cd_inner ON cd_inner.entreprise_id = e.id
-    JOIN facturation_periodes fp ON cd_inner.periode_id = fp.id
-    WHERE e.nom = 'jakarta taxi express'
-        AND r.statut = 'completed'
-        AND r.created_at >= fp.periode_debut 
-        AND r.created_at <= (fp.periode_fin + INTERVAL '1 day - 1 second')
-        AND fp.periode_debut = '2025-08-01'
-        AND fp.periode_fin = '2025-08-31'
-    GROUP BY cd_inner.periode_id, e.id
-) AS subquery
-WHERE cd.entreprise_id = subquery.entreprise_id 
-    AND cd.periode_id = subquery.periode_id;
 
 CREATE TABLE public.adresses (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -309,6 +75,27 @@ CREATE TABLE public.audit_logs (
   CONSTRAINT audit_logs_pkey PRIMARY KEY (id),
   CONSTRAINT audit_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.entreprises(id)
 );
+CREATE TABLE public.balance_entreprises (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  entreprise_id uuid NOT NULL UNIQUE,
+  total_a_reverser numeric DEFAULT 0,
+  total_a_collecter numeric DEFAULT 0,
+  balance_courante numeric DEFAULT 0,
+  total_mobile_money_encaisse numeric DEFAULT 0,
+  total_commissions_mobile_money numeric DEFAULT 0,
+  total_ca_cash numeric DEFAULT 0,
+  total_commissions_cash numeric DEFAULT 0,
+  nombre_periodes_traitees integer DEFAULT 0,
+  derniere_periode_id uuid,
+  date_derniere_mise_a_jour timestamp with time zone DEFAULT now(),
+  alerte_solde_eleve boolean DEFAULT false,
+  montant_alerte numeric DEFAULT 1000000,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT balance_entreprises_pkey PRIMARY KEY (id),
+  CONSTRAINT balance_entreprises_entreprise_id_fkey FOREIGN KEY (entreprise_id) REFERENCES public.entreprises(id),
+  CONSTRAINT balance_entreprises_derniere_periode_id_fkey FOREIGN KEY (derniere_periode_id) REFERENCES public.facturation_periodes(id)
+);
 CREATE TABLE public.client_addresses (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   client_phone character varying NOT NULL,
@@ -319,6 +106,32 @@ CREATE TABLE public.client_addresses (
   created_at timestamp without time zone DEFAULT now(),
   updated_at timestamp without time zone DEFAULT now(),
   CONSTRAINT client_addresses_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.collectes_commissions_cash (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  periode_id uuid NOT NULL,
+  entreprise_id uuid NOT NULL,
+  commission_detail_id uuid,
+  ca_cash_total numeric NOT NULL DEFAULT 0,
+  taux_commission_applique numeric NOT NULL,
+  montant_du numeric NOT NULL DEFAULT 0,
+  montant_collecte numeric DEFAULT 0,
+  solde_restant numeric DEFAULT (montant_du - montant_collecte),
+  statut character varying DEFAULT 'en_attente'::character varying CHECK (statut::text = ANY (ARRAY['en_attente'::character varying, 'partiel'::character varying, 'collecte'::character varying, 'compense'::character varying, 'annule'::character varying]::text[])),
+  date_echeance date,
+  date_derniere_collecte timestamp without time zone,
+  nombre_relances integer DEFAULT 0,
+  historique_paiements jsonb DEFAULT '[]'::jsonb,
+  mode_paiement character varying,
+  reference_paiement character varying,
+  notes text,
+  created_by character varying,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT collectes_commissions_cash_pkey PRIMARY KEY (id),
+  CONSTRAINT collectes_commissions_cash_commission_detail_id_fkey FOREIGN KEY (commission_detail_id) REFERENCES public.commissions_detail(id),
+  CONSTRAINT collectes_commissions_cash_entreprise_id_fkey FOREIGN KEY (entreprise_id) REFERENCES public.entreprises(id),
+  CONSTRAINT collectes_commissions_cash_periode_id_fkey FOREIGN KEY (periode_id) REFERENCES public.facturation_periodes(id)
 );
 CREATE TABLE public.commission_config (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -370,9 +183,22 @@ CREATE TABLE public.commissions_detail (
   updated_at timestamp with time zone DEFAULT now(),
   date_versement_commission timestamp with time zone,
   statut_paiement character varying DEFAULT 'non_paye'::character varying CHECK (statut_paiement::text = ANY (ARRAY['non_paye'::character varying, 'paye'::character varying, 'en_attente'::character varying]::text[])),
+  ca_mobile_money numeric DEFAULT 0,
+  ca_cash numeric DEFAULT 0,
+  nombre_reservations_mobile integer DEFAULT 0,
+  nombre_reservations_cash integer DEFAULT 0,
+  reservations_mobile_ids ARRAY DEFAULT '{}'::uuid[],
+  reservations_cash_ids ARRAY DEFAULT '{}'::uuid[],
+  montant_encaisse numeric DEFAULT 0,
+  montant_a_reverser numeric DEFAULT 0,
+  montant_commission_cash numeric DEFAULT 0,
+  balance_nette numeric DEFAULT 0,
+  statut_balance character varying DEFAULT 'equilibre'::character varying CHECK (statut_balance::text = ANY (ARRAY['crediteur'::character varying, 'debiteur'::character varying, 'equilibre'::character varying, 'compense'::character varying]::text[])),
+  flux_financier_calcule boolean DEFAULT false,
+  date_calcul_flux timestamp with time zone,
   CONSTRAINT commissions_detail_pkey PRIMARY KEY (id),
-  CONSTRAINT commissions_detail_periode_id_fkey FOREIGN KEY (periode_id) REFERENCES public.facturation_periodes(id),
-  CONSTRAINT commissions_detail_entreprise_id_fkey FOREIGN KEY (entreprise_id) REFERENCES public.entreprises(id)
+  CONSTRAINT commissions_detail_entreprise_id_fkey FOREIGN KEY (entreprise_id) REFERENCES public.entreprises(id),
+  CONSTRAINT commissions_detail_periode_id_fkey FOREIGN KEY (periode_id) REFERENCES public.facturation_periodes(id)
 );
 CREATE TABLE public.conducteurs (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
@@ -490,6 +316,24 @@ CREATE TABLE public.litiges_versement (
   CONSTRAINT litiges_versement_pkey PRIMARY KEY (id),
   CONSTRAINT litiges_versement_versement_id_fkey FOREIGN KEY (versement_id) REFERENCES public.versements(id)
 );
+CREATE TABLE public.mouvements_financiers (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  entreprise_id uuid NOT NULL,
+  periode_id uuid,
+  type_mouvement character varying NOT NULL CHECK (type_mouvement::text = ANY (ARRAY['reversement_mm'::character varying, 'collecte_cash'::character varying, 'compensation'::character varying, 'ajustement'::character varying]::text[])),
+  montant numeric NOT NULL,
+  sens character varying NOT NULL CHECK (sens::text = ANY (ARRAY['debit'::character varying, 'credit'::character varying]::text[])),
+  balance_avant numeric,
+  balance_apres numeric,
+  reference_operation character varying,
+  document_reference uuid,
+  description text,
+  created_by character varying,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT mouvements_financiers_pkey PRIMARY KEY (id),
+  CONSTRAINT mouvements_financiers_entreprise_id_fkey FOREIGN KEY (entreprise_id) REFERENCES public.entreprises(id),
+  CONSTRAINT mouvements_financiers_periode_id_fkey FOREIGN KEY (periode_id) REFERENCES public.facturation_periodes(id)
+);
 CREATE TABLE public.notifications (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),
   entreprise_id uuid,
@@ -539,9 +383,9 @@ CREATE TABLE public.paiements_commissions (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT paiements_commissions_pkey PRIMARY KEY (id),
+  CONSTRAINT paiements_commissions_periode_id_fkey FOREIGN KEY (periode_id) REFERENCES public.facturation_periodes(id),
   CONSTRAINT paiements_commissions_entreprise_id_fkey FOREIGN KEY (entreprise_id) REFERENCES public.entreprises(id),
-  CONSTRAINT paiements_commissions_commission_detail_id_fkey FOREIGN KEY (commission_detail_id) REFERENCES public.commissions_detail(id),
-  CONSTRAINT paiements_commissions_periode_id_fkey FOREIGN KEY (periode_id) REFERENCES public.facturation_periodes(id)
+  CONSTRAINT paiements_commissions_commission_detail_id_fkey FOREIGN KEY (commission_detail_id) REFERENCES public.commissions_detail(id)
 );
 CREATE TABLE public.parametres (
   cle character varying NOT NULL,
@@ -564,8 +408,8 @@ CREATE TABLE public.password_reset_history (
   reset_reason text,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT password_reset_history_pkey PRIMARY KEY (id),
-  CONSTRAINT fk_password_reset_entreprise_link FOREIGN KEY (entreprise_id) REFERENCES public.entreprises(id),
-  CONSTRAINT fk_password_reset_conducteur FOREIGN KEY (entity_id) REFERENCES public.conducteurs(id)
+  CONSTRAINT fk_password_reset_conducteur FOREIGN KEY (entity_id) REFERENCES public.conducteurs(id),
+  CONSTRAINT fk_password_reset_entreprise_link FOREIGN KEY (entreprise_id) REFERENCES public.entreprises(id)
 );
 CREATE TABLE public.relances_paiement (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -633,9 +477,33 @@ CREATE TABLE public.reservations (
   reminder_4h_sent_at timestamp with time zone,
   reminder_3h_sent_at timestamp with time zone,
   CONSTRAINT reservations_pkey PRIMARY KEY (id),
-  CONSTRAINT reservations_destination_id_fkey FOREIGN KEY (destination_id) REFERENCES public.adresses(id),
   CONSTRAINT reservations_versement_id_fkey FOREIGN KEY (versement_id) REFERENCES public.versements(id),
-  CONSTRAINT fk_reservations_conducteur FOREIGN KEY (conducteur_id) REFERENCES public.conducteurs(id)
+  CONSTRAINT fk_reservations_conducteur FOREIGN KEY (conducteur_id) REFERENCES public.conducteurs(id),
+  CONSTRAINT reservations_destination_id_fkey FOREIGN KEY (destination_id) REFERENCES public.adresses(id)
+);
+CREATE TABLE public.reversements_entreprises (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  periode_id uuid NOT NULL,
+  entreprise_id uuid NOT NULL,
+  commission_detail_id uuid,
+  montant_mobile_money_encaisse numeric NOT NULL DEFAULT 0,
+  taux_commission_applique numeric NOT NULL,
+  montant_commission_retenue numeric NOT NULL DEFAULT 0,
+  montant_a_reverser numeric NOT NULL DEFAULT 0,
+  montant_verse numeric DEFAULT 0,
+  statut character varying DEFAULT 'en_attente'::character varying CHECK (statut::text = ANY (ARRAY['en_attente'::character varying, 'programme'::character varying, 'verse'::character varying, 'confirme'::character varying, 'annule'::character varying]::text[])),
+  date_programmation timestamp without time zone,
+  date_versement timestamp without time zone,
+  reference_versement character varying,
+  mode_versement character varying,
+  notes text,
+  created_by character varying,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT reversements_entreprises_pkey PRIMARY KEY (id),
+  CONSTRAINT reversements_entreprises_commission_detail_id_fkey FOREIGN KEY (commission_detail_id) REFERENCES public.commissions_detail(id),
+  CONSTRAINT reversements_entreprises_entreprise_id_fkey FOREIGN KEY (entreprise_id) REFERENCES public.entreprises(id),
+  CONSTRAINT reversements_entreprises_periode_id_fkey FOREIGN KEY (periode_id) REFERENCES public.facturation_periodes(id)
 );
 CREATE TABLE public.sessions (
   id uuid NOT NULL DEFAULT uuid_generate_v4(),

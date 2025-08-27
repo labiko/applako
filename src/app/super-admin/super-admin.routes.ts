@@ -54,6 +54,18 @@ export const SUPER_ADMIN_ROUTES: Routes = [
     title: 'Super Admin - Détails Période'
   },
   {
+    path: 'financial-detail/:periodeId',
+    loadComponent: () => import('./pages/financial-detail/financial-detail.page').then(m => m.FinancialDetailPage),
+    canActivate: [SuperAdminGuard],
+    title: 'Super Admin - Détail Financier'
+  },
+  {
+    path: 'paiements-history',
+    loadComponent: () => import('./pages/paiements-history/paiements-history.page').then(m => m.PaiementsHistoryPage),
+    canActivate: [SuperAdminGuard],
+    title: 'Super Admin - Historique Paiements'
+  },
+  {
     path: 'entreprises',
     loadComponent: () => import('./pages/entreprises/entreprises-management.page').then(m => m.EntreprisesManagementPage),
     canActivate: [SuperAdminGuard],

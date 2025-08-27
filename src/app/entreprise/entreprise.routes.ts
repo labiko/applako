@@ -42,6 +42,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/commissions/mes-commissions.page').then(m => m.MesCommissionsPage)
       },
       {
+        path: 'financial-overview',
+        loadComponent: () => import('./pages/financial-overview/financial-overview.page').then(m => m.FinancialOverviewPage)
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'

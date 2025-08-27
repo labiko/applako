@@ -1,0 +1,283 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      <ion-icon name="wallet-outline"></ion-icon>
+      Détail Financier
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="onRefresh()">
+        <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="circular"></ion-spinner>
+    <p>Chargement des détails financiers...</p>
+  </div>
+
+  <div *ngIf="!isLoading" class="page-container">
+    
+    <!-- Informations de la période -->
+    <ion-card class="periode-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="calendar-outline"></ion-icon>
+          Période de Facturation
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <div class="periode-info">
+                <h3>{{ formatDate(periode?.periode_debut) }} - {{ formatDate(periode?.periode_fin) }}</h3>
+                <div class="periode-status">
+                  <ion-badge [color]="getStatutColor(periode?.statut)">
+                    {{ getStatutText(periode?.statut) }}
+                  </ion-badge>
+                </div>
+              </div>
+            </ion-col>
+            <ion-col size="6" size-md="3">
+              <div class="stat-item">
+                <div class="stat-number">{{ statsGlobales.nb_reservations_total }}</div>
+                <div class="stat-label">Réservations Totales</div>
+              </div>
+            </ion-col>
+            <ion-col size="6" size-md="3">
+              <div class="stat-item success">
+                <div class="stat-number">{{ statsGlobales.nb_reservations_validees }}</div>
+                <div class="stat-label">Validées</div>
+              </div>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="6" size-md="3">
+              <div class="stat-item">
+                <div class="stat-number">{{ formatMontant(statsGlobales.ca_total) }}</div>
+                <div class="stat-label">CA Total</div>
+              </div>
+            </ion-col>
+            <ion-col size="6" size-md="3">
+              <div class="stat-item warning">
+                <div class="stat-number">{{ formatMontant(statsGlobales.ca_mobile_money) }}</div>
+                <div class="stat-label">Mobile Money</div>
+              </div>
+            </ion-col>
+            <ion-col size="6" size-md="3">
+              <div class="stat-item tertiary">
+                <div class="stat-number">{{ formatMontant(statsGlobales.ca_cash) }}</div>
+                <div class="stat-label">Cash</div>
+              </div>
+            </ion-col>
+            <ion-col size="6" size-md="3">
+              <div class="stat-item success">
+                <div class="stat-number">{{ formatMontant(statsGlobales.commission_totale) }}</div>
+                <div class="stat-label">Commission</div>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Entreprises avec sélection -->
+    <ion-card class="entreprises-card" *ngIf="entreprisesStats.length > 0">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="business-outline"></ion-icon>
+          Entreprises de la Période ({{ entreprisesStats.length }})
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="entreprise-grid">
+          <div 
+            *ngFor="let entreprise of entreprisesStats" 
+            class="entreprise-item"
+            [class.selected]="selectedEntreprise === entreprise.entreprise_id"
+            (click)="selectEntreprise(entreprise.entreprise_id)">
+            
+            <div class="entreprise-header">
+              <h3>{{ entreprise.entreprise_nom }}</h3>
+              <div class="commission-amount">
+                {{ formatMontant(entreprise.commission_due) }}
+              </div>
+            </div>
+            
+            <div class="entreprise-stats">
+              <ion-chip color="primary" outline>
+                <ion-icon name="car-outline"></ion-icon>
+                <ion-label>{{ entreprise.nb_reservations_validees }}/{{ entreprise.nb_reservations_total }}</ion-label>
+              </ion-chip>
+              <ion-chip color="success" outline>
+                <ion-icon name="cash-outline"></ion-icon>
+                <ion-label>{{ formatMontant(entreprise.ca_validees) }}</ion-label>
+              </ion-chip>
+              <ion-chip color="warning" outline>
+                <ion-icon name="phone-portrait-outline"></ion-icon>
+                <ion-label>{{ formatMontant(entreprise.ca_mobile_money_validees) }}</ion-label>
+              </ion-chip>
+            </div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Filtres et vue -->
+    <ion-card class="filters-card">
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="5">
+              <ion-searchbar
+                [(ngModel)]="searchTerm"
+                (ionInput)="filterReservations()"
+                placeholder="Rechercher..."
+                debounce="300">
+              </ion-searchbar>
+            </ion-col>
+            <ion-col size="12" size-md="7">
+              <ion-segment [(ngModel)]="viewMode" (ionChange)="onViewModeChange()">
+                <ion-segment-button value="all">
+                  <ion-icon name="list-outline"></ion-icon>
+                  <ion-label>Toutes</ion-label>
+                </ion-segment-button>
+                <ion-segment-button value="validees">
+                  <ion-icon name="checkmark-circle-outline"></ion-icon>
+                  <ion-label>Validées</ion-label>
+                </ion-segment-button>
+                <ion-segment-button value="mobile_money">
+                  <ion-icon name="phone-portrait-outline"></ion-icon>
+                  <ion-label>Mobile</ion-label>
+                </ion-segment-button>
+                <ion-segment-button value="cash">
+                  <ion-icon name="cash-outline"></ion-icon>
+                  <ion-label>Cash</ion-label>
+                </ion-segment-button>
+              </ion-segment>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Liste des réservations -->
+    <ion-card class="reservations-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="list-outline"></ion-icon>
+          Détail des Réservations ({{ filteredReservations.length }})
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        
+        <div *ngIf="filteredReservations.length > 0" class="reservations-list">
+          <ion-item *ngFor="let reservation of filteredReservations" class="reservation-item">
+            
+            <div class="reservation-content">
+              <div class="reservation-main">
+                <div class="reservation-client">
+                  <h4>{{ reservation.client_phone }}</h4>
+                  <div class="reservation-id-full">
+                    <ion-icon name="receipt-outline"></ion-icon>
+                    <span>{{ reservation.id }}</span>
+                    <ion-button fill="clear" size="small" (click)="copyToClipboard(reservation.id); $event.stopPropagation()">
+                      <ion-icon name="copy-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </div>
+                </div>
+                
+                <div class="reservation-trajet">
+                  <div class="trajet-info">
+                    <div class="point-trajet depart">
+                      <ion-icon name="radio-button-on-outline" class="point-icon depart-icon"></ion-icon>
+                      <div class="point-details">
+                        <span class="point-label">Départ</span>
+                        <span class="point-nom">{{ reservation.depart_nom }}</span>
+                      </div>
+                    </div>
+                    
+                    <div class="trajet-separator">
+                      <div class="trajet-line"></div>
+                      <ion-icon name="navigate-outline" class="direction-icon"></ion-icon>
+                    </div>
+                    
+                    <div class="point-trajet arrivee">
+                      <ion-icon name="location-outline" class="point-icon arrivee-icon"></ion-icon>
+                      <div class="point-details">
+                        <span class="point-label">Arrivée</span>
+                        <span class="point-nom">{{ reservation.destination_nom }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="service-info">
+                    <ion-icon name="business-outline"></ion-icon>
+                    <span class="entreprise">{{ reservation.entreprise_nom }}</span>
+                    <ion-icon name="person-outline"></ion-icon>
+                    <span class="conducteur">{{ reservation.conducteur_nom }}</span>
+                  </div>
+                </div>
+                
+                <div class="reservation-meta">
+                  <div class="price">{{ formatMontant(reservation.prix_total) }}</div>
+                  <div class="date">{{ formatDate(reservation.created_at) }}</div>
+                </div>
+              </div>
+              
+              <div class="reservation-badges">
+                <ion-chip 
+                  [color]="reservation.type_paiement === 'mobile_money' ? 'warning' : 'medium'"
+                  outline>
+                  <ion-icon [name]="reservation.type_paiement === 'mobile_money' ? 'phone-portrait-outline' : 'cash-outline'"></ion-icon>
+                  <ion-label>{{ reservation.type_paiement === 'mobile_money' ? 'Mobile Money' : 'Cash' }}</ion-label>
+                </ion-chip>
+                
+                <ion-chip 
+                  [color]="reservation.inclus_dans_calcul ? 'success' : 'danger'"
+                  outline>
+                  <ion-icon [name]="reservation.inclus_dans_calcul ? 'checkmark-circle-outline' : 'time-outline'"></ion-icon>
+                  <ion-label>{{ reservation.inclus_dans_calcul ? 'Validée' : 'Non validée' }}</ion-label>
+                </ion-chip>
+                
+                <ion-chip 
+                  [color]="reservation.inclus_dans_calcul ? 'success' : 'medium'"
+                  outline>
+                  <ion-icon [name]="reservation.inclus_dans_calcul ? 'calculator-outline' : 'ban-outline'"></ion-icon>
+                  <ion-label>{{ reservation.inclus_dans_calcul ? 'Commission' : 'Exclue' }}</ion-label>
+                </ion-chip>
+              </div>
+              
+            </div>
+            
+          </ion-item>
+        </div>
+        
+        <div *ngIf="filteredReservations.length === 0" class="no-data">
+          <ion-icon name="document-outline"></ion-icon>
+          <p>Aucune réservation ne correspond aux critères sélectionnés.</p>
+          <ion-button fill="outline" (click)="resetFilters()">
+            <ion-icon name="refresh-outline" slot="start"></ion-icon>
+            Réinitialiser les filtres
+          </ion-button>
+        </div>
+        
+      </ion-card-content>
+    </ion-card>
+
+  </div>
+
+</ion-content>

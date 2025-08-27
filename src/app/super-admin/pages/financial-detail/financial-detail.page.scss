@@ -1,0 +1,556 @@
+/**
+ * STYLES FINANCIAL-DETAIL PAGE
+ * Inspiré de periode-details.page.scss
+ */
+
+// Variables de couleurs
+:root {
+  --lako-primary: #C1F11D;
+  --lako-secondary: #797979;
+  --lako-tertiary: #FFFEE9;
+  --lako-dark: #151515;
+  --lako-success: #22c55e;
+  --lako-warning: #f59e0b;
+  --lako-danger: #ef4444;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  
+  p {
+    margin-top: 16px;
+    color: var(--ion-color-medium);
+  }
+}
+
+.page-container {
+  padding: 16px;
+}
+
+// Carte période
+.periode-card {
+  margin-bottom: 16px;
+  
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    ion-icon {
+      color: var(--lako-primary);
+    }
+  }
+}
+
+.periode-info {
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.2em;
+    font-weight: 600;
+    color: var(--lako-dark);
+  }
+  
+  .periode-status {
+    margin-top: 8px;
+  }
+}
+
+.stat-item {
+  text-align: center;
+  padding: 16px 8px;
+  
+  .stat-number {
+    font-size: 1.4em;
+    font-weight: 600;
+    color: var(--lako-dark);
+    margin-bottom: 4px;
+  }
+  
+  .stat-label {
+    font-size: 0.8em;
+    color: var(--ion-color-medium);
+    font-weight: 500;
+  }
+  
+  &.success {
+    .stat-number {
+      color: var(--lako-success);
+    }
+  }
+  
+  &.warning {
+    .stat-number {
+      color: var(--lako-warning);
+    }
+  }
+  
+  &.tertiary {
+    .stat-number {
+      color: var(--lako-dark);
+    }
+  }
+}
+
+// Carte entreprises
+.entreprises-card {
+  margin-bottom: 16px;
+  
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    ion-icon {
+      color: var(--lako-primary);
+    }
+  }
+}
+
+.entreprise-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.entreprise-item {
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  
+  &:hover {
+    background: var(--ion-color-light-shade);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  &.selected {
+    border-color: var(--lako-primary);
+    background: rgba(193, 241, 29, 0.1);
+  }
+}
+
+.entreprise-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  
+  h3 {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--lako-dark);
+    flex: 1;
+  }
+  
+  .commission-amount {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--lako-success);
+  }
+}
+
+.entreprise-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+// Carte filtres
+.filters-card {
+  margin-bottom: 16px;
+  
+  ion-segment {
+    --background: var(--ion-color-light);
+    
+    ion-segment-button {
+      --color: var(--ion-color-medium);
+      --color-checked: var(--lako-primary);
+      --border-color: var(--ion-color-light-shade);
+      min-width: auto;
+      
+      ion-label {
+        font-size: 0.85em;
+        font-weight: 500;
+      }
+      
+      ion-icon {
+        margin-bottom: 2px;
+      }
+    }
+  }
+  
+  ion-searchbar {
+    --background: var(--ion-color-light);
+    --border-radius: 8px;
+    --box-shadow: none;
+    --placeholder-font-size: 0.9em;
+  }
+}
+
+// Carte réservations
+.reservations-card {
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    ion-icon {
+      color: var(--lako-primary);
+    }
+  }
+}
+
+.reservations-list {
+  .reservation-item {
+    --padding-start: 0;
+    --padding-end: 0;
+    margin-bottom: 8px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.reservation-content {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--ion-color-light-shade);
+  border-radius: 8px;
+  background: white;
+}
+
+.reservation-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 16px;
+}
+
+.reservation-client {
+  min-width: 200px;
+  
+  h4 {
+    margin: 0 0 8px 0;
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--lako-dark);
+  }
+  
+  .reservation-id-full {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 6px;
+    border: 1px solid var(--ion-color-light-shade);
+    font-family: 'Courier New', monospace;
+    font-size: 0.75em;
+    
+    ion-icon:first-child {
+      color: var(--lako-primary);
+      font-size: 1.1em;
+      flex-shrink: 0;
+    }
+    
+    span {
+      flex: 1;
+      color: var(--lako-secondary);
+      word-break: break-all;
+      line-height: 1.2;
+    }
+    
+    ion-button {
+      --color: var(--lako-secondary);
+      --padding-start: 4px;
+      --padding-end: 4px;
+      margin: 0;
+      flex-shrink: 0;
+      
+      &:hover {
+        --color: var(--lako-primary);
+      }
+    }
+  }
+}
+
+.reservation-trajet {
+  flex: 1;
+  
+  .trajet-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    padding: 8px;
+    background: linear-gradient(135deg, rgba(193, 241, 29, 0.03) 0%, rgba(245, 158, 11, 0.03) 100%);
+    border-radius: 6px;
+    border: 1px solid rgba(193, 241, 29, 0.1);
+  }
+  
+  .point-trajet {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    
+    .point-icon {
+      font-size: 1.2em;
+      flex-shrink: 0;
+      
+      &.depart-icon {
+        color: var(--lako-success);
+      }
+      
+      &.arrivee-icon {
+        color: var(--lako-danger);
+      }
+    }
+    
+    .point-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      
+      .point-label {
+        font-size: 0.7em;
+        color: var(--ion-color-medium);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+      
+      .point-nom {
+        font-size: 0.85em;
+        color: var(--lako-dark);
+        font-weight: 600;
+        line-height: 1.1;
+      }
+    }
+  }
+  
+  .trajet-separator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    margin: 0 4px;
+    
+    .trajet-line {
+      width: 2px;
+      height: 20px;
+      background: linear-gradient(to bottom, var(--lako-success) 0%, var(--lako-warning) 50%, var(--lako-danger) 100%);
+      border-radius: 1px;
+    }
+    
+    .direction-icon {
+      color: var(--lako-warning);
+      font-size: 1em;
+      animation: pulse-subtle 2s infinite;
+    }
+  }
+  
+  .service-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8em;
+    color: var(--ion-color-medium);
+    
+    ion-icon {
+      color: var(--lako-secondary);
+      font-size: 0.9em;
+    }
+    
+    .entreprise {
+      font-weight: 600;
+      color: var(--lako-primary);
+    }
+    
+    .conducteur {
+      font-weight: 500;
+    }
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+.reservation-meta {
+  text-align: right;
+  
+  .price {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--lako-success);
+    margin-bottom: 4px;
+  }
+  
+  .date {
+    font-size: 0.8em;
+    color: var(--ion-color-medium);
+  }
+}
+
+.reservation-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.no-data {
+  text-align: center;
+  padding: 40px;
+  color: var(--ion-color-medium);
+  
+  ion-icon {
+    font-size: 3em;
+    opacity: 0.5;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    margin: 0 0 16px 0;
+    font-style: italic;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .page-container {
+    padding: 8px;
+  }
+  
+  .entreprise-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .reservation-main {
+    flex-direction: column;
+    gap: 12px;
+    
+    .reservation-meta {
+      text-align: left;
+    }
+  }
+  
+  .reservation-client {
+    min-width: auto;
+    
+    .reservation-id-full {
+      font-size: 0.7em;
+      padding: 4px 6px;
+      
+      span {
+        font-size: 0.9em;
+      }
+    }
+  }
+  
+  .reservation-trajet {
+    .trajet-info {
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .trajet-separator {
+      flex-direction: row;
+      
+      .trajet-line {
+        width: 30px;
+        height: 2px;
+        background: linear-gradient(to right, var(--lako-success) 0%, var(--lako-warning) 50%, var(--lako-danger) 100%);
+      }
+      
+      .direction-icon {
+        transform: rotate(90deg);
+      }
+    }
+  }
+  
+  .reservation-badges {
+    flex-direction: column;
+    
+    ion-chip {
+      align-self: flex-start;
+    }
+  }
+  
+  // Optimisation segments sur mobile
+  .filters-card {
+    ion-segment {
+      ion-segment-button {
+        min-width: 60px;
+        padding: 0 4px;
+        
+        ion-label {
+          font-size: 0.8em;
+          margin: 0;
+        }
+        
+        ion-icon {
+          font-size: 1em;
+          margin-bottom: 1px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .stat-item {
+    padding: 12px 4px;
+    
+    .stat-number {
+      font-size: 1.2em;
+    }
+    
+    .stat-label {
+      font-size: 0.75em;
+    }
+  }
+  
+  .entreprise-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .entreprise-stats {
+    justify-content: flex-start;
+  }
+  
+  // Segments encore plus compacts sur très petits écrans
+  .filters-card {
+    ion-segment {
+      ion-segment-button {
+        min-width: 55px;
+        padding: 0 2px;
+        
+        ion-label {
+          font-size: 0.75em;
+          line-height: 1.2;
+        }
+        
+        ion-icon {
+          font-size: 0.9em;
+        }
+      }
+    }
+    
+    ion-searchbar {
+      --placeholder-font-size: 0.85em;
+    }
+  }
+}

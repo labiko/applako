@@ -29,6 +29,13 @@ import {
   IonSpinner,
   IonRefresher,
   IonRefresherContent,
+  IonSegment,
+  IonSegmentButton,
+  IonSelect,
+  IonSelectOption,
+  IonModal,
+  IonInput,
+  IonTextarea,
   LoadingController,
   ToastController,
   AlertController,
@@ -52,7 +59,10 @@ import {
   trendingUpOutline,
   calendarOutline,
   returnUpBackOutline,
-  trashOutline
+  trashOutline,
+  sendOutline,
+  cardOutline as cardIcon,
+  receiptOutline
 } from 'ionicons/icons';
 
 import { 
@@ -61,6 +71,9 @@ import {
   CommissionDetail,
   StatistiquesFinancieres 
 } from '../../services/financial-management.service';
+import { FluxFinancierService } from '../../services/flux-financier.service';
+import { PaiementEntrepriseService, EntreprisePaiementDue, PaiementEntreprise } from '../../services/paiement-entreprise.service';
+import { SupabaseService } from '../../../services/supabase.service';
 
 @Component({
   selector: 'app-financial-dashboard',
@@ -135,6 +148,201 @@ import {
       </ion-card-content>
     </ion-card>
 
+    <!-- Sélecteur Vue Global / Par Période -->
+    <ion-card class="view-selector-card">
+      <ion-card-content>
+        <ion-segment [(ngModel)]="viewMode" (ionChange)="onViewModeChange($event)">
+          <ion-segment-button value="global">
+            <ion-label>🌍 Vue Globale</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="periode">
+            <ion-label>📅 Par Période</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+        
+        <!-- Sélecteur de période -->
+        <div *ngIf="viewMode === 'periode' && fluxParPeriode.length > 0" class="periode-selector">
+          <ion-item>
+            <ion-label>Période:</ion-label>
+            <ion-select [(ngModel)]="selectedPeriodeId" (ionChange)="onPeriodeChange($event)">
+              <ion-select-option *ngFor="let flux of fluxParPeriode" [value]="flux.periode_id">
+                {{ formatDate(flux.periode_debut) }} - {{ formatDate(flux.periode_fin) }}
+              </ion-select-option>
+            </ion-select>
+            <ion-button 
+              *ngIf="selectedPeriodeId"
+              slot="end" 
+              fill="outline" 
+              size="small"
+              (click)="voirDetailPeriode(selectedPeriodeId)">
+              <ion-icon name="eye-outline" slot="start"></ion-icon>
+              Voir détail
+            </ion-button>
+          </ion-item>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Flux Financier Mobile Money vs Cash -->
+    <ion-card *ngIf="(viewMode === 'global' && fluxFinancierStats) || (viewMode === 'periode' && getSelectedPeriodeFlux())" class="flux-financier-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="wallet-outline"></ion-icon>
+          Flux Financier Mobile Money vs Cash
+          <span *ngIf="viewMode === 'global'" class="view-badge global">CUMULÉ</span>
+          <span *ngIf="viewMode === 'periode'" class="view-badge periode">PÉRIODE</span>
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <!-- Vue Global -->
+          <ng-container *ngIf="viewMode === 'global' && fluxFinancierStats">
+            <ion-row>
+              <ion-col size="6" size-md="3">
+                <div class="stat-item mobile-money">
+                  <div class="stat-number">{{ formatPrice(fluxFinancierStats.totalMobileMoneyEncaisse) }}</div>
+                  <div class="stat-label">Mobile Money Encaissé</div>
+                </div>
+              </ion-col>
+              <ion-col size="6" size-md="3">
+                <div class="stat-item cash">
+                  <div class="stat-number">{{ formatPrice(fluxFinancierStats.totalCACash) }}</div>
+                  <div class="stat-label">CA Cash Total</div>
+                </div>
+              </ion-col>
+              <ion-col size="6" size-md="3">
+                <div class="stat-item reverser">
+                  <div class="stat-number">{{ formatPrice(fluxFinancierStats.totalAReverser) }}</div>
+                  <div class="stat-label">À Reverser (89%)</div>
+                </div>
+              </ion-col>
+              <ion-col size="6" size-md="3">
+                <div class="stat-item collecter">
+                  <div class="stat-number">{{ formatPrice(fluxFinancierStats.totalACollecter) }}</div>
+                  <div class="stat-label">À Collecter (11%)</div>
+                </div>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="12" size-md="6">
+                <div class="stat-item balance" [class.positive]="fluxFinancierStats.balanceGlobale > 0" [class.negative]="fluxFinancierStats.balanceGlobale < 0">
+                  <div class="stat-number">{{ formatPrice(fluxFinancierStats.balanceGlobale) }}</div>
+                  <div class="stat-label">Balance Globale Cumulative</div>
+                </div>
+              </ion-col>
+              <ion-col size="12" size-md="6">
+                <div class="stat-item">
+                  <div class="stat-number">{{ fluxFinancierStats.nombreEntreprises }}</div>
+                  <div class="stat-label">Entreprises Actives</div>
+                </div>
+              </ion-col>
+            </ion-row>
+          </ng-container>
+
+          <!-- Vue Par Période -->
+          <ng-container *ngIf="viewMode === 'periode' && getSelectedPeriodeFlux() as periodeFlux">
+            <ion-row>
+              <ion-col size="6" size-md="3">
+                <div class="stat-item mobile-money">
+                  <div class="stat-number">{{ formatPrice(periodeFlux.totalMobileMoneyEncaisse) }}</div>
+                  <div class="stat-label">Mobile Money Période</div>
+                </div>
+              </ion-col>
+              <ion-col size="6" size-md="3">
+                <div class="stat-item cash">
+                  <div class="stat-number">{{ formatPrice(periodeFlux.totalCACash) }}</div>
+                  <div class="stat-label">CA Cash Période</div>
+                </div>
+              </ion-col>
+              <ion-col size="6" size-md="3">
+                <div class="stat-item reverser">
+                  <div class="stat-number">{{ formatPrice(periodeFlux.totalAReverser) }}</div>
+                  <div class="stat-label">À Reverser Période</div>
+                </div>
+              </ion-col>
+              <ion-col size="6" size-md="3">
+                <div class="stat-item collecter">
+                  <div class="stat-number">{{ formatPrice(periodeFlux.totalACollecter) }}</div>
+                  <div class="stat-label">À Collecter Période</div>
+                </div>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="12" size-md="6">
+                <div class="stat-item balance" [class.positive]="(periodeFlux.totalAReverser - periodeFlux.totalACollecter) > 0" [class.negative]="(periodeFlux.totalAReverser - periodeFlux.totalACollecter) < 0">
+                  <div class="stat-number">{{ formatPrice(periodeFlux.totalAReverser - periodeFlux.totalACollecter) }}</div>
+                  <div class="stat-label">Balance Période</div>
+                </div>
+              </ion-col>
+              <ion-col size="12" size-md="6">
+                <div class="stat-item">
+                  <div class="stat-number">{{ periodeFlux.entreprises.length }}</div>
+                  <div class="stat-label">Entreprises Période</div>
+                </div>
+              </ion-col>
+            </ion-row>
+          </ng-container>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Balances par Entreprise avec Paiements -->
+    <ion-card *ngIf="balancesEntreprises.length > 0" class="balances-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="business-outline"></ion-icon>
+          Balances par Entreprise ({{ balancesEntreprises.length }})
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let balance of balancesEntreprises">
+            <div class="balance-item">
+              <div class="balance-header">
+                <strong>{{ balance.entreprises?.nom || 'Entreprise Inconnue' }}</strong>
+                <div class="balance-actions">
+                  <ion-badge [color]="balance.balance_courante > 0 ? 'success' : balance.balance_courante < 0 ? 'danger' : 'medium'">
+                    {{ formatPrice(balance.balance_courante || 0) }}
+                  </ion-badge>
+                  <ion-button 
+                    *ngIf="balance.balance_courante > 0"
+                    fill="clear" 
+                    size="small" 
+                    color="success"
+                    (click)="ouvrirModalPaiement(balance)"
+                    title="Effectuer un paiement">
+                    <ion-icon name="send-outline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </div>
+              </div>
+              <div class="balance-details">
+                <div class="balance-row">
+                  <span class="label">💰 Mobile Money:</span>
+                  <span class="value">{{ formatPrice(balance.total_mobile_money_encaisse || 0) }}</span>
+                </div>
+                <div class="balance-row">
+                  <span class="label">💵 CA Cash:</span>
+                  <span class="value">{{ formatPrice(balance.total_ca_cash || 0) }}</span>
+                </div>
+                <div class="balance-row">
+                  <span class="label">↩️ À Reverser:</span>
+                  <span class="value success">{{ formatPrice(balance.total_a_reverser || 0) }}</span>
+                </div>
+                <div class="balance-row">
+                  <span class="label">📥 À Collecter:</span>
+                  <span class="value warning">{{ formatPrice(balance.total_a_collecter || 0) }}</span>
+                </div>
+                <div class="balance-row">
+                  <span class="label">📊 Périodes:</span>
+                  <span class="value">{{ balance.nombre_periodes_traitees || 0 }}</span>
+                </div>
+              </div>
+            </div>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
     <!-- Actions rapides -->
     <ion-card class="actions-card">
       <ion-card-header>
@@ -169,6 +377,16 @@ import {
                 (click)="onExportRapport()">
                 <ion-icon name="download-outline" slot="start"></ion-icon>
                 Export Rapport
+              </ion-button>
+            </ion-col>
+            <ion-col size="6" size-md="3">
+              <ion-button 
+                expand="block" 
+                fill="outline"
+                color="secondary"
+                (click)="onVoirHistoriquePaiements()">
+                <ion-icon name="receipt-outline" slot="start"></ion-icon>
+                Historique Paiements
               </ion-button>
             </ion-col>
             <ion-col size="6" size-md="3">
@@ -316,6 +534,123 @@ import {
       </ion-card-content>
     </ion-card>
 
+    <!-- Modal de Paiement Entreprise -->
+    <ion-modal [isOpen]="paiementModalOpen" (didDismiss)="fermerModalPaiement()">
+      <ng-template>
+        <ion-header>
+          <ion-toolbar color="primary">
+            <ion-title>
+              <ion-icon name="send-outline"></ion-icon>
+              Paiement Entreprise
+            </ion-title>
+            <ion-button 
+              slot="end" 
+              fill="clear" 
+              color="light"
+              (click)="fermerModalPaiement()">
+              <ion-icon name="close-circle-outline"></ion-icon>
+            </ion-button>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content class="ion-padding">
+          <div *ngIf="selectedEntreprisePaiement" class="paiement-form">
+            
+            <!-- Informations Entreprise -->
+            <ion-card class="entreprise-info-card">
+              <ion-card-content>
+                <div class="entreprise-header">
+                  <h2>{{ selectedEntreprisePaiement.entreprise_nom }}</h2>
+                  <ion-badge color="success" class="balance-badge">
+                    Balance: {{ formatPrice(selectedEntreprisePaiement.balance_courante) }}
+                  </ion-badge>
+                </div>
+                <div class="entreprise-details">
+                  <div class="detail-item">
+                    <span class="label">💰 À reverser:</span>
+                    <span class="value">{{ formatPrice(selectedEntreprisePaiement.total_a_reverser) }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="label">📥 À collecter:</span>
+                    <span class="value warning">{{ formatPrice(selectedEntreprisePaiement.total_a_collecter) }}</span>
+                  </div>
+                  <div class="detail-item" *ngIf="selectedEntreprisePaiement.dernier_paiement_date">
+                    <span class="label">📅 Dernier paiement:</span>
+                    <span class="value">{{ formatDate(selectedEntreprisePaiement.dernier_paiement_date) }}</span>
+                  </div>
+                </div>
+              </ion-card-content>
+            </ion-card>
+
+            <!-- Formulaire de Paiement -->
+            <ion-item>
+              <ion-label position="stacked">Montant à payer *</ion-label>
+              <ion-input
+                type="number"
+                [(ngModel)]="paiementForm.montant_paye"
+                [placeholder]="'Max: ' + formatPrice(selectedEntreprisePaiement.balance_courante)"
+                [max]="selectedEntreprisePaiement.balance_courante"
+                min="1">
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Méthode de paiement *</ion-label>
+              <ion-select [(ngModel)]="paiementForm.methode_paiement" placeholder="Sélectionner">
+                <ion-select-option value="mobile_money">💳 Mobile Money</ion-select-option>
+                <ion-select-option value="virement">🏦 Virement bancaire</ion-select-option>
+                <ion-select-option value="especes">💵 Espèces</ion-select-option>
+              </ion-select>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Référence de paiement</ion-label>
+              <ion-input
+                [(ngModel)]="paiementForm.reference_paiement"
+                placeholder="Ex: TX123456789">
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Numéro bénéficiaire</ion-label>
+              <ion-input
+                [(ngModel)]="paiementForm.numero_beneficiaire"
+                placeholder="Ex: +224 123 456 789">
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Notes (optionnel)</ion-label>
+              <ion-textarea
+                [(ngModel)]="paiementForm.notes"
+                placeholder="Commentaires sur le paiement"
+                rows="3">
+              </ion-textarea>
+            </ion-item>
+
+            <div class="modal-actions">
+              <ion-button 
+                expand="block" 
+                color="success"
+                (click)="effectuerPaiement()"
+                [disabled]="isProcessingPaiement || !paiementForm.montant_paye || !paiementForm.methode_paiement">
+                <ion-icon name="send-outline" slot="start" *ngIf="!isProcessingPaiement"></ion-icon>
+                <ion-spinner *ngIf="isProcessingPaiement"></ion-spinner>
+                {{ isProcessingPaiement ? 'Traitement...' : 'Effectuer le paiement' }}
+              </ion-button>
+              <ion-button 
+                expand="block" 
+                fill="outline" 
+                color="medium"
+                (click)="fermerModalPaiement()"
+                [disabled]="isProcessingPaiement">
+                Annuler
+              </ion-button>
+            </div>
+          </div>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+
   </div>
 </ion-content>
   `,
@@ -344,7 +679,14 @@ import {
     IonBadge,
     IonSpinner,
     IonRefresher,
-    IonRefresherContent
+    IonRefresherContent,
+    IonSegment,
+    IonSegmentButton,
+    IonSelect,
+    IonSelectOption,
+    IonModal,
+    IonInput,
+    IonTextarea
   ]
 })
 export class FinancialDashboardPage implements OnInit {
@@ -353,12 +695,33 @@ export class FinancialDashboardPage implements OnInit {
   periodes: FacturationPeriode[] = [];
   stats: StatistiquesFinancieres | null = null;
   periodeCourante: FacturationPeriode | null = null;
+  balancesEntreprises: any[] = [];
+  fluxFinancierStats: any = null;
+  fluxParPeriode: any[] = [];
+  selectedPeriodeId: string | null = null;
+  viewMode: 'global' | 'periode' = 'global';
+  
+  // Paiements entreprises
+  entreprisesPaiementsDus: EntreprisePaiementDue[] = [];
+  paiementModalOpen = false;
+  selectedEntreprisePaiement: EntreprisePaiementDue | null = null;
+  paiementForm = {
+    montant_paye: 0,
+    methode_paiement: 'mobile_money' as 'mobile_money' | 'virement' | 'especes',
+    reference_paiement: '',
+    numero_beneficiaire: '',
+    notes: ''
+  };
 
   // État de l'interface
   isLoading = true;
+  isProcessingPaiement = false;
 
   constructor(
     private financialService: FinancialManagementService,
+    private fluxFinancierService: FluxFinancierService,
+    private paiementService: PaiementEntrepriseService,
+    private supabase: SupabaseService,
     private router: Router,
     private loadingController: LoadingController,
     private toastController: ToastController,
@@ -382,7 +745,10 @@ export class FinancialDashboardPage implements OnInit {
       trendingUpOutline,
       calendarOutline,
       returnUpBackOutline,
-      trashOutline
+      trashOutline,
+      sendOutline,
+      cardIcon,
+      receiptOutline
     });
   }
 
@@ -397,8 +763,22 @@ export class FinancialDashboardPage implements OnInit {
       // Charger les périodes
       await this.loadPeriodes();
       
-      // Charger les statistiques
-      await this.loadStatistiques();
+      // Charger les statistiques (peut échouer s'il n'y a pas de période courante)
+      try {
+        await this.loadStatistiques();
+      } catch (statsError) {
+        console.warn('⚠️ Statistiques non disponibles (pas de période courante):', statsError);
+        this.stats = null;
+      }
+      
+      // Charger les données flux financier
+      await this.loadFluxFinancierData();
+      
+      // Charger les flux par période
+      await this.loadFluxParPeriode();
+      
+      // Charger les entreprises dues
+      await this.loadEntreprisesPaiementsDus();
       
     } catch (error) {
       console.error('❌ Erreur chargement données financières:', error);
@@ -783,6 +1163,10 @@ export class FinancialDashboardPage implements OnInit {
     this.router.navigate(['/super-admin/financial/relances']);
   }
 
+  async onVoirHistoriquePaiements() {
+    this.router.navigate(['/super-admin/paiements-history']);
+  }
+
   async onDeletePeriode(periode: FacturationPeriode, event: Event) {
     // Empêcher la propagation du clic vers l'item parent
     event.stopPropagation();
@@ -838,6 +1222,10 @@ export class FinancialDashboardPage implements OnInit {
     this.router.navigate(['/super-admin/dashboard']);
   }
 
+  voirDetailPeriode(periodeId: string) {
+    this.router.navigate(['/super-admin/financial-detail', periodeId]);
+  }
+
   // Utilitaires
   getPeriodeStatusText(statut: string): string {
     switch (statut) {
@@ -889,5 +1277,309 @@ export class FinancialDashboardPage implements OnInit {
       position: 'top'
     });
     await toast.present();
+  }
+
+  private async loadFluxFinancierData() {
+    try {
+      // Charger les balances entreprises
+      const { data: balances, error: balanceError } = await this.fluxFinancierService.getBalancesEntreprises();
+      
+      if (balanceError) {
+        console.error('❌ Erreur chargement balances:', balanceError);
+      } else {
+        this.balancesEntreprises = balances || [];
+      }
+
+      // Calculer les stats du flux financier
+      this.calculateFluxFinancierStats();
+
+    } catch (error) {
+      console.error('❌ Erreur chargement flux financier:', error);
+    }
+  }
+
+  private calculateFluxFinancierStats() {
+    if (!this.balancesEntreprises.length) {
+      this.fluxFinancierStats = null;
+      return;
+    }
+
+    const totalAReverser = this.balancesEntreprises.reduce((sum, balance) => sum + (balance.total_a_reverser || 0), 0);
+    const totalACollecter = this.balancesEntreprises.reduce((sum, balance) => sum + (balance.total_a_collecter || 0), 0);
+    const totalMobileMoneyEncaisse = this.balancesEntreprises.reduce((sum, balance) => sum + (balance.total_mobile_money_encaisse || 0), 0);
+    const totalCACash = this.balancesEntreprises.reduce((sum, balance) => sum + (balance.total_ca_cash || 0), 0);
+
+    this.fluxFinancierStats = {
+      totalAReverser,
+      totalACollecter,
+      totalMobileMoneyEncaisse,
+      totalCACash,
+      balanceGlobale: totalAReverser - totalACollecter,
+      nombreEntreprises: this.balancesEntreprises.length
+    };
+  }
+
+  private async loadFluxParPeriode() {
+    try {
+      // Charger les flux pour chaque période clôturée
+      const { data, error } = await this.financialService.getCommissionsDetailAvecFlux();
+      
+      if (error) {
+        console.error('❌ Erreur chargement flux par période:', error);
+      } else {
+        // Charger aussi les paiements effectués pour corriger les balances
+        const { data: paiementsData, error: paiementsError } = await this.supabase.client
+          .from('paiements_entreprises')
+          .select('*')
+          .eq('statut', 'confirme');
+
+        if (paiementsError) {
+          console.error('❌ Erreur chargement paiements:', paiementsError);
+        }
+
+        // Grouper par période avec les paiements
+        this.fluxParPeriode = this.groupFluxByPeriode(data || [], paiementsData || []);
+        
+        // Sélectionner la période la plus récente par défaut
+        if (this.fluxParPeriode.length > 0) {
+          this.selectedPeriodeId = this.fluxParPeriode[0].periode_id;
+        }
+      }
+    } catch (error) {
+      console.error('❌ Erreur loadFluxParPeriode:', error);
+    }
+  }
+
+  private groupFluxByPeriode(commissions: any[], paiements: any[]): any[] {
+    const groupedByPeriode = new Map();
+
+    commissions.forEach(commission => {
+      const periodeId = commission.periode_id;
+      if (!groupedByPeriode.has(periodeId)) {
+        // Trouver la période correspondante
+        const periode = this.periodes.find(p => p.id === periodeId);
+        groupedByPeriode.set(periodeId, {
+          periode_id: periodeId,
+          periode_debut: periode?.periode_debut,
+          periode_fin: periode?.periode_fin,
+          entreprises: [],
+          totalMobileMoneyEncaisse: 0,
+          totalCACash: 0,
+          totalAReverser: 0,
+          totalACollecter: 0
+        });
+      }
+
+      const groupe = groupedByPeriode.get(periodeId);
+      
+      // Calculer les montants après paiements pour cette entreprise
+      const entrepriseId = commission.entreprise_id;
+      const paiementsEntreprise = paiements.filter(p => 
+        p.entreprise_id === entrepriseId && 
+        (p.periode_id === periodeId || p.periode_id === null) // Gérer les paiements sans période
+      );
+      
+      const totalPaiementRecu = paiementsEntreprise.reduce((sum, p) => sum + (p.montant_paye || 0), 0);
+      
+      // Calculer les balances réelles après paiement
+      const montantAReverserBrut = commission.montant_a_reverser || 0;
+      const montantACollecterBrut = commission.montant_commission_cash || 0;
+      
+      // Appliquer les paiements (pour Mobile Money on déduit des reversements, pour Cash des collectes)
+      let montantAReverserNet = montantAReverserBrut;
+      let montantACollecterNet = montantACollecterBrut;
+      
+      if (totalPaiementRecu > 0) {
+        // Si paiement reçu, on considère que l'entreprise est soldée côté Mobile Money
+        montantAReverserNet = Math.max(0, montantAReverserBrut - totalPaiementRecu);
+      }
+
+      groupe.entreprises.push({
+        entreprise_nom: commission.entreprise_nom,
+        ca_mobile_money: commission.ca_mobile_money || 0,
+        ca_cash: commission.ca_cash || 0,
+        montant_a_reverser: montantAReverserNet,
+        montant_commission_cash: montantACollecterNet,
+        balance_nette: montantAReverserNet - montantACollecterNet,
+        paiement_recu: totalPaiementRecu
+      });
+
+      // Cumuls par période avec montants nets
+      groupe.totalMobileMoneyEncaisse += commission.ca_mobile_money || 0;
+      groupe.totalCACash += commission.ca_cash || 0;
+      groupe.totalAReverser += montantAReverserNet;
+      groupe.totalACollecter += montantACollecterNet;
+    });
+
+    return Array.from(groupedByPeriode.values()).sort((a, b) => 
+      new Date(b.periode_debut).getTime() - new Date(a.periode_debut).getTime()
+    );
+  }
+
+  onViewModeChange(event: any) {
+    const mode = event.detail.value;
+    if (mode === 'global' || mode === 'periode') {
+      this.viewMode = mode;
+    }
+  }
+
+  onPeriodeChange(event: any) {
+    const periodeId = event.detail.value;
+    if (periodeId) {
+      this.selectedPeriodeId = periodeId;
+    }
+  }
+
+  getSelectedPeriodeFlux() {
+    return this.fluxParPeriode.find(flux => flux.periode_id === this.selectedPeriodeId);
+  }
+
+  /**
+   * Charge les entreprises éligibles pour un paiement
+   */
+  private async loadEntreprisesPaiementsDus() {
+    try {
+      const { data, error } = await this.paiementService.getEntreprisesPaiementsDus();
+      
+      if (error) {
+        console.error('❌ Erreur chargement entreprises dues:', error);
+        this.entreprisesPaiementsDus = [];
+      } else {
+        this.entreprisesPaiementsDus = data || [];
+        console.log(`✅ ${this.entreprisesPaiementsDus.length} entreprises éligibles pour paiement`);
+      }
+    } catch (error) {
+      console.error('❌ Exception loadEntreprisesPaiementsDus:', error);
+      this.entreprisesPaiementsDus = [];
+    }
+  }
+
+  /**
+   * Ouvre le modal de paiement pour une entreprise
+   */
+  ouvrirModalPaiement(balance: any) {
+    // Convertir balance vers EntreprisePaiementDue
+    this.selectedEntreprisePaiement = {
+      entreprise_id: balance.entreprise_id,
+      entreprise_nom: balance.entreprises?.nom || 'Entreprise Inconnue',
+      balance_courante: balance.balance_courante || 0,
+      total_a_reverser: balance.total_a_reverser || 0,
+      total_a_collecter: balance.total_a_collecter || 0,
+      dernier_paiement_date: balance.date_derniere_mise_a_jour,
+      peut_payer: balance.balance_courante > 0
+    };
+
+    // Réinitialiser le formulaire avec montant suggéré
+    this.paiementForm = {
+      montant_paye: Math.min(balance.balance_courante, balance.total_a_reverser || balance.balance_courante),
+      methode_paiement: 'mobile_money',
+      reference_paiement: '',
+      numero_beneficiaire: '',
+      notes: ''
+    };
+
+    this.paiementModalOpen = true;
+  }
+
+  /**
+   * Ferme le modal de paiement
+   */
+  fermerModalPaiement() {
+    this.paiementModalOpen = false;
+    this.selectedEntreprisePaiement = null;
+    this.isProcessingPaiement = false;
+  }
+
+  /**
+   * Effectue le paiement à l'entreprise
+   */
+  async effectuerPaiement() {
+    if (!this.selectedEntreprisePaiement || !this.paiementForm.montant_paye) {
+      this.showError('Veuillez saisir un montant valide');
+      return;
+    }
+
+    // Validation du montant
+    if (this.paiementForm.montant_paye > this.selectedEntreprisePaiement.balance_courante) {
+      this.showError('Le montant ne peut pas dépasser la balance courante');
+      return;
+    }
+
+    if (this.paiementForm.montant_paye <= 0) {
+      this.showError('Le montant doit être positif');
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: '💰 Confirmer le Paiement',
+      message: `Êtes-vous sûr de vouloir effectuer ce paiement ?\n\n🏢 Entreprise: ${this.selectedEntreprisePaiement.entreprise_nom}\n💰 Montant: ${this.formatPrice(this.paiementForm.montant_paye)}\n💳 Méthode: ${this.getMethodePaiementText(this.paiementForm.methode_paiement)}\n📝 Référence: ${this.paiementForm.reference_paiement || 'N/A'}\n\nLa balance sera automatiquement mise à jour.`,
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+        {
+          text: 'Confirmer Paiement',
+          handler: async () => {
+            await this.processPaiement();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Traite le paiement
+   */
+  private async processPaiement() {
+    if (!this.selectedEntreprisePaiement) return;
+
+    this.isProcessingPaiement = true;
+
+    try {
+      const paiementData: Partial<PaiementEntreprise> = {
+        entreprise_id: this.selectedEntreprisePaiement.entreprise_id,
+        montant_paye: this.paiementForm.montant_paye,
+        methode_paiement: this.paiementForm.methode_paiement,
+        reference_paiement: this.paiementForm.reference_paiement || undefined,
+        numero_beneficiaire: this.paiementForm.numero_beneficiaire || undefined,
+        notes: this.paiementForm.notes || undefined,
+        statut: 'confirme'
+      };
+
+      const { success, data, error } = await this.paiementService.effectuerPaiement(paiementData);
+
+      if (!success) {
+        throw error;
+      }
+
+      this.showSuccess(`✅ Paiement effectué avec succès !\n\n🏢 ${this.selectedEntreprisePaiement.entreprise_nom}\n💰 ${this.formatPrice(this.paiementForm.montant_paye)}\n📋 ID: ${data?.id}`);
+      
+      // Recharger les données
+      await this.loadFluxFinancierData();
+      await this.loadEntreprisesPaiementsDus();
+      
+      this.fermerModalPaiement();
+
+    } catch (error) {
+      console.error('❌ Erreur paiement:', error);
+      this.showError('Erreur lors du traitement du paiement');
+    } finally {
+      this.isProcessingPaiement = false;
+    }
+  }
+
+  /**
+   * Retourne le texte de la méthode de paiement
+   */
+  private getMethodePaiementText(methode: string): string {
+    switch (methode) {
+      case 'mobile_money': return '💳 Mobile Money';
+      case 'virement': return '🏦 Virement bancaire';
+      case 'especes': return '💵 Espèces';
+      default: return methode;
+    }
   }
 }

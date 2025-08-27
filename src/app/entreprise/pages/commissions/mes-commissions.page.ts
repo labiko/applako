@@ -68,6 +68,7 @@ import {
 } from 'ionicons/icons';
 
 import { EntrepriseCommissionService } from '../../services/entreprise-commission.service';
+import { FluxFinancierService } from '../../../super-admin/services/flux-financier.service';
 
 // Interfaces locales
 export interface PeriodeCommission {
@@ -172,6 +173,70 @@ export interface ReservationCommission {
                 <div class="stat-item">
                   <div class="stat-value">{{ totalReservations }}</div>
                   <div class="stat-label">Réservations</div>
+                </div>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Balance Financière Mobile Money vs Cash -->
+      <ion-card *ngIf="balanceEntreprise" class="balance-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="wallet-outline"></ion-icon>
+            Ma Balance Financière
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="balance-summary">
+            <div class="balance-main">
+              <div class="balance-amount" [class.positive]="balanceEntreprise.balance_courante > 0" [class.negative]="balanceEntreprise.balance_courante < 0">
+                {{ formatPrice(balanceEntreprise.balance_courante || 0) }}
+              </div>
+              <div class="balance-label">
+                {{ balanceEntreprise.balance_courante > 0 ? 'Créditeur' : balanceEntreprise.balance_courante < 0 ? 'Débiteur' : 'Équilibré' }}
+              </div>
+            </div>
+          </div>
+          
+          <ion-grid class="balance-details">
+            <ion-row>
+              <ion-col size="6">
+                <div class="detail-item mobile-money">
+                  <div class="detail-value">{{ formatPrice(balanceEntreprise.total_mobile_money_encaisse || 0) }}</div>
+                  <div class="detail-label">💰 Mobile Money Traité</div>
+                </div>
+              </ion-col>
+              <ion-col size="6">
+                <div class="detail-item cash">
+                  <div class="detail-value">{{ formatPrice(balanceEntreprise.total_ca_cash || 0) }}</div>
+                  <div class="detail-label">💵 CA Cash</div>
+                </div>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="6">
+                <div class="detail-item reverser">
+                  <div class="detail-value">{{ formatPrice(balanceEntreprise.total_a_reverser || 0) }}</div>
+                  <div class="detail-label">↩️ Reçu Admin</div>
+                  <div class="detail-explanation">89% du MM vous sera reversé</div>
+                </div>
+              </ion-col>
+              <ion-col size="6">
+                <div class="detail-item collecter">
+                  <div class="detail-value">{{ formatPrice(balanceEntreprise.total_a_collecter || 0) }}</div>
+                  <div class="detail-label">📥 Dû Commission</div>
+                  <div class="detail-explanation">11% sur vos ventes cash</div>
+                </div>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="12">
+                <div class="detail-item periods">
+                  <div class="detail-value">{{ balanceEntreprise.nombre_periodes_traitees || 0 }}</div>
+                  <div class="detail-label">📊 Périodes Traitées</div>
+                  <div class="detail-explanation">Dernière MAJ: {{ formatDate(balanceEntreprise.date_derniere_mise_a_jour) }}</div>
                 </div>
               </ion-col>
             </ion-row>
@@ -452,6 +517,10 @@ export class MesCommissionsPage implements OnInit {
   totalEnAttente = 0;
   totalReservations = 0;
 
+  // Données Flux Financier
+  balanceEntreprise: any = null;
+  entrepriseId: string | null = null;
+
   // État de l'interface
   isLoading = true;
   statutFilter: 'tous' | 'paye' | 'non_paye' | 'en_attente' = 'tous';
@@ -461,6 +530,7 @@ export class MesCommissionsPage implements OnInit {
 
   constructor(
     private commissionService: EntrepriseCommissionService,
+    private fluxFinancierService: FluxFinancierService,
     private router: Router,
     private loadingController: LoadingController,
     private toastController: ToastController
@@ -503,6 +573,9 @@ export class MesCommissionsPage implements OnInit {
     try {
       this.isLoading = true;
       
+      // Récupérer l'ID de l'entreprise connectée
+      await this.loadEntrepriseInfo();
+      
       const { data, error } = await this.commissionService.getMesCommissions();
       
       if (error) {
@@ -510,6 +583,11 @@ export class MesCommissionsPage implements OnInit {
       }
 
       this.periodes = data || [];
+      
+      // Charger la balance de l'entreprise
+      if (this.entrepriseId) {
+        await this.loadBalanceEntreprise();
+      }
       this.calculateGlobalStats();
       this.applyFilters();
 
@@ -679,5 +757,36 @@ export class MesCommissionsPage implements OnInit {
       position: 'top'
     });
     await toast.present();
+  }
+
+  private async loadEntrepriseInfo() {
+    try {
+      // Pour l'instant, utilisons Jakarta taxi express comme exemple
+      // Dans un vrai contexte, il faudrait récupérer l'ID depuis le service d'auth
+      this.entrepriseId = '20100373-6776-4075-9f8e-a77da892cf67'; // Jakarta taxi express
+      
+      // TODO: Implémenter la vraie méthode d'authentification entreprise
+      // const currentEntreprise = await this.getCurrentEntreprise();
+      // this.entrepriseId = currentEntreprise?.id || null;
+    } catch (error) {
+      console.error('❌ Erreur récupération info entreprise:', error);
+    }
+  }
+
+  private async loadBalanceEntreprise() {
+    if (!this.entrepriseId) return;
+    
+    try {
+      const { data: balances } = await this.fluxFinancierService.getBalancesEntreprises();
+      
+      // Trouver la balance de cette entreprise
+      this.balanceEntreprise = balances?.find(balance => 
+        balance.entreprise_id === this.entrepriseId
+      ) || null;
+      
+    } catch (error) {
+      console.error('❌ Erreur chargement balance entreprise:', error);
+      this.balanceEntreprise = null;
+    }
   }
 }

@@ -210,11 +210,7 @@ export class DashboardPage implements OnInit, OnDestroy {
     this.router.navigate(['/entreprise/mes-commissions']);
   }
 
-  navigateToCommissionsFactures() {
-    this.router.navigate(['/entreprise/commissions-factures']);
-  }
-
-  navigateToFinances() {
-    this.router.navigate(['/entreprise/finances']);
+  navigateToFinancialOverview() {
+    this.router.navigate(['/entreprise/financial-overview']);
   }
 }
