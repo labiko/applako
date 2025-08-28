@@ -19,6 +19,7 @@ import {
   IonAvatar,
   IonBadge,
   IonButton,
+  IonButtons,
   IonIcon,
   IonChip,
   IonSpinner,
@@ -63,7 +64,10 @@ import {
   chatbubbleEllipses,
   car,
   statsChart,
-  download
+  download,
+  phonePortraitOutline,
+  cardOutline,
+  closeCircleOutline
 } from 'ionicons/icons';
 import { VersementService } from '../../services/versement.service';
 import { 
@@ -97,6 +101,7 @@ import {
     IonAvatar,
     IonBadge,
     IonButton,
+    IonButtons,
     IonIcon,
     IonChip,
     IonSpinner,
@@ -149,6 +154,7 @@ export class VersementsPage implements OnInit {
   // OTP
   otpDigits: string[] = ['', '', '', ''];
   otpError = '';
+  forcerValidation = false;
   
   // Options de versement
   commentaireVersement = '';
@@ -184,7 +190,10 @@ export class VersementsPage implements OnInit {
       chatbubbleEllipses,
       car,
       statsChart,
-      download
+      download,
+      phonePortraitOutline,
+      cardOutline,
+      closeCircleOutline
     });
   }
 
@@ -238,6 +247,8 @@ export class VersementsPage implements OnInit {
     try {
       this.selectedConducteurVersement = conducteurVersement;
       
+      // La vue 'reservations_cash_a_verser_view' ne retourne que des réservations cash
+      // Pas besoin de filtrer, toutes les réservations sont déjà cash uniquement
       const reservationIds = conducteurVersement.reservations.map(r => r.id);
       const options = {
         montant: conducteurVersement.montantTotal,
@@ -263,6 +274,14 @@ export class VersementsPage implements OnInit {
         
         this.isOTPModalOpen = true;
         this.resetOTP();
+        
+        // Focus automatique sur le premier champ OTP
+        setTimeout(() => {
+          const firstInput = document.querySelector('#otp-0 input') as HTMLInputElement;
+          if (firstInput) {
+            firstInput.focus();
+          }
+        }, 300);
       } else {
         console.error('Erreur initiation versement:', result.message);
       }
@@ -286,13 +305,20 @@ export class VersementsPage implements OnInit {
       );
 
       if (result.success) {
+        const conducteurId = this.selectedVersement.conducteur.id;
+        
+        // Supprimer immédiatement la ligne validée de l'onglet "À verser"
+        this.conducteursVersements = this.conducteursVersements.filter(c => c.conducteur.id !== conducteurId);
+        
         this.closeOTPModal();
+        
         // Afficher le message de succès
         await this.afficherMessageSucces(this.selectedVersement);
-        // Basculer automatiquement vers l'onglet Historique
-        this.selectedSegment = 'historique';
-        await this.loadData(); // Recharger les données
-        console.log('✅ Versement validé avec succès - Redirection vers Historique');
+        
+        // Recharger seulement les données en arrière-plan sans rechargement de page
+        this.loadData(false);
+        
+        console.log('✅ Versement validé - Ligne supprimée immédiatement');
       } else {
         this.otpError = result.message;
         this.selectedVersement.otp_attempts = (this.selectedVersement.otp_attempts || 0) + 1;
@@ -334,12 +360,14 @@ export class VersementsPage implements OnInit {
     if (value && /^\d$/.test(value)) {
       this.otpDigits[index] = value;
       
-      // Auto-focus sur le champ suivant
+      // Auto-focus sur le champ suivant avec délai
       if (index < 3) {
-        const nextInput = document.querySelector(`#otp-${index + 1}`) as HTMLInputElement;
-        if (nextInput) {
-          nextInput.focus();
-        }
+        setTimeout(() => {
+          const nextInput = document.querySelector(`#otp-${index + 1} input`) as HTMLInputElement;
+          if (nextInput) {
+            nextInput.focus();
+          }
+        }, 50);
       }
     } else {
       this.otpDigits[index] = '';
@@ -474,6 +502,18 @@ export class VersementsPage implements OnInit {
       minute: '2-digit',
       timeZone: 'Africa/Conakry' // Timezone de la Guinée (GMT+0)
     });
+  }
+
+  getPaymentModeIcon(mode: string): string {
+    return mode === 'mobile_money' ? 'phone-portrait-outline' : 'cash';
+  }
+
+  getPaymentModeColor(mode: string): string {
+    return mode === 'mobile_money' ? 'primary' : 'success';
+  }
+
+  getPaymentModeLabel(mode: string): string {
+    return mode === 'mobile_money' ? 'Mobile Money' : 'Cash';
   }
 
   getMoyennePrix(): string {

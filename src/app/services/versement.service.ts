@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { EntrepriseAuthService } from './entreprise-auth.service';
 import { SMSService } from './sms.service';
+import { WhatsAppService } from './whatsapp.service';
+import { DatabaseSetupService } from './database-setup.service';
 import { 
   ConducteurVersement, 
   Versement, 
@@ -28,7 +30,9 @@ export class VersementService {
   constructor(
     private supabaseService: SupabaseService,
     private entrepriseAuthService: EntrepriseAuthService,
-    private smsService: SMSService
+    private smsService: SMSService,
+    private whatsAppService: WhatsAppService,
+    private databaseSetup: DatabaseSetupService
   ) { }
 
   // ==================== GESTION FILE D'ATTENTE ====================
@@ -160,6 +164,7 @@ export class VersementService {
     }
   }
 
+
   // ==================== WORKFLOW VERSEMENT ====================
 
   async getMontantsAVerser(): Promise<ConducteurVersement[]> {
@@ -172,123 +177,32 @@ export class VersementService {
 
       console.log(`🔍 Recherche des montants à verser pour l'entreprise: ${entrepriseId}`);
 
-      // D'abord, récupérer les conducteurs de l'entreprise
-      const { data: conducteurs, error: conducteursError } = await this.supabaseService.client
-        .from('conducteurs')
-        .select('id')
+      // Utiliser la vue optimisée pour les réservations à verser
+      const { data: reservations, error } = await this.supabaseService.client
+        .from('reservations_cash_a_verser_view')
+        .select('*')
         .eq('entreprise_id', entrepriseId);
 
-      if (conducteursError) {
-        console.error('❌ Erreur récupération conducteurs:', conducteursError);
-        throw conducteursError;
-      }
-
-      if (!conducteurs || conducteurs.length === 0) {
-        console.log(`📊 Aucun conducteur trouvé pour l'entreprise ${entrepriseId}`);
-        return [];
-      }
-
-      const conducteurIds = conducteurs.map(c => c.id);
-      console.log(`👥 ${conducteurIds.length} conducteur(s) de l'entreprise`);
-
-      // Récupérer les réservations à verser uniquement pour les conducteurs de l'entreprise
-      const { data: reservations, error } = await this.supabaseService.client
-        .from('reservations')
-        .select(`
-          id,
-          client_phone,
-          vehicle_type,
-          position_depart,
-          statut,
-          created_at,
-          conducteur_id,
-          destination_nom,
-          destination_id,
-          position_arrivee,
-          distance_km,
-          prix_total,
-          prix_par_km,
-          tarif_applique,
-          code_validation,
-          updated_at,
-          date_code_validation,
-          commentaire,
-          note_conducteur,
-          date_add_commentaire,
-          versement_id,
-          depart_nom
-        `)
-        .in('conducteur_id', conducteurIds)
-        .eq('statut', 'completed')
-        .not('date_code_validation', 'is', null)
-        .is('versement_id', null) // Pas encore versées
-        .gt('prix_total', 0); // Prix supérieur à 0
-
-      console.log('🔍 Critères de recherche des réservations à verser:', {
-        entrepriseId,
-        nombreConducteurs: conducteurIds.length,
-        criteres: {
-          statut: 'completed',
-          date_code_validation: 'NOT NULL',
-          versement_id: 'NULL',
-          prix_total: '> 0'
-        }
-      });
-
       if (error) {
-        console.error('❌ Erreur récupération réservations:', error);
+        console.error('❌ Vue reservations_a_verser non disponible:', error);
+        console.log('💡 Veuillez créer la vue dans Supabase SQL Editor');
         throw error;
       }
 
-
+      console.log('✅ Utilisation de la vue reservations_completed_view avec détection automatique Mobile Money/Cash');
       console.log(`📊 ${reservations?.length || 0} réservation(s) à verser trouvée(s)`);
       
       if (reservations && reservations.length > 0) {
-        console.log('📋 Aperçu des réservations trouvées:', 
+        console.log('📋 Aperçu des réservations avec mode de paiement:', 
           reservations.slice(0, 3).map(r => ({
             id: r.id.substring(0, 8),
-            conducteur_id: r.conducteur_id,
+            conducteur: `${r.conducteur_prenom} ${r.conducteur_nom}`,
             prix: r.prix_total,
-            date_validation: r.date_code_validation,
-            versement_id: r.versement_id
+            mode_paiement: r.mode_paiement, // 🆕 Détection automatique
+            date_validation: r.date_code_validation
           }))
         );
       }
-
-      // Récupérer les informations des conducteurs
-      const { data: conducteursDetails, error: conducteurError } = await this.supabaseService.client
-        .from('conducteurs')
-        .select(`
-          id, 
-          nom, 
-          prenom, 
-          telephone, 
-          entreprise_id,
-          vehicle_type,
-          vehicle_marque,
-          vehicle_modele,
-          vehicle_couleur,
-          vehicle_plaque,
-          statut,
-          note_moyenne,
-          nombre_courses,
-          derniere_activite,
-          hors_ligne,
-          position_actuelle,
-          date_update_position,
-          date_inscription,
-          actif
-        `)
-        .in('id', conducteurIds)
-        .eq('entreprise_id', entrepriseId);
-
-      if (conducteurError) {
-        console.error('❌ Erreur récupération détails conducteurs:', conducteurError);
-        throw conducteurError;
-      }
-
-      // Créer un map des conducteurs pour accès rapide
-      const conducteursMap = new Map(conducteursDetails?.map(c => [c.id, c]) || []);
 
       // Grouper par conducteur
       const groupedByConducteur = this.groupReservationsByConducteur(reservations || []);
@@ -297,10 +211,22 @@ export class VersementService {
       const result: ConducteurVersement[] = [];
 
       for (const [conducteurId, reservationsList] of groupedByConducteur.entries()) {
-        const conducteur = conducteursMap.get(conducteurId);
-        if (!conducteur) continue;
-
         const montantTotal = reservationsList.reduce((sum, r) => sum + (r.prix_total || 0), 0);
+        
+        const premièreRéservation = reservationsList[0];
+        const conducteur: ConducteurStats = {
+          id: conducteurId,
+          nom: premièreRéservation.conducteur_nom,
+          prenom: premièreRéservation.conducteur_prenom,
+          telephone: premièreRéservation.conducteur_telephone || '',
+          vehicle_type: 'moto',
+          statut: 'actif',
+          note_moyenne: 0,
+          nombre_courses: reservationsList.length,
+          derniere_activite: new Date().toISOString(),
+          hors_ligne: false
+        };
+
         const anomalies = await this.detecterAnomalies(conducteurId);
 
         result.push({
@@ -315,7 +241,9 @@ export class VersementService {
             distance_km: r.distance_km,
             date_code_validation: r.date_code_validation,
             created_at: r.created_at,
-            commentaire: r.commentaire
+            commentaire: r.commentaire,
+            mode_paiement: r.mode_paiement, // 🆕 Mode de paiement auto-détecté
+            depart_nom: r.depart_nom
           })),
           nombreCourses: reservationsList.length,
           priorite: 'normal',
@@ -323,24 +251,12 @@ export class VersementService {
         });
       }
 
-      console.log(`✅ Résultat final: ${result.length} conducteur(s) à verser pour un montant total de:`, 
-        result.reduce((sum, c) => sum + c.montantTotal, 0).toLocaleString() + ' GNF'
-      );
-      
-      if (result.length > 0) {
-        console.log('📋 Détail des conducteurs à verser:', 
-          result.map(c => ({
-            conducteur: c.conducteur.nom + ' ' + c.conducteur.prenom,
-            montant: c.montantTotal,
-            courses: c.nombreCourses
-          }))
-        );
-      }
+      console.log(`✅ ${result.length} conducteur(s) à verser - Total: ${result.reduce((sum, c) => sum + c.montantTotal, 0).toLocaleString()} GNF`);
 
       return result.sort((a, b) => b.montantTotal - a.montantTotal);
 
     } catch (error) {
-      console.error('Erreur getMontantsAVerser:', error);
+      console.error('❌ Erreur getMontantsAVerser:', error);
       return [];
     }
   }
@@ -380,7 +296,7 @@ export class VersementService {
 
       if (error) throw error;
 
-      // 5. Envoyer SMS OTP
+      // 5. Envoyer SMS OTP et notification WhatsApp
       const conducteur = await this.getConducteur(conducteurId);
       if (!conducteur) return { success: false, message: 'Conducteur non trouvé' };
 
@@ -389,6 +305,17 @@ export class VersementService {
         otpCode, 
         options.montant
       );
+
+      // Envoyer aussi via WhatsApp en parallèle
+      const whatsAppResult = await this.whatsAppService.envoyerNotificationVersement(
+        conducteur.telephone,
+        `${conducteur.prenom} ${conducteur.nom}`,
+        options.montant,
+        otpCode
+      );
+
+      console.log('📱 SMS envoyé:', smsResult.success ? '✅' : '❌');
+      console.log('💬 WhatsApp envoyé:', whatsAppResult.success ? '✅' : '❌');
 
       if (!smsResult.success) {
         // Annuler le versement si SMS échoue
@@ -448,15 +375,27 @@ export class VersementService {
       // Marquer les réservations comme versées
       await this.marquerReservationsVersees(versement.reservation_ids, versementId);
 
-      // Envoyer SMS de confirmation
+      // Envoyer SMS de confirmation et WhatsApp
       const conducteur = await this.getConducteur(versement.conducteur_id);
       if (conducteur) {
         const reference = `VER-${versement.id.substring(0, 8)}`;
+        
+        // SMS de confirmation
         await this.smsService.envoyerConfirmationVersement(
           conducteur.telephone, 
           versement.montant, 
           reference
         );
+
+        // WhatsApp de confirmation
+        const whatsAppConfirmation = await this.whatsAppService.envoyerConfirmationVersement(
+          conducteur.telephone,
+          `${conducteur.prenom} ${conducteur.nom}`,
+          versement.montant
+        );
+
+        console.log('📱 SMS confirmation envoyé ✅');
+        console.log('💬 WhatsApp confirmation envoyé:', whatsAppConfirmation.success ? '✅' : '❌');
       }
 
       return { success: true, message: 'Versement effectué avec succès' };
@@ -491,12 +430,23 @@ export class VersementService {
 
       if (error) throw error;
 
-      // Renvoyer SMS
+      // Renvoyer SMS et WhatsApp
       const smsResult = await this.smsService.envoyerOTPVersement(
         versement.conducteur.telephone,
         nouvelOTP,
         versement.montant
       );
+
+      // Renvoyer aussi via WhatsApp
+      const whatsAppResult = await this.whatsAppService.envoyerNotificationVersement(
+        versement.conducteur.telephone,
+        `${versement.conducteur.prenom} ${versement.conducteur.nom}`,
+        versement.montant,
+        nouvelOTP
+      );
+
+      console.log('📱 SMS renvoyé:', smsResult.success ? '✅' : '❌');
+      console.log('💬 WhatsApp renvoyé:', whatsAppResult.success ? '✅' : '❌');
 
       return smsResult.success;
 
@@ -628,73 +578,23 @@ export class VersementService {
 
       console.log(`🔍 Recherche des réservations en attente pour l'entreprise: ${entrepriseId}`);
 
-      // D'abord, récupérer les conducteurs de l'entreprise connectée
-      const { data: conducteurs, error: conducteursError } = await this.supabaseService.client
-        .from('conducteurs')
-        .select('id')
-        .eq('entreprise_id', entrepriseId);
-
-      if (conducteursError) {
-        console.error('❌ Erreur récupération conducteurs:', conducteursError);
-        throw conducteursError;
-      }
-
-      if (!conducteurs || conducteurs.length === 0) {
-        console.log(`📊 Aucun conducteur trouvé pour l'entreprise ${entrepriseId}`);
-        return [];
-      }
-
-      console.log(`👥 ${conducteurs.length} conducteur(s) trouvé(s) pour l'entreprise`);
-
-      // Récupérer les IDs des conducteurs
-      const conducteurIds = conducteurs.map(c => c.id);
-
-      // Puis récupérer les réservations de ces conducteurs uniquement
+      // Utiliser la vue cash pour les réservations en attente (sans date_code_validation)
       const { data, error } = await this.supabaseService.client
-        .from('reservations')
-        .select(`
-          id,
-          client_phone,
-          vehicle_type,
-          position_depart,
-          statut,
-          created_at,
-          conducteur_id,
-          destination_nom,
-          destination_id,
-          position_arrivee,
-          distance_km,
-          prix_total,
-          prix_par_km,
-          tarif_applique,
-          code_validation,
-          updated_at,
-          date_code_validation,
-          commentaire,
-          note_conducteur,
-          date_add_commentaire,
-          versement_id,
-          depart_nom,
-          conducteurs!inner (
-            id,
-            nom,
-            prenom,
-            telephone,
-            entreprise_id
-          )
-        `)
-        .in('conducteur_id', conducteurIds)
-        .eq('conducteurs.entreprise_id', entrepriseId)
-        .eq('statut', 'completed')
+        .from('reservations_cash_view')
+        .select('*')
+        .eq('entreprise_id', entrepriseId)
         .is('date_code_validation', null)
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('❌ Erreur récupération réservations:', error);
+        console.error('❌ Vue reservations_cash_view non disponible:', error);
+        console.log('💡 Veuillez créer la vue dans Supabase SQL Editor');
         throw error;
       }
       
-      console.log(`✅ ${data?.length || 0} réservation(s) en attente trouvée(s) pour l'entreprise ${entrepriseId}`);
+      console.log(`✅ ${data?.length || 0} réservation(s) cash en attente trouvée(s) pour l'entreprise ${entrepriseId}`);
+      console.log('✅ Utilisation de la vue CASH uniquement (Mobile Money exclu automatiquement)');
+      
       return data || [];
 
     } catch (error) {
@@ -840,10 +740,9 @@ export class VersementService {
   private async getReservationsAVerser(conducteurId: string): Promise<ReservationVersement[]> {
     try {
       const { data, error } = await this.supabaseService.client
-        .from('reservations')
+        .from('reservations_cash_view')
         .select('*')
         .eq('conducteur_id', conducteurId)
-        .eq('statut', 'completed')
         .not('date_code_validation', 'is', null)
         .is('versement_id', null);
 

@@ -312,45 +312,41 @@
   <ng-template>
     <ion-header>
       <ion-toolbar color="primary">
-        <ion-title>
-          <ion-icon name="key" slot="start"></ion-icon>
-          Validation OTP Versement
-        </ion-title>
-        <ion-button slot="end" fill="clear" (click)="closeOTPModal()" class="close-button">
-          <ion-icon name="close"></ion-icon>
-        </ion-button>
+        <ion-title>💰 Validation Versement</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeOTPModal()">
+            <ion-icon name="close-circle-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
     
-    <ion-content class="ion-padding" *ngIf="selectedVersement">
-      <!-- Info conducteur -->
+    <ion-content class="ion-padding">
+      <!-- Résumé conducteur -->
       <div class="conducteur-summary">
         <ion-avatar>
           <div class="avatar-placeholder">
-            <ion-icon name="people"></ion-icon>
+            <ion-icon name="person"></ion-icon>
           </div>
         </ion-avatar>
         <div class="summary-info">
-          <h3>{{ selectedVersement.conducteur.prenom }} {{ selectedVersement.conducteur.nom }}</h3>
-          <p>📱 {{ selectedVersement.conducteur.telephone }}</p>
-          <p>💰 {{ formatCurrency(selectedVersement.montant) }}</p>
+          <h3>{{ selectedVersement?.conducteur?.prenom }} {{ selectedVersement?.conducteur?.nom }}</h3>
+          <p>📱 {{ selectedVersement?.conducteur?.telephone }}</p>
+          <p>💰 Montant: <strong>{{ formatCurrency(selectedVersement?.montant || 0) }}</strong></p>
         </div>
       </div>
-      
+
       <!-- Statut SMS -->
       <div class="sms-status">
-        <ion-item color="success">
-          <ion-icon name="checkmarkCircle" slot="start"></ion-icon>
-          <ion-label>
-            <h3>SMS envoyé avec succès</h3>
-            <p>Le conducteur doit vous communiquer le code reçu</p>
-          </ion-label>
+        <ion-item>
+          <ion-icon name="checkmark-circle" slot="start" color="success"></ion-icon>
+          <ion-label>WhatsApp envoyé avec succès</ion-label>
         </ion-item>
       </div>
-      
-      <!-- Saisie OTP -->
+
+      <!-- Section saisie OTP -->
       <div class="otp-input-section">
-        <h4>Code OTP (4 chiffres)</h4>
+        <h4>Saisir le code OTP reçu par SMS</h4>
         <div class="otp-inputs">
           <ion-input 
             type="tel" 
@@ -387,8 +383,8 @@
         </div>
         
         <div class="otp-info">
-          <p *ngIf="otpError" class="error-message">{{ otpError }}</p>
-          <p>Tentatives restantes: {{ 3 - (selectedVersement.otp_attempts || 0) }}/3</p>
+          <p *ngIf="otpError" class="error-message">❌ {{ otpError }}</p>
+          <p>Tentatives restantes: {{ 3 - (selectedVersement?.otp_attempts || 0) }}/3</p>
           <ion-button fill="clear" size="small" (click)="renvoyerOTP()">
             <ion-icon name="refresh" slot="start"></ion-icon>
             Renvoyer le code
@@ -396,36 +392,32 @@
         </div>
       </div>
       
-      <!-- Options simplifiées -->
-      <div class="options-versement">
+      <!-- Options avancées -->
+      <div class="options-avancees" style="display: none;">
         <ion-item>
-          <ion-label>
-            <h3>Options du versement</h3>
-            <p>Le versement sera enregistré avec la date et l'heure actuelles</p>
-          </ion-label>
+          <ion-checkbox [(ngModel)]="forcerValidation"></ion-checkbox>
+          <ion-label class="ion-margin-start">Forcer la validation (admin)</ion-label>
         </ion-item>
       </div>
       
-      <!-- Commentaire -->
-      <ion-item>
-        <ion-label position="stacked">Commentaire (optionnel)</ion-label>
-        <ion-textarea [(ngModel)]="commentaireVersement" rows="3"></ion-textarea>
-      </ion-item>
-      
       <!-- Actions -->
       <div class="modal-actions">
-        <ion-button expand="block" color="danger" fill="outline" (click)="annulerVersement()">
-          <ion-icon name="close" slot="start"></ion-icon>
-          Annuler le versement
-        </ion-button>
-        
         <ion-button 
           expand="block" 
           color="primary" 
           (click)="validerVersement()"
-          [disabled]="!isOTPComplete()">
-          <ion-icon name="checkmarkCircle" slot="start"></ion-icon>
+          [disabled]="!isOTPComplete() && !forcerValidation">
+          <ion-icon name="checkmark-circle" slot="start"></ion-icon>
           Valider le versement
+        </ion-button>
+        
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          color="medium"
+          (click)="annulerVersement()">
+          <ion-icon name="close" slot="start"></ion-icon>
+          Annuler
         </ion-button>
       </div>
     </ion-content>
@@ -495,6 +487,13 @@
             </div>
             <div class="course-price">
               <span class="price-amount">{{ formatCurrency(reservation.prix_total) }}</span>
+              <ion-chip 
+                [color]="getPaymentModeColor(reservation.mode_paiement)" 
+                class="payment-mode-chip"
+                *ngIf="reservation.mode_paiement">
+                <ion-icon [name]="getPaymentModeIcon(reservation.mode_paiement)"></ion-icon>
+                <ion-label>{{ getPaymentModeLabel(reservation.mode_paiement) }}</ion-label>
+              </ion-chip>
             </div>
           </div>
 
@@ -540,6 +539,17 @@
                 <div class="detail-content">
                   <span class="detail-label">Validé</span>
                   <span class="detail-value">{{ formatTime(reservation.date_code_validation) }}</span>
+                </div>
+              </div>
+              
+              <div class="detail-item payment-mode-item" *ngIf="reservation.mode_paiement">
+                <ion-icon 
+                  [name]="getPaymentModeIcon(reservation.mode_paiement)" 
+                  [color]="getPaymentModeColor(reservation.mode_paiement)">
+                </ion-icon>
+                <div class="detail-content">
+                  <span class="detail-label">Mode paiement</span>
+                  <span class="detail-value">{{ getPaymentModeLabel(reservation.mode_paiement) }}</span>
                 </div>
               </div>
             </div>
