@@ -3,7 +3,6 @@ import { SupabaseService } from './supabase.service';
 import { EntrepriseAuthService } from './entreprise-auth.service';
 import { SMSService } from './sms.service';
 import { WhatsAppService } from './whatsapp.service';
-import { DatabaseSetupService } from './database-setup.service';
 import { 
   ConducteurVersement, 
   Versement, 
@@ -31,8 +30,7 @@ export class VersementService {
     private supabaseService: SupabaseService,
     private entrepriseAuthService: EntrepriseAuthService,
     private smsService: SMSService,
-    private whatsAppService: WhatsAppService,
-    private databaseSetup: DatabaseSetupService
+    private whatsAppService: WhatsAppService
   ) { }
 
   // ==================== GESTION FILE D'ATTENTE ====================
