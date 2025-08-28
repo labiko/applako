@@ -1,14 +1,16 @@
 /**
  * STYLES PAGE LOGIN SUPER-ADMIN
- * Design sécurisé et professionnel
+ * Design moderne avec couleurs thème Lako
  */
 
 .super-admin-login {
-  --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --background: var(--ion-background-color, #fafafa) !important;
+  position: relative !important;
+  min-height: 100vh !important;
   
   ion-header ion-toolbar {
-    --background: rgba(0, 0, 0, 0.9);
-    --color: white;
+    --background: var(--lako-primary, #C1F11D);
+    --color: var(--lako-dark, #151515);
     
     .title-center {
       text-align: center;
@@ -20,6 +22,47 @@
       }
     }
   }
+  
+  // Fond dégradé principal directement sur ion-content
+  &::before {
+    content: '' !important;
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 100vh !important;
+    background: linear-gradient(
+      45deg,
+      transparent 20%,
+      rgba(193, 241, 29, 0.02) 40%,
+      rgba(193, 241, 29, 0.05) 60%,
+      rgba(193, 241, 29, 0.08) 80%,
+      rgba(193, 241, 29, 0.03) 100%
+    ) !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
+    animation: backgroundPulse 6s ease-in-out infinite !important;
+  }
+  
+  // Effet de particules sur ion-content
+  &::after {
+    content: '' !important;
+    position: fixed !important;
+    top: 20% !important;
+    right: 10% !important;
+    width: 200px !important;
+    height: 200px !important;
+    background: radial-gradient(
+      circle,
+      rgba(193, 241, 29, 0.1) 0%,
+      rgba(193, 241, 29, 0.05) 30%,
+      transparent 70%
+    ) !important;
+    border-radius: 50% !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
+    animation: floatEffect 8s ease-in-out infinite !important;
+  }
 }
 
 .login-container {
@@ -27,51 +70,203 @@
   display: flex;
   align-items: center;
   padding: 20px;
-  background: var(--background);
+  background: var(--ion-background-color, #fafafa);
+  position: relative;
+  overflow: hidden;
+  
+  // Dégradé animé très visible sur le côté droit  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+      135deg,
+      rgba(193, 241, 29, 0.15) 0%,
+      rgba(193, 241, 29, 0.25) 25%,
+      rgba(193, 241, 29, 0.35) 50%,
+      rgba(193, 241, 29, 0.20) 75%,
+      rgba(193, 241, 29, 0.10) 100%
+    );
+    border-radius: 100px 0 0 100px;
+    z-index: 0;
+    animation: visibleGradientPulse 4s ease-in-out infinite;
+  }
+  
+  // Cercle flottant plus visible
+  &::after {
+    content: '';
+    position: absolute;
+    top: 15%;
+    right: 5%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(
+      circle,
+      rgba(193, 241, 29, 0.25) 0%,
+      rgba(193, 241, 29, 0.15) 30%,
+      rgba(193, 241, 29, 0.05) 60%,
+      transparent 100%
+    );
+    border-radius: 50%;
+    z-index: 0;
+    animation: bigFloatEffect 10s ease-in-out infinite;
+    mix-blend-mode: soft-light;
+  }
+}
+
+// Particules lumineuses plus visibles
+.login-container {
+  .particles {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    
+    &::before, &::after {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: rgba(193, 241, 29, 0.8);
+      border-radius: 50%;
+      box-shadow: 
+        0 0 20px rgba(193, 241, 29, 0.6),
+        0 0 40px rgba(193, 241, 29, 0.4),
+        0 0 60px rgba(193, 241, 29, 0.2);
+    }
+    
+    &::before {
+      top: 30%;
+      right: 20%;
+      animation: visibleParticle1 12s ease-in-out infinite;
+    }
+    
+    &::after {
+      top: 70%;
+      right: 40%;
+      animation: visibleParticle2 15s ease-in-out infinite reverse;
+    }
+  }
+  
+  // Particules supplémentaires
+  .particles2 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    
+    &::before, &::after {
+      content: '';
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: rgba(193, 241, 29, 0.6);
+      border-radius: 50%;
+      box-shadow: 0 0 15px rgba(193, 241, 29, 0.4);
+    }
+    
+    &::before {
+      top: 20%;
+      right: 60%;
+      animation: visibleParticle3 20s ease-in-out infinite;
+    }
+    
+    &::after {
+      top: 80%;
+      right: 10%;
+      animation: visibleParticle4 18s ease-in-out infinite reverse;
+    }
+  }
 }
 
 .logo-section {
   text-align: center;
   margin-bottom: 2rem;
+  position: relative;
+  z-index: 10;
   
   .logo-icon {
     margin-bottom: 1rem;
     
     ion-icon {
       font-size: 4rem;
-      color: var(--ion-color-primary);
-      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+      color: var(--lako-primary, #C1F11D);
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
     }
   }
   
   h1 {
-    color: white;
+    color: var(--lako-dark, #151515);
     font-size: 2rem;
     font-weight: 700;
     margin: 0.5rem 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    text-shadow: none;
   }
   
   .subtitle {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--lako-secondary, #797979);
     font-size: 1rem;
     margin: 0;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    text-shadow: none;
   }
 }
 
 .login-card {
-  --background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
+  --background: white;
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(193, 241, 29, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  
+  // Effet de lueur subtile au survol
+  &::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(
+      45deg,
+      rgba(193, 241, 29, 0.1) 0%,
+      rgba(193, 241, 29, 0.05) 50%,
+      rgba(193, 241, 29, 0.1) 100%
+    );
+    border-radius: 18px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  &:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12),
+                0 0 20px rgba(193, 241, 29, 0.1);
+    transform: translateY(-2px);
+    
+    &::before {
+      opacity: 1;
+    }
+  }
   
   ion-card-header {
     text-align: center;
+    background: rgba(193, 241, 29, 0.05);
+    border-radius: 16px 16px 0 0;
     
     ion-card-title {
-      color: var(--ion-color-dark);
+      color: var(--lako-dark, #151515);
       font-weight: 600;
       font-size: 1.3rem;
     }
@@ -85,25 +280,34 @@
 .form-item {
   margin-bottom: 1rem;
   --border-radius: 12px;
-  --background: rgba(255, 255, 255, 0.8);
-  --border-color: rgba(0, 0, 0, 0.1);
+  --background: rgba(193, 241, 29, 0.03);
+  --border-color: rgba(193, 241, 29, 0.2);
+  transition: all 0.3s ease;
   
   &:hover {
-    --background: rgba(255, 255, 255, 0.9);
+    --background: rgba(193, 241, 29, 0.05);
+    --border-color: rgba(193, 241, 29, 0.3);
+  }
+  
+  &:focus-within {
+    --background: white;
+    --border-color: var(--lako-primary, #C1F11D);
+    box-shadow: 0 0 0 3px rgba(193, 241, 29, 0.1);
   }
   
   ion-label {
     font-weight: 500;
-    color: var(--ion-color-dark);
+    color: var(--lako-dark, #151515);
   }
   
   ion-input {
-    --color: var(--ion-color-dark);
+    --color: var(--lako-dark, #151515);
     font-size: 1rem;
   }
   
   ion-icon {
     margin-right: 8px;
+    color: var(--lako-secondary, #797979);
   }
 }
 
@@ -113,14 +317,23 @@
   --border-radius: 12px;
   font-weight: 600;
   font-size: 1rem;
+  transition: all 0.3s ease;
   
   &:not([disabled]) {
-    --background: linear-gradient(45deg, var(--ion-color-primary), var(--ion-color-secondary));
-    --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    --background: var(--lako-primary, #C1F11D);
+    --color: var(--lako-dark, #151515);
+    --box-shadow: 0 4px 16px rgba(193, 241, 29, 0.3);
+    
+    &:hover {
+      --box-shadow: 0 6px 20px rgba(193, 241, 29, 0.4);
+      transform: translateY(-1px);
+    }
   }
   
   &[disabled] {
     --opacity: 0.6;
+    --background: var(--lako-secondary, #797979);
+    --color: white;
   }
   
   ion-icon {
@@ -177,12 +390,14 @@
 .security-info {
   margin-top: 1.5rem;
   padding: 12px;
-  background: rgba(var(--ion-color-light-rgb), 0.3);
+  background: rgba(193, 241, 29, 0.05);
+  border: 1px solid rgba(193, 241, 29, 0.2);
   border-radius: 8px;
   text-align: center;
   
   small {
     line-height: 1.4;
+    color: var(--lako-secondary, #797979);
   }
 }
 
@@ -191,15 +406,15 @@
   margin-top: 2rem;
   
   p {
-    color: white;
+    color: var(--lako-dark, #151515);
     font-weight: 600;
     margin: 0.5rem 0;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    text-shadow: none;
   }
   
   small {
-    color: rgba(255, 255, 255, 0.7);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    color: var(--lako-secondary, #797979);
+    text-shadow: none;
   }
 }
 
@@ -207,10 +422,34 @@
 @media (max-width: 768px) {
   .login-container {
     padding: 10px;
+    
+    // Ajuster les effets pour mobile
+    &::before {
+      width: 70%;
+      opacity: 0.4;
+      animation-duration: 10s;
+    }
+    
+    &::after {
+      width: 50%;
+      height: 50%;
+      right: -15%;
+      animation-duration: 15s;
+    }
+    
+    .particles {
+      &::before, &::after {
+        width: 2px;
+        height: 2px;
+        box-shadow: 0 0 5px rgba(193, 241, 29, 0.2);
+      }
+    }
   }
   
   .logo-section {
     margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
     
     .logo-icon ion-icon {
       font-size: 3rem;
@@ -222,6 +461,9 @@
   }
   
   .login-card {
+    position: relative;
+    z-index: 1;
+    
     ion-card-content {
       padding: 1rem;
     }
@@ -240,6 +482,153 @@
   }
 }
 
+@keyframes backgroundPulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    opacity: 0.7;
+    transform: scale(1.02) rotate(1deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05) rotate(0deg);
+  }
+  75% {
+    opacity: 0.6;
+    transform: scale(1.01) rotate(-1deg);
+  }
+}
+
+@keyframes floatEffect {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateY(0) scale(1);
+  }
+  33% {
+    opacity: 0.8;
+    transform: translateY(-30px) scale(1.2);
+  }
+  66% {
+    opacity: 0.5;
+    transform: translateY(20px) scale(0.8);
+  }
+}
+
+@keyframes visibleGradientPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1) translateX(0);
+  }
+  25% {
+    opacity: 0.9;
+    transform: scale(1.02) translateX(-10px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05) translateX(-20px);
+  }
+  75% {
+    opacity: 0.8;
+    transform: scale(1.01) translateX(-5px);
+  }
+}
+
+@keyframes bigFloatEffect {
+  0%, 100% {
+    opacity: 0.5;
+    transform: translateY(0) translateX(0) scale(1);
+  }
+  25% {
+    opacity: 0.8;
+    transform: translateY(-40px) translateX(-20px) scale(1.1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-20px) translateX(-40px) scale(0.9);
+  }
+  75% {
+    opacity: 0.7;
+    transform: translateY(30px) translateX(-10px) scale(1.05);
+  }
+}
+
+@keyframes particleFloat1 {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateY(0) translateX(0) scale(1);
+  }
+  25% {
+    opacity: 0.8;
+    transform: translateY(-30px) translateX(-15px) scale(1.2);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(-10px) translateX(-30px) scale(0.8);
+  }
+  75% {
+    opacity: 0.7;
+    transform: translateY(15px) translateX(-10px) scale(1.1);
+  }
+}
+
+@keyframes visibleParticle1 {
+  0%, 100% {
+    opacity: 0.8;
+    transform: translateY(0) translateX(0) scale(1);
+  }
+  25% {
+    opacity: 1;
+    transform: translateY(-50px) translateX(-30px) scale(1.5);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateY(-20px) translateX(-60px) scale(0.8);
+  }
+  75% {
+    opacity: 0.9;
+    transform: translateY(40px) translateX(-20px) scale(1.2);
+  }
+}
+
+@keyframes visibleParticle2 {
+  0%, 100% {
+    opacity: 0.7;
+    transform: translateY(0) translateX(0) scale(0.9);
+  }
+  33% {
+    opacity: 1;
+    transform: translateY(60px) translateX(40px) scale(1.4);
+  }
+  66% {
+    opacity: 0.5;
+    transform: translateY(-40px) translateX(20px) scale(1.1);
+  }
+}
+
+@keyframes visibleParticle3 {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateY(0) translateX(0) scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translateY(-80px) translateX(100px) scale(1.3);
+  }
+}
+
+@keyframes visibleParticle4 {
+  0%, 100% {
+    opacity: 0.5;
+    transform: translateY(0) translateX(0) scale(0.8);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(50px) translateX(-80px) scale(1.2);
+  }
+}
+
 .login-card {
   animation: fadeInUp 0.6s ease-out;
 }
@@ -248,13 +637,7 @@
   animation: fadeInUp 0.4s ease-out;
 }
 
-// Focus states
-.form-item {
-  ion-input:focus-within {
-    --background: white;
-    --border-color: var(--ion-color-primary);
-  }
-}
+// Focus states sont maintenant intégrés dans .form-item ci-dessus
 
 // Loading state
 .login-button {
