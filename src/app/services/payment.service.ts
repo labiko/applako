@@ -147,9 +147,9 @@ export class PaymentService {
 
     const payment = reservation.paymentStatus;
     
-    // Pas de paiement = NE PEUT PAS déclencher (changé)
+    // Pas de paiement = PEUT déclencher pour la première fois (si config active)
     if (!payment) {
-      return false;
+      return true; // Le contrôle is_active sera fait dans l'historique
     }
 
     // Paiement réussi = ne peut pas relancer
@@ -168,5 +168,30 @@ export class PaymentService {
     }
 
     return false;
+  }
+
+  /**
+   * Vérifie si l'entreprise du conducteur a LengoPay activé
+   * @param entrepriseId ID de l'entreprise
+   * @returns true si config active
+   */
+  async isLengoPayActiveForEntreprise(entrepriseId: string): Promise<boolean> {
+    try {
+      const { data, error } = await this.supabaseService.client
+        .from('lengopay_config')
+        .select('is_active')
+        .eq('entreprise_id', entrepriseId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Erreur vérification config LengoPay:', error);
+        return false;
+      }
+
+      return data?.is_active === true;
+    } catch (error) {
+      console.error('Erreur isLengoPayActiveForEntreprise:', error);
+      return false;
+    }
   }
 }

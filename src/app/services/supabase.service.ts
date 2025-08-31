@@ -60,7 +60,10 @@ export class SupabaseService {
   async authenticateConducteur(telephone: string, password: string): Promise<Conducteur | null> {
     const { data, error } = await this.supabase
       .from('conducteurs')
-      .select('*')
+      .select(`
+        *,
+        entreprises(nom)
+      `)
       .eq('telephone', telephone)
       .eq('password', password)
       .single();
@@ -70,7 +73,14 @@ export class SupabaseService {
       return null;
     }
 
-    return data as Conducteur;
+    // Extraire le nom de l'entreprise de la jointure
+    const conducteur = data as any;
+    if (conducteur.entreprises && conducteur.entreprises.nom) {
+      conducteur.entreprise_nom = conducteur.entreprises.nom;
+      delete conducteur.entreprises; // Nettoyer l'objet
+    }
+
+    return conducteur as Conducteur;
   }
 
   // Authenticate entreprise (uniquement par email)

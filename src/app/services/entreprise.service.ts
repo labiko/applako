@@ -397,12 +397,20 @@ export class EntrepriseService {
 
       if (conducteurIds.length === 0) return [];
 
-      // Ensuite récupérer toutes les réservations sans limite
+      // Ensuite récupérer toutes les réservations sans limite avec les données de paiement
       const { data, error } = await this.supabaseService.client
         .from('reservations')
         .select(`
           *,
-          conducteurs:conducteur_id (nom, prenom, telephone)
+          conducteurs:conducteur_id (nom, prenom, telephone),
+          lengopay_payments!left (
+            id,
+            status,
+            amount,
+            currency,
+            payment_id,
+            processed_at
+          )
         `)
         .in('conducteur_id', conducteurIds)
         .order('created_at', { ascending: false });

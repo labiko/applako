@@ -246,6 +246,12 @@ export class FinancialDetailPage implements OnInit {
 
     const hasSuccessPayment = payments && payments.length > 0;
     
+    // Debug log pour vérifier les données de paiement
+    console.log(`🔍 Reservation ${reservation.id.substring(0, 8)}: ${hasSuccessPayment ? 'Mobile Money' : 'Cash'}`, {
+      hasPayments: !!payments?.length,
+      paymentsCount: payments?.length || 0
+    });
+    
     return {
       id: reservation.id,
       client_phone: reservation.client_phone,

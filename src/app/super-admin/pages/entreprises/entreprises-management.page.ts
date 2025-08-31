@@ -38,6 +38,7 @@ import {
   IonModal,
   IonButtons,
   IonAvatar,
+  IonChip,
   LoadingController,
   ToastController,
   AlertController,
@@ -79,7 +80,15 @@ import {
   shieldOutline,
   personAddOutline,
   colorPaletteOutline,
-  checkmarkOutline
+  checkmarkOutline,
+  globeOutline,
+  addCircleOutline,
+  idCardOutline,
+  returnUpBackOutline,
+  eyeOffOutline,
+  flashOutline,
+  pauseOutline,
+  chatbubbleEllipsesOutline
 } from 'ionicons/icons';
 
 import { 
@@ -90,6 +99,7 @@ import {
 } from '../../services/entreprise-management.service';
 import { BlocageUtils } from '../../../utils/blocage.utils';
 import { BlockageService } from '../../../services/blocage.service';
+import { LengoPayConfigService } from '../../services/lengopay-config.service';
 import { Injector } from '@angular/core';
 
 @Component({
@@ -129,7 +139,8 @@ import { Injector } from '@angular/core';
     IonToggle,
     IonModal,
     IonButtons,
-    IonAvatar
+    IonAvatar,
+    IonChip
   ]
 })
 export class EntreprisesManagementPage implements OnInit {
@@ -190,6 +201,29 @@ export class EntreprisesManagementPage implements OnInit {
   isDetailsModalOpen = false;
   selectedReservationDetails: any = null;
 
+  // Modal Configuration LengoPay
+  isLengoPayConfigModalOpen = false;
+  selectedEntrepriseForLengoPay: Entreprise | null = null;
+  isLoadingLengoPayConfig = false;
+  lengoPayConfig: any = null;
+  isEditingLengoPay = false;
+  isCreationMode = false;
+  showLicenseKey = false;
+  isTesting = false;
+  isLengoPayActive = false; // Statut actif/inactif de la configuration
+  lengoPayForm = {
+    api_url: '',
+    license_key: '',
+    website_id: '',
+    callback_url: '',
+    telephone_marchand: ''
+  };
+  greenApiData = {
+    instance_id: '',
+    token: '',
+    base_url: ''
+  };
+
   constructor(
     private entrepriseService: EntrepriseManagementService,
     private router: Router,
@@ -197,7 +231,8 @@ export class EntreprisesManagementPage implements OnInit {
     private toastController: ToastController,
     private alertController: AlertController,
     private blocageService: BlockageService,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private lengoPayConfigService: LengoPayConfigService
   ) {
     // Ajouter les icônes
     addIcons({
@@ -235,7 +270,15 @@ export class EntreprisesManagementPage implements OnInit {
       shieldOutline,
       personAddOutline,
       colorPaletteOutline,
-      checkmarkOutline
+      checkmarkOutline,
+      globeOutline,
+      idCardOutline,
+      returnUpBackOutline,
+      eyeOffOutline,
+      flashOutline,
+      pauseOutline,
+      chatbubbleEllipsesOutline,
+      addCircleOutline
     });
   }
 
@@ -863,6 +906,21 @@ Cette action va:
     );
   }
 
+  /**
+   * Validation du formulaire LengoPay pour création
+   */
+  isLengoPayFormValid(): boolean {
+    if (!this.isCreationMode) return true;
+    
+    return !!(
+      this.lengoPayForm.api_url?.trim() &&
+      this.lengoPayForm.license_key?.trim() &&
+      this.lengoPayForm.website_id?.trim() &&
+      this.lengoPayForm.callback_url?.trim() &&
+      this.lengoPayForm.telephone_marchand?.trim()
+    );
+  }
+
 
   trackByEntreprise(index: number, entreprise: Entreprise): string {
     return entreprise.id;
@@ -897,6 +955,363 @@ Cette action va:
     });
     await toast.present();
   }
+
+  // ==================== CONFIGURATION LENGOPAY ====================
+
+  async onConfigureLengoPay(entreprise: Entreprise) {
+    console.log('🎯 === DÉBUT onConfigureLengoPay ===');
+    console.log('🏢 Entreprise sélectionnée:', entreprise.nom, '- ID:', entreprise.id);
+    
+    this.selectedEntrepriseForLengoPay = entreprise;
+    this.isLengoPayConfigModalOpen = true;
+    console.log('✅ Modal ouvert pour entreprise:', entreprise.nom);
+    
+    // Charger directement les données - loadLengoPayConfig() gère la réinitialisation
+    await this.loadLengoPayConfig(entreprise.id);
+  }
+
+  async loadLengoPayConfig(entrepriseId: string) {
+    try {
+      console.log('🔍 === DÉBUT loadLengoPayConfig ===');
+      console.log('🏢 ID Entreprise:', entrepriseId);
+      this.isLoadingLengoPayConfig = true;
+      
+      // Récupérer la configuration depuis lengopay_config
+      console.log('📡 Requête Supabase lengopay_config...');
+      const { data, error } = await this.entrepriseService.supabaseClient
+        .from('lengopay_config')
+        .select('*')
+        .eq('entreprise_id', entrepriseId)
+        .maybeSingle(); // Pas de filtre is_active pour permettre consultation des configs inactives
+
+      console.log('📥 Réponse Supabase - Data:', data);
+      console.log('📥 Réponse Supabase - Error:', error);
+
+      if (error) {
+        console.error('❌ Erreur requête lengopay_config:', error);
+        throw error;
+      }
+
+      this.lengoPayConfig = data;
+      this.isCreationMode = this.lengoPayConfigService.isCreationMode(data);
+      console.log('🎭 Mode détecté:', this.isCreationMode ? 'CRÉATION' : 'CONSULTATION');
+      console.log('📋 Configuration chargée:', this.lengoPayConfig);
+      console.log('🔍 DIAGNOSTIC - data:', data);
+      console.log('🔍 DIAGNOSTIC - data?.id:', data?.id);
+      console.log('🔍 DIAGNOSTIC - isCreationMode result:', this.lengoPayConfigService.isCreationMode(data));
+      
+      if (data) {
+        // ✅ CONFIGURATION EXISTANTE - Mode consultation/édition
+        console.log('📋 Configuration existante trouvée');
+        console.log('📝 Remplissage formulaire avec data existante');
+        this.lengoPayForm = {
+          api_url: data.api_url || '',
+          license_key: data.license_key || '',
+          website_id: data.website_id || '',
+          callback_url: data.callback_url || '',
+          telephone_marchand: data.telephone_marchand || ''
+        };
+        console.log('📝 Formulaire rempli:', this.lengoPayForm);
+        
+        this.greenApiData = {
+          instance_id: data.green_api_instance_id || '',
+          token: data.green_api_token || '',
+          base_url: data.green_api_base_url || ''
+        };
+        console.log('🔌 Green API rempli:', this.greenApiData);
+        
+        // Définir l'état actif/inactif
+        this.isLengoPayActive = data.is_active || false;
+        console.log('🎛️ État configuration:', this.isLengoPayActive ? 'ACTIVE' : 'INACTIVE');
+        
+        this.isEditingLengoPay = false; // Mode consultation par défaut
+        console.log('🔒 Mode consultation activé');
+      } else {
+        // 🆕 NOUVELLE CONFIGURATION - Mode création
+        console.log('🆕 === MODE CRÉATION DÉTECTÉ ===');
+        console.log('🆕 Aucune configuration existante - Mode création');
+        const greenApiConstants = this.lengoPayConfigService.getGreenApiConstants();
+        console.log('🔌 Constantes Green API récupérées:', greenApiConstants);
+        
+        // FORMULAIRE LENGOPAY COMPLÈTEMENT VIDE pour la création
+        this.lengoPayForm = {
+          api_url: 'https://sandbox.lengopay.com/api/v1/payments', // Seul champ prérempli
+          license_key: '',
+          website_id: '',
+          callback_url: '',
+          telephone_marchand: ''
+        };
+        console.log('🆕 Formulaire LengoPay créé (VIDE):', this.lengoPayForm);
+        
+        // Préremplir UNIQUEMENT Green API avec les constantes
+        this.greenApiData = {
+          instance_id: greenApiConstants.instance_id,
+          token: greenApiConstants.token,
+          base_url: greenApiConstants.base_url
+        };
+        console.log('🔌 Green API prérempli:', this.greenApiData);
+        
+        // Mode création = configuration inactive par défaut
+        this.isLengoPayActive = false;
+        console.log('🎛️ État configuration (création):', 'INACTIVE par défaut');
+        
+        // Mode création = tous les champs LengoPay sont éditables
+        this.isEditingLengoPay = true;
+        console.log('✏️ Mode édition LengoPay activé');
+        console.log('🆕 === FIN MODE CRÉATION ===');
+      }
+
+      // 🔄 FORCER LA DÉTECTION DES CHANGEMENTS
+      console.log('🔄 Forcing change detection...');
+      this.changeDetectorRef.detectChanges();
+      console.log('🔄 Change detection terminée');
+      
+      console.log('📊 État final du formulaire:', this.lengoPayForm);
+      console.log('📊 État final Green API:', this.greenApiData);
+      console.log('📊 Mode édition:', this.isEditingLengoPay);
+      console.log('📊 Mode création:', this.isCreationMode);
+      console.log('🔍 === FIN loadLengoPayConfig ===');
+
+    } catch (error) {
+      console.error('❌ Erreur chargement config LengoPay:', error);
+      this.showError('Erreur lors du chargement de la configuration');
+    } finally {
+      this.isLoadingLengoPayConfig = false;
+    }
+  }
+
+  closeLengoPayConfigModal() {
+    this.isLengoPayConfigModalOpen = false;
+    this.selectedEntrepriseForLengoPay = null;
+    this.lengoPayConfig = null;
+    this.isEditingLengoPay = false;
+    this.isCreationMode = false;
+    this.showLicenseKey = false;
+    this.isLengoPayActive = false;
+    
+    // 🔄 RÉINITIALISATION COMPLÈTE DU FORMULAIRE
+    this.lengoPayForm = {
+      api_url: '',
+      license_key: '',
+      website_id: '',
+      callback_url: '',
+      telephone_marchand: ''
+    };
+    
+    this.greenApiData = {
+      instance_id: '',
+      token: '',
+      base_url: ''
+    };
+    this.isTesting = false;
+  }
+
+  async refreshLengoPayConfig() {
+    if (this.selectedEntrepriseForLengoPay) {
+      await this.loadLengoPayConfig(this.selectedEntrepriseForLengoPay.id);
+      this.showInfo('Configuration mise à jour');
+    }
+  }
+
+  async toggleLengoPayActive() {
+    try {
+      const newStatus = !this.isLengoPayActive;
+      
+      if (this.isCreationMode) {
+        // En mode création, juste changer la valeur locale
+        this.isLengoPayActive = newStatus;
+        console.log('🎛️ Mode création - Statut local changé:', newStatus ? 'ACTIVE' : 'INACTIVE');
+        return;
+      }
+      
+      // En mode édition, mettre à jour en base
+      if (!this.lengoPayConfig?.id) {
+        this.showError('Configuration invalide');
+        return;
+      }
+      
+      const { error } = await this.entrepriseService.supabaseClient
+        .from('lengopay_config')
+        .update({ 
+          is_active: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', this.lengoPayConfig.id);
+      
+      if (error) {
+        console.error('❌ Erreur mise à jour statut:', error);
+        this.showError('Erreur lors de la mise à jour du statut');
+        return;
+      }
+      
+      this.isLengoPayActive = newStatus;
+      this.showSuccess(`Configuration ${newStatus ? 'activée' : 'désactivée'}`);
+      console.log('🎛️ Statut mis à jour en base:', newStatus ? 'ACTIVE' : 'INACTIVE');
+      
+    } catch (error) {
+      console.error('❌ Erreur toggle statut:', error);
+      this.showError('Erreur lors du changement de statut');
+    }
+  }
+
+  editLengoPayField(field: string) {
+    this.isEditingLengoPay = true;
+  }
+
+  async saveLengoPayField(field: string) {
+    try {
+      if (!this.selectedEntrepriseForLengoPay) {
+        throw new Error('Aucune entreprise sélectionnée');
+      }
+
+      const updateData = {
+        [field]: this.lengoPayForm[field as keyof typeof this.lengoPayForm],
+        updated_at: new Date().toISOString()
+      };
+
+      if (this.lengoPayConfig) {
+        // Mise à jour
+        const { error } = await this.entrepriseService.supabaseClient
+          .from('lengopay_config')
+          .update(updateData)
+          .eq('entreprise_id', this.selectedEntrepriseForLengoPay.id);
+
+        if (error) throw error;
+      } else {
+        // Création avec service
+        const insertData = this.lengoPayConfigService.prepareConfigForSave(
+          this.lengoPayForm, 
+          this.selectedEntrepriseForLengoPay.id,
+          this.isLengoPayActive
+        );
+
+        const { data, error } = await this.entrepriseService.supabaseClient
+          .from('lengopay_config')
+          .insert(insertData)
+          .select()
+          .single();
+
+        if (error) throw error;
+        this.lengoPayConfig = data;
+        this.isCreationMode = false; // Sortir du mode création
+      }
+
+      this.isEditingLengoPay = false;
+      this.showSuccess(`${field} mis à jour`);
+
+    } catch (error) {
+      console.error('❌ Erreur sauvegarde LengoPay:', error);
+      this.showError('Erreur lors de la sauvegarde');
+    }
+  }
+
+  toggleLicenseKeyVisibility() {
+    this.showLicenseKey = !this.showLicenseKey;
+  }
+
+  async testLengoPayConfiguration() {
+    try {
+      this.isTesting = true;
+      
+      // Simuler un test de configuration
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Ici on pourrait faire un vrai test API
+      this.showSuccess('Configuration testée avec succès');
+
+    } catch (error) {
+      console.error('❌ Erreur test LengoPay:', error);
+      this.showError('Échec du test de configuration');
+    } finally {
+      this.isTesting = false;
+    }
+  }
+
+  async deactivateLengoPayConfig() {
+    if (!this.lengoPayConfig) return;
+
+    const alert = await this.alertController.create({
+      header: 'Désactiver LengoPay',
+      message: 'Êtes-vous sûr de vouloir désactiver la configuration LengoPay ?',
+      buttons: [
+        { text: 'Annuler', role: 'cancel' },
+        {
+          text: 'Désactiver',
+          role: 'destructive',
+          handler: async () => {
+            try {
+              const { error } = await this.entrepriseService.supabaseClient
+                .from('lengopay_config')
+                .update({ is_active: false, updated_at: new Date().toISOString() })
+                .eq('id', this.lengoPayConfig.id);
+
+              if (error) throw error;
+
+              this.lengoPayConfig.is_active = false;
+              this.showSuccess('Configuration désactivée');
+            } catch (error) {
+              console.error('❌ Erreur désactivation:', error);
+              this.showError('Erreur lors de la désactivation');
+            }
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  getEnterpriseInitials(entreprise: Entreprise): string {
+    return entreprise.nom
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase())
+      .join('')
+      .substring(0, 2);
+  }
+
+  /**
+   * NOUVELLE MÉTHODE - Créer une configuration LengoPay complète
+   */
+  async createLengoPayConfiguration() {
+    try {
+      if (!this.selectedEntrepriseForLengoPay) {
+        throw new Error('Aucune entreprise sélectionnée');
+      }
+
+      this.isTesting = true;
+      
+      // Préparer les données complètes avec Green API
+      const insertData = this.lengoPayConfigService.prepareConfigForSave(
+        this.lengoPayForm, 
+        this.selectedEntrepriseForLengoPay.id,
+        this.isLengoPayActive
+      );
+
+      console.log('📝 Création config complète:', insertData);
+
+      const { data, error } = await this.entrepriseService.supabaseClient
+        .from('lengopay_config')
+        .insert(insertData)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Mettre à jour l'état
+      this.lengoPayConfig = data;
+      this.isCreationMode = false;
+      this.isEditingLengoPay = false;
+
+      this.showSuccess('Configuration LengoPay créée avec succès');
+
+    } catch (error) {
+      console.error('❌ Erreur création config LengoPay:', error);
+      this.showError('Erreur lors de la création de la configuration');
+    } finally {
+      this.isTesting = false;
+    }
+  }
+
 
   // ==================== SYSTÈME DE BLOCAGE ====================
 

@@ -48,6 +48,11 @@ export class EntrepriseManagementService {
 
   constructor(private supabase: SupabaseService) {}
 
+  // Getter pour exposer le client Supabase
+  get supabaseClient() {
+    return this.supabase.client;
+  }
+
   /**
    * Récupérer toutes les entreprises avec statistiques
    */

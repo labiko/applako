@@ -75,7 +75,8 @@ export class ProfilePage implements OnInit {
     rating: 0,
     totalRides: 0,
     memberSince: '',
-    rayon_km_reservation: 5
+    rayon_km_reservation: 5,
+    entreprise_nom: ''
   };
 
   constructor(
@@ -134,7 +135,8 @@ export class ProfilePage implements OnInit {
         rating: conducteur.note_moyenne || 5.0,
         totalRides: totalRides,
         memberSince: memberSince,
-        rayon_km_reservation: conducteur.rayon_km_reservation
+        rayon_km_reservation: conducteur.rayon_km_reservation,
+        entreprise_nom: conducteur.entreprise_nom || ''
       };
     }
   }

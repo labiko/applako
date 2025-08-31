@@ -2,6 +2,311 @@
  * STYLES PAGE GESTION ENTREPRISES SUPER-ADMIN
  */
 
+// ==================== STYLES MODAL LENGOPAY CONFIG ====================
+
+.lengopay-config-modal {
+  --width: 90vw;
+  --max-width: 1200px;
+  --height: 90vh;
+  --max-height: 900px;
+  --border-radius: 16px;
+  
+  .lengopay-config-toolbar {
+    background: linear-gradient(135deg, #6f42c1 0%, #9c27b0 100%);
+    
+    ion-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      ion-icon {
+        margin-right: 8px;
+      }
+      
+      .mode-indicator {
+        margin-left: 8px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        
+        ion-icon {
+          margin-right: 4px;
+          font-size: 1rem;
+        }
+        
+        ion-label {
+          font-size: 0.85rem;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+
+  .enterprise-card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    
+    .enterprise-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      
+      .enterprise-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #C1F11D 0%, #96E072 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        color: #333;
+      }
+      
+      .enterprise-info {
+        flex: 1;
+        
+        h2 {
+          margin: 0 0 4px 0;
+          font-size: 1.3rem;
+          font-weight: 600;
+          color: #333;
+        }
+        
+        .proprietaire-label {
+          margin: 0;
+          font-size: 0.9rem;
+          color: #666;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+      }
+      
+      .enterprise-status {
+        .status-badge {
+          font-size: 0.8rem;
+          font-weight: 600;
+          padding: 6px 12px;
+          border-radius: 20px;
+        }
+      }
+    }
+  }
+
+  .lengopay-section, .greenapi-section {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    
+    .lengopay-header, .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e9ecef;
+      
+      .lengopay-logo {
+        display: flex;
+        align-items: center;
+        
+        .lengopay-logo-img {
+          height: 40px;
+          width: auto;
+          object-fit: contain;
+        }
+      }
+      
+      .lengopay-status {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        
+        .config-status {
+          font-size: 0.75rem;
+          font-weight: 600;
+          padding: 4px 8px;
+        }
+        
+        .toggle-status-btn {
+          --padding-start: 8px;
+          --padding-end: 8px;
+          font-size: 0.85rem;
+          font-weight: 500;
+          
+          ion-icon {
+            margin-right: 4px;
+          }
+        }
+      }
+      
+      .lengopay-title, .section-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      .lengopay-status {
+        .config-status {
+          font-size: 0.8rem;
+          font-weight: 600;
+          padding: 6px 12px;
+          border-radius: 20px;
+        }
+      }
+    }
+
+    .config-form {
+      .config-field {
+        margin-bottom: 20px;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        background: #f8f9fa;
+        
+        .field-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 16px;
+          background: linear-gradient(135deg, #f1f3f4 0%, #e9ecef 100%);
+          border-bottom: 1px solid #e9ecef;
+          border-radius: 12px 12px 0 0;
+          
+          ion-icon {
+            color: #6f42c1;
+            font-size: 1.1rem;
+          }
+          
+          .field-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #495057;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+        }
+        
+        .field-content {
+          display: flex;
+          align-items: center;
+          padding: 8px;
+          
+          .lengopay-input {
+            flex: 1;
+            --background: transparent;
+            --padding: 12px;
+            --border-radius: 8px;
+            --color: #333;
+            
+            &.disabled-input {
+              --color: #6c757d;
+              opacity: 0.6;
+            }
+          }
+          
+          .field-actions {
+            display: flex;
+            gap: 4px;
+            
+            ion-button {
+              --border-radius: 8px;
+              height: 36px;
+              width: 36px;
+            }
+          }
+        }
+      }
+    }
+
+    .lengopay-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 24px;
+      
+      ion-button {
+        --border-radius: 12px;
+        font-weight: 600;
+        height: 48px;
+      }
+    }
+  }
+
+  // Badge enabled pour nouvelle configuration
+  .enabled-badge {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+  }
+
+  // Section Green API désactivée
+  .disabled-section {
+    opacity: 0.6;
+    pointer-events: none;
+    background: #f8f9fa !important;
+    
+    .disabled-header {
+      .disabled-icon {
+        color: #adb5bd !important;
+      }
+      
+      .disabled-title {
+        color: #6c757d !important;
+      }
+    }
+    
+    .disabled-badge {
+      background: #dee2e6;
+      color: #6c757d;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .disabled-form {
+      .disabled-field {
+        background: #e9ecef !important;
+        border-color: #dee2e6 !important;
+        
+        .disabled-header {
+          background: #dee2e6 !important;
+          
+          .disabled-icon {
+            color: #adb5bd !important;
+          }
+          
+          .disabled-label {
+            color: #6c757d !important;
+          }
+        }
+        
+        .disabled-input {
+          --color: #6c757d !important;
+          opacity: 0.7 !important;
+        }
+      }
+    }
+  }
+}
+
 // ==================== STYLES RÉSERVATIONS (STYLE A77) ====================
 
 .reservation-item-entreprise {

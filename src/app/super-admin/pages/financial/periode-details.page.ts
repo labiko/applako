@@ -42,6 +42,7 @@ import {
   arrowBackOutline,
   cashOutline,
   cardOutline,
+  phonePortraitOutline,
   statsChartOutline,
   businessOutline,
   personOutline,
@@ -70,6 +71,7 @@ import {
   CommissionDetail 
 } from '../../services/financial-management.service';
 import { CommissionManagementService } from '../../services/commission-management.service';
+import { SupabaseService } from '../../../services/supabase.service';
 
 // Interface pour un groupe de conducteur avec ses réservations
 interface ConducteurGroup {
@@ -106,6 +108,7 @@ interface ReservationDetail {
   created_at: string;
   date_code_validation?: string | null; // Date de validation du code
   code_validation?: string; // Code de validation
+  type_paiement?: 'mobile_money' | 'cash'; // Type de paiement détecté
   conducteur?: {
     id: string;
     nom: string;
@@ -407,6 +410,17 @@ interface ReservationDetail {
                     <ion-icon name="time-outline" color="warning"></ion-icon>
                     En attente de validation
                   </p>
+                  
+                  <!-- Mode de paiement -->
+                  <div class="payment-type-badge" *ngIf="reservation.type_paiement">
+                    <ion-chip 
+                      [color]="reservation.type_paiement === 'mobile_money' ? 'warning' : 'medium'"
+                      outline
+                      size="small">
+                      <ion-icon [name]="reservation.type_paiement === 'mobile_money' ? 'phone-portrait-outline' : 'cash-outline'"></ion-icon>
+                      <ion-label>{{ reservation.type_paiement === 'mobile_money' ? 'Mobile Money' : 'Cash' }}</ion-label>
+                    </ion-chip>
+                  </div>
                 </div>
                 
                 <div class="reservation-footer">
@@ -456,6 +470,17 @@ interface ReservationDetail {
                             [color]="reservation.date_code_validation ? 'success' : 'warning'"></ion-icon>
                   {{ reservation.date_code_validation ? 'Validé' : 'En attente' }}
                 </p>
+                
+                <!-- Mode de paiement -->
+                <div class="payment-type-badge" *ngIf="reservation.type_paiement">
+                  <ion-chip 
+                    [color]="reservation.type_paiement === 'mobile_money' ? 'warning' : 'medium'"
+                    outline
+                    size="small">
+                    <ion-icon [name]="reservation.type_paiement === 'mobile_money' ? 'phone-portrait-outline' : 'cash-outline'"></ion-icon>
+                    <ion-label>{{ reservation.type_paiement === 'mobile_money' ? 'Mobile Money' : 'Cash' }}</ion-label>
+                  </ion-chip>
+                </div>
               </div>
               
               <div class="card-footer">
@@ -535,6 +560,17 @@ interface ReservationDetail {
                           <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
                           Validé le {{ formatDate(reservation.date_code_validation) }}
                         </p>
+                        
+                        <!-- Mode de paiement -->
+                        <div class="payment-type-badge" *ngIf="reservation.type_paiement">
+                          <ion-chip 
+                            [color]="reservation.type_paiement === 'mobile_money' ? 'warning' : 'medium'"
+                            outline
+                            size="small">
+                            <ion-icon [name]="reservation.type_paiement === 'mobile_money' ? 'phone-portrait-outline' : 'cash-outline'"></ion-icon>
+                            <ion-label>{{ reservation.type_paiement === 'mobile_money' ? 'Mobile Money' : 'Cash' }}</ion-label>
+                          </ion-chip>
+                        </div>
                       </div>
                     </div>
                   </ion-item>
@@ -642,6 +678,7 @@ export class PeriodeDetailsPage implements OnInit {
   constructor(
     private financialService: FinancialManagementService,
     private commissionService: CommissionManagementService,
+    private supabase: SupabaseService,
     private route: ActivatedRoute,
     private router: Router,
     private loadingController: LoadingController,
@@ -652,6 +689,7 @@ export class PeriodeDetailsPage implements OnInit {
       arrowBackOutline,
       cashOutline,
       cardOutline,
+      phonePortraitOutline,
       statsChartOutline,
       businessOutline,
       personOutline,
@@ -722,6 +760,9 @@ export class PeriodeDetailsPage implements OnInit {
     );
     this.reservations = data || [];
     
+    // Enrichir avec le type de paiement (Mobile Money vs Cash)
+    await this.enrichReservationsWithPaymentType();
+    
     // Séparer les réservations validées vs en attente
     this.reservationsValidees = this.reservations.filter(r => r.date_code_validation !== null);
     this.reservationsEnAttente = this.reservations.filter(r => r.date_code_validation === null);
@@ -735,6 +776,40 @@ export class PeriodeDetailsPage implements OnInit {
       
     // Regrouper par conducteur (uniquement les validées pour les commissions)
     await this.groupReservationsByConducteur();
+  }
+
+  /**
+   * Enrichit les réservations avec le type de paiement (Mobile Money vs Cash)
+   */
+  private async enrichReservationsWithPaymentType() {
+    for (const reservation of this.reservations) {
+      try {
+        // Vérifier s'il y a un paiement Mobile Money SUCCESS
+        const { data: payments } = await this.supabase.client
+          .from('lengopay_payments')
+          .select('status, amount')
+          .eq('reservation_id', reservation.id)
+          .eq('status', 'SUCCESS');
+
+        const hasSuccessPayment = payments && payments.length > 0;
+        
+        // Enrichir la réservation avec le type de paiement
+        reservation.type_paiement = hasSuccessPayment ? 'mobile_money' : 'cash';
+        
+        // Debug log
+        console.log(`🔍 Reservation ${reservation.id.substring(0, 8)}: ${hasSuccessPayment ? 'Mobile Money' : 'Cash'}`, {
+          hasPayments: !!payments?.length,
+          paymentsCount: payments?.length || 0
+        });
+        
+      } catch (error) {
+        console.error(`❌ Erreur enrichissement réservation ${reservation.id}:`, error);
+        // Par défaut, considérer comme Cash en cas d'erreur
+        reservation.type_paiement = 'cash';
+      }
+    }
+    
+    console.log(`💰 ${this.reservations.length} réservations enrichies avec type de paiement`);
   }
 
   // Filtres et recherche

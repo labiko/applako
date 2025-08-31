@@ -117,6 +117,11 @@ export class HistoriquePage implements OnInit {
    * Charge le statut de paiement pour toutes les réservations acceptées
    */
   private async loadPaymentStatusForReservations() {
+    // Récupérer l'entreprise du conducteur connecté
+    const conducteur = this.authService.getCurrentConducteur();
+    const isLengoPayActive = conducteur?.entreprise_id ? 
+      await this.paymentService.isLengoPayActiveForEntreprise(conducteur.entreprise_id) : false;
+
     for (const reservation of this.reservations) {
       if (reservation.statut === 'accepted' || reservation.statut === 'completed') {
         try {
@@ -128,8 +133,9 @@ export class HistoriquePage implements OnInit {
             reservation.isPaymentExpired = this.paymentService.isPaymentExpired(paymentStatus.created_at);
           }
           
-          // Déterminer si on peut relancer un paiement
-          reservation.canRetriggerPayment = this.paymentService.canRetriggerPayment(reservation);
+          // Déterminer si on peut relancer un paiement (inclut vérification is_active)
+          const canRetriggerBasedOnStatus = this.paymentService.canRetriggerPayment(reservation);
+          reservation.canRetriggerPayment = canRetriggerBasedOnStatus && isLengoPayActive;
         } catch (error) {
           console.error(`Erreur chargement paiement pour ${reservation.id}:`, error);
         }
@@ -417,13 +423,21 @@ export class HistoriquePage implements OnInit {
     await loading.present();
 
     try {
+      // Vérifier la configuration LengoPay
+      const conducteur = this.authService.getCurrentConducteur();
+      const isLengoPayActive = conducteur?.entreprise_id ? 
+        await this.paymentService.isLengoPayActiveForEntreprise(conducteur.entreprise_id) : false;
+
       // Recharger le statut de paiement pour cette réservation
       const paymentStatus = await this.paymentService.getLatestPaymentStatus(reservation.id);
       
       if (paymentStatus) {
         reservation.paymentStatus = paymentStatus;
         reservation.isPaymentExpired = this.paymentService.isPaymentExpired(paymentStatus.created_at);
-        reservation.canRetriggerPayment = this.paymentService.canRetriggerPayment(reservation);
+        
+        // Appliquer la logique complète pour canRetriggerPayment
+        const canRetriggerBasedOnStatus = this.paymentService.canRetriggerPayment(reservation);
+        reservation.canRetriggerPayment = canRetriggerBasedOnStatus && isLengoPayActive;
         
         // Message selon le statut
         if (paymentStatus.status === 'SUCCESS' || paymentStatus.status === 'Success') {
@@ -434,6 +448,10 @@ export class HistoriquePage implements OnInit {
           this.presentToast('Statut mis à jour', 'success');
         }
       } else {
+        // Pas de paiement mais vérifier si config active pour permettre le déclenchement
+        const canRetriggerBasedOnStatus = this.paymentService.canRetriggerPayment(reservation);
+        reservation.canRetriggerPayment = canRetriggerBasedOnStatus && isLengoPayActive;
+        
         this.presentToast('Aucun paiement trouvé', 'warning');
       }
     } catch (error) {

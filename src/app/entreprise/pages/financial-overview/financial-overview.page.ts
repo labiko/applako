@@ -363,13 +363,13 @@ interface ResumeFinancier {
         <ion-card-content>
           <ion-grid>
             <ion-row>
-              <ion-col size="6">
+              <ion-col size="12" size-md="6">
                 <div class="stat-item">
                   <div class="stat-value">{{ filteredReservations.length }}</div>
                   <div class="stat-label">Réservations</div>
                 </div>
               </ion-col>
-              <ion-col size="6">
+              <ion-col size="12" size-md="6">
                 <div class="stat-item">
                   <div class="stat-value">{{ formatPrice(getTotalByType('all')) }}</div>
                   <div class="stat-label">CA Total</div>
@@ -377,7 +377,7 @@ interface ResumeFinancier {
               </ion-col>
             </ion-row>
             <ion-row>
-              <ion-col size="6">
+              <ion-col size="12" size-md="6">
                 <div class="stat-item mobile-money">
                   <div class="stat-value">{{ formatPrice(getTotalByType('mobile_money')) }}</div>
                   <div class="stat-label">
@@ -386,7 +386,7 @@ interface ResumeFinancier {
                   </div>
                 </div>
               </ion-col>
-              <ion-col size="6">
+              <ion-col size="12" size-md="6">
                 <div class="stat-item cash">
                   <div class="stat-value">{{ formatPrice(getTotalByType('cash')) }}</div>
                   <div class="stat-label">
@@ -405,7 +405,7 @@ interface ResumeFinancier {
         <ion-card-content>
           <ion-grid>
             <ion-row>
-              <ion-col size="8">
+              <ion-col size="12" size-md="8">
                 <ion-searchbar 
                   [(ngModel)]="searchTerm"
                   (ionInput)="onSearchChange($event)"
@@ -413,7 +413,7 @@ interface ResumeFinancier {
                   show-clear-button="focus">
                 </ion-searchbar>
               </ion-col>
-              <ion-col size="4">
+              <ion-col size="12" size-md="4">
                 <ion-select 
                   [(ngModel)]="filterType" 
                   (ionChange)="onFilterChange($event)"
@@ -435,7 +435,7 @@ interface ResumeFinancier {
           <ion-card-content>
             <ion-grid>
               <ion-row>
-                <ion-col size="8">
+                <ion-col size="12" size-md="8">
                   <!-- Informations principales -->
                   <div class="reservation-header">
                     <div class="client-phone">
@@ -446,13 +446,19 @@ interface ResumeFinancier {
                       {{ formatDateTime(reservation.date_reservation, reservation.heure_reservation, reservation.minute_reservation) }}
                     </div>
                   </div>
+                  
+                  <!-- ID de réservation complet -->
+                  <div class="reservation-id">
+                    <ion-icon name="receipt-outline"></ion-icon>
+                    <span class="full-id">{{ reservation.id }}</span>
+                  </div>
 
                   <!-- Trajet -->
                   <div class="trip-info">
                     <div class="locations">
                       <div class="departure">
                         <ion-icon name="location-outline" color="success"></ion-icon>
-                        <span>{{ reservation.depart_nom }}</span>
+                        <span>{{ reservation.depart_nom || 'Position GPS' }}</span>
                       </div>
                       <div class="destination">
                         <ion-icon name="location-outline" color="danger"></ion-icon>
@@ -468,7 +474,7 @@ interface ResumeFinancier {
                   </div>
                 </ion-col>
 
-                <ion-col size="4" class="reservation-summary">
+                <ion-col size="12" size-md="4" class="reservation-summary">
                   <!-- Prix total -->
                   <div class="price-total">
                     {{ formatPrice(reservation.prix_total) }}
@@ -775,18 +781,24 @@ export class FinancialOverviewPage implements OnInit {
         .from('lengopay_payments')
         .select('reservation_id, status')
         .in('reservation_id', reservationIds)
-        .eq('status', 'completed');
+        .eq('status', 'SUCCESS');
 
       if (!paiementsError) {
         paiementsData = paiements || [];
       }
     }
 
+    // Debug log pour vérifier la détection
+    console.log(`💰 ${paiementsData.length} paiements Mobile Money SUCCESS trouvés sur ${reservationIds.length} réservations`);
+    
     // Traiter les données
     this.allReservations = (reservationsData || []).map(res => {
       const paiementMM = paiementsData.find(p => p.reservation_id === res.id);
       const mode_paiement = paiementMM ? 'mobile_money' : 'cash';
       const conducteur = res.conducteurs as any;
+      
+      // Debug log par réservation
+      console.log(`🔍 Reservation ${res.id.substring(0, 8)}: ${mode_paiement} ${paiementMM ? '(Payment found)' : '(No payment)'}`);
       
       return {
         id: res.id,

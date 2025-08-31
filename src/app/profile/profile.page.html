@@ -76,6 +76,14 @@
               <p>{{ driver.email }}</p>
             </ion-label>
           </ion-item>
+          
+          <ion-item *ngIf="driver.entreprise_nom">
+            <ion-icon name="business" slot="start" color="secondary"></ion-icon>
+            <ion-label>
+              <h3>Entreprise</h3>
+              <p>{{ driver.entreprise_nom }}</p>
+            </ion-label>
+          </ion-item>
         </ion-list>
       </ion-card-content>
     </ion-card>

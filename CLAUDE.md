@@ -561,6 +561,35 @@ Only commit when the user explicitly requests it with commands like:
 - "save changes to git"
 - "push to repository"
 
+### ⚠️ CRITICAL: Complete Project Commit Rule
+**MANDATORY**: When committing, you MUST ALWAYS commit ALL modifications in the project without exception.
+
+**Required workflow for commits:**
+```bash
+# 1. Check ALL pending changes
+git status
+
+# 2. Add ALL files (never selective add)
+git add .
+
+# 3. Commit everything
+git commit -m "Descriptive message"
+
+# 4. Push to remote
+git push
+```
+
+**NEVER use selective file commits like:**
+- ❌ `git add src/app/specific/file.ts` 
+- ❌ `git add folder1/ folder2/`
+- ✅ **ALWAYS use `git add .`** to include everything
+
+**Why this is critical:**
+- Partial commits leave modifications stranded locally
+- Vercel cannot deploy incomplete changes
+- Creates confusion about what's actually deployed
+- User expects ALL work to be saved and deployed
+
 ### Exception
 The only exception is when the user provides a specific instruction in their initial request that clearly indicates they want commits (e.g., "implement feature X and commit it").
 

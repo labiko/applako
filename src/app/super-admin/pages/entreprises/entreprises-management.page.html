@@ -239,6 +239,15 @@
                   (click)="onResetPasswordSpecific(entreprise)">
                   <ion-icon name="key-outline" slot="icon-only"></ion-icon>
                 </ion-button>
+                
+                <ion-button 
+                  size="small" 
+                  fill="clear" 
+                  color="secondary"
+                  (click)="onConfigureLengoPay(entreprise)"
+                  title="Configuration LengoPay">
+                  <ion-icon name="card-outline" slot="icon-only"></ion-icon>
+                </ion-button>
 
                 <!-- Boutons blocage/déblocage -->
                 <ion-button 
@@ -849,6 +858,398 @@
             </div>
           </div>
         </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <!-- Modal Configuration LengoPay -->
+  <ion-modal [isOpen]="isLengoPayConfigModalOpen" (didDismiss)="closeLengoPayConfigModal()" class="lengopay-config-modal">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar class="lengopay-config-toolbar">
+          <ion-button 
+            slot="start" 
+            fill="clear" 
+            (click)="closeLengoPayConfigModal()"
+            color="light">
+            <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+          <ion-title>
+            <ion-icon name="card-outline"></ion-icon>
+            Configuration Paiement - {{ selectedEntrepriseForLengoPay?.nom }}
+            <ion-chip 
+              *ngIf="isCreationMode" 
+              color="success" 
+              class="mode-indicator">
+              <ion-icon name="add-circle-outline"></ion-icon>
+              <ion-label>Mode Création</ion-label>
+            </ion-chip>
+            <ion-chip 
+              *ngIf="!isCreationMode" 
+              color="warning" 
+              class="mode-indicator">
+              <ion-icon name="create-outline"></ion-icon>
+              <ion-label>Mode Édition</ion-label>
+            </ion-chip>
+          </ion-title>
+          <ion-button 
+            slot="end" 
+            fill="clear" 
+            (click)="refreshLengoPayConfig()"
+            color="light">
+            <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        
+        <!-- Loading -->
+        <div *ngIf="isLoadingLengoPayConfig" class="loading-container">
+          <ion-spinner></ion-spinner>
+          <p>Chargement de la configuration...</p>
+        </div>
+
+        <!-- Configuration existante -->
+        <div *ngIf="!isLoadingLengoPayConfig">
+          
+          <!-- En-tête Entreprise -->
+          <ion-card class="enterprise-card" *ngIf="selectedEntrepriseForLengoPay">
+            <ion-card-content>
+              <div class="enterprise-header">
+                <div class="enterprise-avatar">
+                  {{ getEnterpriseInitials(selectedEntrepriseForLengoPay) }}
+                </div>
+                <div class="enterprise-info">
+                  <h2>{{ selectedEntrepriseForLengoPay.nom }}</h2>
+                  <p class="proprietaire-label">Propriétaire</p>
+                </div>
+                <div class="enterprise-status">
+                  <ion-badge [color]="selectedEntrepriseForLengoPay.actif ? 'success' : 'danger'" class="status-badge">
+                    {{ selectedEntrepriseForLengoPay.actif ? 'ACTIF' : 'INACTIF' }}
+                  </ion-badge>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Section Configuration LengoPay -->
+          <div class="lengopay-section">
+            <div class="lengopay-header">
+              <div class="lengopay-logo">
+                <img src="https://portal.lengopay.com/public/images/logo_lengopay_black.png" 
+                     alt="LengoPay" 
+                     class="lengopay-logo-img">
+              </div>
+              <div class="lengopay-title">Configuration LengoPay</div>
+              <div class="lengopay-status">
+                <ion-badge [color]="isLengoPayActive ? 'success' : 'medium'" class="config-status">
+                  {{ isLengoPayActive ? 'ACTIF' : 'INACTIF' }}
+                </ion-badge>
+                <ion-button 
+                  size="small" 
+                  fill="clear" 
+                  [color]="isLengoPayActive ? 'danger' : 'success'"
+                  (click)="toggleLengoPayActive()"
+                  class="toggle-status-btn">
+                  <ion-icon [name]="isLengoPayActive ? 'close-circle-outline' : 'checkmark-circle-outline'" slot="icon-only"></ion-icon>
+                  {{ isLengoPayActive ? 'Désactiver' : 'Activer' }}
+                </ion-button>
+              </div>
+            </div>
+
+            <!-- Formulaire de configuration -->
+            <div class="config-form">
+              
+              <!-- URL API -->
+              <div class="config-field">
+                <div class="field-header">
+                  <ion-icon name="globe-outline"></ion-icon>
+                  <span class="field-label">URL API</span>
+                </div>
+                <div class="field-content">
+                  <ion-input
+                    [(ngModel)]="lengoPayForm.api_url"
+                    [readonly]="!isEditingLengoPay"
+                    placeholder="https://sandbox.lengopay.com/api/v1/payments"
+                    class="lengopay-input">
+                  </ion-input>
+                  <div class="field-actions">
+                    <ion-button 
+                      *ngIf="!isEditingLengoPay" 
+                      size="small" 
+                      fill="clear" 
+                      (click)="editLengoPayField('api_url')"
+                      color="primary">
+                      <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                    <ion-button 
+                      *ngIf="isEditingLengoPay" 
+                      size="small" 
+                      fill="clear" 
+                      (click)="saveLengoPayField('api_url')"
+                      color="success">
+                      <ion-icon name="checkmark-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CLÉ DE LICENCE -->
+              <div class="config-field">
+                <div class="field-header">
+                  <ion-icon name="key-outline"></ion-icon>
+                  <span class="field-label">CLÉ DE LICENCE</span>
+                </div>
+                <div class="field-content">
+                  <ion-input
+                    [(ngModel)]="lengoPayForm.license_key"
+                    [readonly]="!isEditingLengoPay"
+                    [type]="showLicenseKey ? 'text' : 'password'"
+                    [placeholder]="isCreationMode ? 'Saisissez votre clé de licence LengoPay' : 'VmVHNGZud2h1YVdUUnBSYnZ1R3BlNmtMTFhHN1NDNGpaU3plMENtQ1drZ084Y280S2J5ODZPWXJQVWZRT05OWg=='"
+                    class="lengopay-input">
+                  </ion-input>
+                  <div class="field-actions">
+                    <ion-button 
+                      size="small" 
+                      fill="clear" 
+                      (click)="toggleLicenseKeyVisibility()"
+                      color="medium">
+                      <ion-icon [name]="showLicenseKey ? 'eye-off-outline' : 'eye-outline'" slot="icon-only"></ion-icon>
+                    </ion-button>
+                    <ion-button 
+                      *ngIf="!isEditingLengoPay" 
+                      size="small" 
+                      fill="clear" 
+                      (click)="editLengoPayField('license_key')"
+                      color="primary">
+                      <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                    <ion-button 
+                      *ngIf="isEditingLengoPay" 
+                      size="small" 
+                      fill="clear" 
+                      (click)="saveLengoPayField('license_key')"
+                      color="success">
+                      <ion-icon name="checkmark-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- WEBSITE ID -->
+              <div class="config-field">
+                <div class="field-header">
+                  <ion-icon name="id-card-outline"></ion-icon>
+                  <span class="field-label">WEBSITE ID</span>
+                </div>
+                <div class="field-content">
+                  <ion-input
+                    [(ngModel)]="lengoPayForm.website_id"
+                    [readonly]="!isEditingLengoPay"
+                    [placeholder]="isCreationMode ? 'Votre Website ID (ex: wyp6J7uN3pVG2Pjn)' : 'wyp6J7uN3pVG2Pjn'"
+                    class="lengopay-input">
+                  </ion-input>
+                  <div class="field-actions">
+                    <ion-button 
+                      *ngIf="!isEditingLengoPay" 
+                      size="small" 
+                      fill="clear" 
+                      (click)="editLengoPayField('website_id')"
+                      color="primary">
+                      <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                    <ion-button 
+                      *ngIf="isEditingLengoPay" 
+                      size="small" 
+                      fill="clear" 
+                      (click)="saveLengoPayField('website_id')"
+                      color="success">
+                      <ion-icon name="checkmark-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- URL DE CALLBACK -->
+              <div class="config-field">
+                <div class="field-header">
+                  <ion-icon name="return-up-back-outline"></ion-icon>
+                  <span class="field-label">URL DE CALLBACK</span>
+                </div>
+                <div class="field-content">
+                  <ion-input
+                    [(ngModel)]="lengoPayForm.callback_url"
+                    [readonly]="!isEditingLengoPay"
+                    [placeholder]="isCreationMode ? 'URL de callback (optionnel)' : 'https://api.whatsapp.com/send/?phone=22462354219'"
+                    class="lengopay-input">
+                  </ion-input>
+                  <div class="field-actions">
+                    <ion-button 
+                      *ngIf="!isEditingLengoPay" 
+                      size="small" 
+                      fill="clear" 
+                      (click)="editLengoPayField('callback_url')"
+                      color="primary">
+                      <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                    <ion-button 
+                      *ngIf="isEditingLengoPay" 
+                      size="small" 
+                      fill="clear" 
+                      (click)="saveLengoPayField('callback_url')"
+                      color="success">
+                      <ion-icon name="checkmark-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TÉLÉPHONE MARCHAND -->
+              <div class="config-field">
+                <div class="field-header">
+                  <ion-icon name="call-outline"></ion-icon>
+                  <span class="field-label">TÉLÉPHONE MARCHAND</span>
+                </div>
+                <div class="field-content">
+                  <ion-input
+                    [(ngModel)]="lengoPayForm.telephone_marchand"
+                    [readonly]="!isEditingLengoPay"
+                    [placeholder]="isCreationMode ? 'Numéro de téléphone marchand' : '628406028'"
+                    class="lengopay-input">
+                  </ion-input>
+                  <div class="field-actions">
+                    <ion-button 
+                      *ngIf="!isEditingLengoPay" 
+                      size="small" 
+                      fill="clear" 
+                      (click)="editLengoPayField('telephone_marchand')"
+                      color="primary">
+                      <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                    <ion-button 
+                      *ngIf="isEditingLengoPay" 
+                      size="small" 
+                      fill="clear" 
+                      (click)="saveLengoPayField('telephone_marchand')"
+                      color="success">
+                      <ion-icon name="checkmark-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Actions principales -->
+            <div class="lengopay-actions">
+              
+              <!-- MODE CRÉATION : Bouton créer -->
+              <ion-button 
+                *ngIf="isCreationMode"
+                expand="block" 
+                color="primary"
+                (click)="createLengoPayConfiguration()"
+                [disabled]="!isLengoPayFormValid() || isTesting">
+                <ion-icon name="add-outline" slot="start"></ion-icon>
+                {{ isTesting ? 'Création en cours...' : 'Créer la configuration' }}
+              </ion-button>
+
+              <!-- MODE CONSULTATION : Boutons test et désactivation -->
+              <ion-button 
+                *ngIf="!isCreationMode"
+                expand="block" 
+                color="secondary"
+                (click)="testLengoPayConfiguration()"
+                [disabled]="isTesting">
+                <ion-icon name="flash-outline" slot="start"></ion-icon>
+                {{ isTesting ? 'Test en cours...' : 'Tester la configuration' }}
+              </ion-button>
+              
+              <ion-button 
+                *ngIf="!isCreationMode"
+                expand="block" 
+                fill="outline"
+                color="warning"
+                (click)="deactivateLengoPayConfig()"
+                [disabled]="!lengoPayConfig?.is_active">
+                <ion-icon name="pause-outline" slot="start"></ion-icon>
+                Désactiver
+              </ion-button>
+
+            </div>
+
+          </div>
+
+          <!-- Section Configuration Green API (Préremplie et non modifiable) -->
+          <div class="greenapi-section" [class.disabled-section]="!isCreationMode">
+            <div class="section-header" [class.disabled-header]="!isCreationMode">
+              <ion-icon name="chatbubble-ellipses-outline" [class.disabled-icon]="!isCreationMode"></ion-icon>
+              <span class="section-title" [class.disabled-title]="!isCreationMode">Configuration Green API</span>
+              <div class="enabled-badge" *ngIf="isCreationMode">
+                <span>WHATSAPP BUSINESS (INCLUS)</span>
+              </div>
+              <div class="disabled-badge" *ngIf="!isCreationMode">
+                <span>WHATSAPP BUSINESS (DÉSACTIVÉ)</span>
+              </div>
+            </div>
+
+            <!-- Formulaire Green API -->
+            <div class="config-form" [class.disabled-form]="!isCreationMode">
+              
+              <!-- INSTANCE ID -->
+              <div class="config-field" [class.disabled-field]="!isCreationMode">
+                <div class="field-header" [class.disabled-header]="!isCreationMode">
+                  <ion-icon name="id-card-outline" [class.disabled-icon]="!isCreationMode"></ion-icon>
+                  <span class="field-label" [class.disabled-label]="!isCreationMode">INSTANCE ID</span>
+                </div>
+                <div class="field-content">
+                  <ion-input
+                    [value]="greenApiData.instance_id"
+                    readonly
+                    class="lengopay-input" 
+                    [class.disabled-input]="!isCreationMode">
+                  </ion-input>
+                </div>
+              </div>
+
+              <!-- TOKEN API -->
+              <div class="config-field" [class.disabled-field]="!isCreationMode">
+                <div class="field-header" [class.disabled-header]="!isCreationMode">
+                  <ion-icon name="key-outline" [class.disabled-icon]="!isCreationMode"></ion-icon>
+                  <span class="field-label" [class.disabled-label]="!isCreationMode">TOKEN API</span>
+                </div>
+                <div class="field-content">
+                  <ion-input
+                    [value]="greenApiData.token"
+                    readonly
+                    type="password"
+                    class="lengopay-input"
+                    [class.disabled-input]="!isCreationMode">
+                  </ion-input>
+                </div>
+              </div>
+
+              <!-- BASE URL -->
+              <div class="config-field" [class.disabled-field]="!isCreationMode">
+                <div class="field-header" [class.disabled-header]="!isCreationMode">
+                  <ion-icon name="globe-outline" [class.disabled-icon]="!isCreationMode"></ion-icon>
+                  <span class="field-label" [class.disabled-label]="!isCreationMode">BASE URL</span>
+                </div>
+                <div class="field-content">
+                  <ion-input
+                    [value]="greenApiData.base_url"
+                    readonly
+                    class="lengopay-input"
+                    [class.disabled-input]="!isCreationMode">
+                  </ion-input>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
       </ion-content>
     </ng-template>
   </ion-modal>

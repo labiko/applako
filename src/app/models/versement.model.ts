@@ -23,6 +23,7 @@ export interface ReservationVersement {
   date_code_validation: string;
   created_at: string;
   commentaire?: string;
+  mode_paiement?: 'mobile_money' | 'cash';
 }
 
 export interface Versement {

@@ -353,6 +353,17 @@
                     <p class="detail-value">{{ formatCurrency(selectedReservationDetails.prix_total) }}</p>
                   </div>
                 </div>
+                <div class="detail-card">
+                  <ion-icon [name]="getPaymentModeIcon(selectedReservationDetails)" class="detail-card-icon"></ion-icon>
+                  <div class="detail-card-content">
+                    <p class="detail-label">Mode de paiement</p>
+                    <p class="detail-value">
+                      <ion-badge [color]="getPaymentModeColor(selectedReservationDetails)">
+                        {{ getPaymentModeLabel(selectedReservationDetails) }}
+                      </ion-badge>
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

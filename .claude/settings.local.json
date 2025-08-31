@@ -52,7 +52,17 @@
       "Read(/C:\\Users\\diall\\Documents\\LABICOTAXI\\LOGS\\BOT-V3/**)",
       "Read(/C:\\Users\\diall\\Documents\\LABICOTAXI\\SCRIPT/**)",
       "Read(/C:\\Users\\diall\\Documents\\LABICOTAXI\\SCRIPT/**)",
-      "Read(/C:\\Users\\diall\\Documents\\LABICOTAXI\\LOGS\\BOT-V3/**)"
+      "Read(/C:\\Users\\diall\\Documents\\LABICOTAXI\\LOGS\\BOT-V3/**)",
+      "Read(/C:\\Users\\diall\\Documents\\IonicProjects\\Claude\\botRestaurant\\botResto\\src\\app\\core\\services/**)",
+      "Read(/C:\\Users\\diall\\Documents\\LABICOTAXI\\LOGS\\BOT-V3/**)",
+      "Read(/C:\\Users\\diall\\Documents\\LABICOTAXI\\LOGS\\BOT-V3/**)",
+      "Read(C:\\Users\\diall\\Documents\\LABICOTAXI\\LOGS\\BOT-V3/**)",
+      "Read(C:\\Users\\diall\\Documents\\LABICOTAXI\\SCRIPT/**)",
+      "Read(C:\\Users\\diall\\Documents\\LABICOTAXI\\SCRIPT/**)",
+      "Read(C:\\Users\\diall\\Documents\\LABICOTAXI\\SCRIPT/**)",
+      "Read(C:\\Users\\diall\\Documents\\LABICOTAXI\\LOGS\\BOT-V3/**)",
+      "Read(C:\\Users\\diall\\Documents\\LABICOTAXI\\LOGS\\BOT-V3/**)",
+      "Read(C:\\Users\\diall\\Documents\\LABICOTAXI\\LOGS\\BOT-V3/**)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

@@ -57,9 +57,12 @@ import {
   todayOutline,
   filterOutline,
   close,
-  checkmark
+  checkmark,
+  cash,
+  phonePortraitOutline
 } from 'ionicons/icons';
 import { EntrepriseService } from '../../services/entreprise.service';
+import { ReservationHelperService } from '../../services/reservation-helper.service';
 
 interface ConducteurGroup {
   conducteur: any;
@@ -137,7 +140,10 @@ export class EntrepriseReservationsPage implements OnInit {
   isDetailsModalOpen = false;
   selectedReservationDetails: any = null;
 
-  constructor(private entrepriseService: EntrepriseService) {
+  constructor(
+    private entrepriseService: EntrepriseService,
+    public reservationHelper: ReservationHelperService
+  ) {
     addIcons({ 
       document, 
       checkmarkCircle, 
@@ -159,7 +165,9 @@ export class EntrepriseReservationsPage implements OnInit {
       todayOutline,
       filterOutline,
       close,
-      checkmark
+      checkmark,
+      cash,
+      phonePortraitOutline
     });
   }
 
@@ -591,6 +599,13 @@ export class EntrepriseReservationsPage implements OnInit {
   }
 
   openReservationDetails(reservation: any) {
+    // Debug pour vérifier les données de paiement
+    console.log('📋 Opening details for reservation:', {
+      id: reservation.id,
+      lengopay_payments: reservation.lengopay_payments,
+      paymentDetected: this.reservationHelper.isMobileMoneyPayment(reservation)
+    });
+    
     this.selectedReservationDetails = reservation;
     this.isDetailsModalOpen = true;
   }
@@ -598,6 +613,19 @@ export class EntrepriseReservationsPage implements OnInit {
   closeDetailsModal() {
     this.isDetailsModalOpen = false;
     this.selectedReservationDetails = null;
+  }
+
+  // Méthodes déléguées au service helper pour la réutilisabilité
+  getPaymentModeIcon(reservation: any): string {
+    return this.reservationHelper.getPaymentModeIcon(reservation);
+  }
+
+  getPaymentModeColor(reservation: any): string {
+    return this.reservationHelper.getPaymentModeColor(reservation);
+  }
+
+  getPaymentModeLabel(reservation: any): string {
+    return this.reservationHelper.getPaymentModeLabel(reservation);
   }
 
   truncateText(text: string, maxLength: number): string {

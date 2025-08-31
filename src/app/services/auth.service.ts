@@ -31,6 +31,8 @@ export interface Conducteur {
   rayon_km_reservation?: number; // Rayon de recherche personnalisé en km
   first_login?: boolean; // Indicateur de première connexion (réinitialisation password)
   password?: string; // Mot de passe
+  entreprise_id?: string; // ID de l'entreprise du conducteur
+  entreprise_nom?: string; // Nom de l'entreprise du conducteur
 }
 
 @Injectable({
