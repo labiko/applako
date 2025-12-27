@@ -344,13 +344,13 @@ interface ResumeFinancier {
 <ion-modal [isOpen]="showReservationsModal" (didDismiss)="closeReservationsModal()">
   <ng-template>
     <ion-header>
-      <ion-toolbar color="primary">
+      <ion-toolbar style="--background: var(--lako-green); --color: var(--lako-dark);">
         <ion-title>
           Réservations {{ selectedPeriode ? formatPeriodeName(selectedPeriode.periode_debut, selectedPeriode.periode_fin) : '' }}
         </ion-title>
         <ion-buttons slot="end">
-          <ion-button fill="clear" (click)="closeReservationsModal()">
-            <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+          <ion-button (click)="closeReservationsModal()">
+            <ion-icon name="close-circle-outline" slot="icon-only" style="color: white;"></ion-icon>
           </ion-button>
         </ion-buttons>
       </ion-toolbar>

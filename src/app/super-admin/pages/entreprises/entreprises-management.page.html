@@ -93,17 +93,7 @@
                 Réinitialiser Mot de Passe
               </ion-button>
             </ion-col>
-            <ion-col size="12" size-md="4">
-              <ion-button 
-                expand="block" 
-                fill="outline"
-                color="medium"
-                (click)="onExportData()">
-                <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
-                Export Données
-              </ion-button>
-            </ion-col>
-          </ion-row>
+                      </ion-row>
         </ion-grid>
       </ion-card-content>
     </ion-card>
@@ -613,14 +603,6 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="modal-actions" *ngIf="!isLoadingConducteurs && conducteursList.length > 0">
-          <ion-button expand="block" fill="outline" (click)="exportConducteursList()">
-            <ion-icon name="download-outline" slot="start"></ion-icon>
-            Exporter la liste
-          </ion-button>
         </div>
 
       </ion-content>

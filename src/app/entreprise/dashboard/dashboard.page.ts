@@ -43,6 +43,7 @@ import { EntrepriseAuthService } from '../../services/entreprise-auth.service';
 import { NotificationsService } from '../../services/notifications.service';
 import { NotificationsModalComponent } from '../../components/notifications-modal/notifications-modal.component';
 import { Subscription, interval } from 'rxjs';
+import { APP_VERSION } from '../../constants/version';
 
 @Component({
   selector: 'app-dashboard',
@@ -80,6 +81,7 @@ export class DashboardPage implements OnInit, OnDestroy {
   isLoading = true;
   entreprise: any = null;
   unreadCount = 0;
+  appVersion = APP_VERSION;
   
   private refreshSubscription?: Subscription;
   private notificationSubscription?: Subscription;

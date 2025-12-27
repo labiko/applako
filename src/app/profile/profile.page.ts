@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   IonContent,
@@ -21,23 +20,20 @@ import {
   IonRange,
   IonChip,
   IonButton,
-  IonModal,
-  IonInput,
-  IonButtons,
   ToastController,
-  LoadingController
+  ModalController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   person, call, mail, car, star, settings, logOut, personCircleOutline,
   business, colorPalette, idCard, speedometer, location, navigateCircle,
-  informationCircle, bug, lockClosedOutline, keyOutline, closeCircleOutline,
-  eyeOutline, eyeOffOutline, checkmarkCircleOutline
+  informationCircle, bug, lockClosedOutline
 } from 'ionicons/icons';
 import { AuthService } from '../services/auth.service';
 import { APP_VERSION } from '../constants/version';
 import { SupabaseService } from '../services/supabase.service';
 import { OneSignalService } from '../services/onesignal.service';
+import { PasswordModalComponent } from '../components/password-modal/password-modal.component';
 
 @Component({
   selector: 'app-profile',
@@ -63,27 +59,12 @@ import { OneSignalService } from '../services/onesignal.service';
     IonRange,
     IonChip,
     IonButton,
-    IonModal,
-    IonInput,
-    IonButtons,
     CommonModule,
-    FormsModule,
   ],
 })
 export class ProfilePage implements OnInit {
   testMode = false;
   appVersion = APP_VERSION;
-
-  // Modal changement mot de passe
-  isPasswordModalOpen = false;
-  passwordForm = {
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  };
-  showCurrentPassword = false;
-  showNewPassword = false;
-  isSavingPassword = false;
 
   driver: any = {
     id: '',
@@ -108,13 +89,12 @@ export class ProfilePage implements OnInit {
     private oneSignalService: OneSignalService,
     private router: Router,
     private toastController: ToastController,
-    private loadingController: LoadingController
+    private modalController: ModalController
   ) {
     addIcons({
       person, call, mail, car, star, settings, logOut, personCircleOutline,
       business, colorPalette, idCard, speedometer, location, navigateCircle,
-      informationCircle, bug, lockClosedOutline, keyOutline, closeCircleOutline,
-      eyeOutline, eyeOffOutline, checkmarkCircleOutline
+      informationCircle, bug, lockClosedOutline
     });
   }
 
@@ -258,72 +238,15 @@ export class ProfilePage implements OnInit {
   }
 
   // ========== GESTION MOT DE PASSE ==========
-  openPasswordModal() {
-    this.passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
-    this.showCurrentPassword = false;
-    this.showNewPassword = false;
-    this.isPasswordModalOpen = true;
-  }
-
-  closePasswordModal() {
-    this.isPasswordModalOpen = false;
-    this.passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
-  }
-
-  toggleCurrentPasswordVisibility() {
-    this.showCurrentPassword = !this.showCurrentPassword;
-  }
-
-  toggleNewPasswordVisibility() {
-    this.showNewPassword = !this.showNewPassword;
-  }
-
-  isPasswordFormValid(): boolean {
-    return !!(
-      this.passwordForm.currentPassword &&
-      this.passwordForm.newPassword &&
-      this.passwordForm.newPassword.length >= 6 &&
-      this.passwordForm.newPassword === this.passwordForm.confirmPassword
-    );
-  }
-
-  async onSavePassword() {
-    if (!this.isPasswordFormValid()) {
-      await this.showToast('Veuillez vérifier les champs', 'warning');
-      return;
-    }
-
-    if (!this.driver.id) {
-      await this.showToast('Erreur: conducteur non identifié', 'danger');
-      return;
-    }
-
-    this.isSavingPassword = true;
-    const loading = await this.loadingController.create({
-      message: 'Mise à jour...'
-    });
-    await loading.present();
-
-    try {
-      const result = await this.authService.updatePassword(
-        this.driver.id,
-        this.passwordForm.currentPassword,
-        this.passwordForm.newPassword
-      );
-
-      if (result.success) {
-        await this.showToast('Mot de passe mis à jour avec succès', 'success');
-        this.closePasswordModal();
-      } else {
-        await this.showToast(result.error || 'Erreur lors de la mise à jour', 'danger');
+  async openPasswordModal() {
+    const modal = await this.modalController.create({
+      component: PasswordModalComponent,
+      componentProps: {
+        conducteurId: this.driver.id
       }
-    } catch (error) {
-      console.error('Erreur mise à jour mot de passe:', error);
-      await this.showToast('Erreur technique', 'danger');
-    } finally {
-      this.isSavingPassword = false;
-      await loading.dismiss();
-    }
+    });
+
+    return await modal.present();
   }
 
   // Toggle du mode test

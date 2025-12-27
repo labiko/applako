@@ -8,6 +8,25 @@
 
 // Badge de notification dans le header
 ion-header ion-toolbar {
+  .header-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .header-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+
+      .header-version {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--lako-dark);
+        opacity: 0.9;
+      }
+    }
+  }
+
   ion-button {
     position: relative;
 

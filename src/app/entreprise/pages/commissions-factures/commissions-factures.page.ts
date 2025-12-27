@@ -332,11 +332,11 @@ interface StatutPaiement {
   <ion-modal [isOpen]="isDetailsModalOpen" (didDismiss)="closeDetailsModal()" class="details-modal">
     <ng-template>
       <ion-header>
-        <ion-toolbar color="primary">
+        <ion-toolbar style="--background: var(--lako-green); --color: var(--lako-dark);">
           <ion-title>Détails de la Facture</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="closeDetailsModal()">
-              <ion-icon name="close-outline"></ion-icon>
+              <ion-icon name="close-circle-outline" slot="icon-only" style="color: white;"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>

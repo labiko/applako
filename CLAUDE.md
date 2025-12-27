@@ -594,3 +594,36 @@ git push
 The only exception is when the user provides a specific instruction in their initial request that clearly indicates they want commits (e.g., "implement feature X and commit it").
 
 This ensures the user maintains full control over their git history and can review changes before they are committed.
+
+## 🔢 Version Management
+
+### Automatic Version Increment Rule
+**MANDATORY**: When the user requests a commit, you MUST automatically increment the version number in `src/app/constants/version.ts` BEFORE committing.
+
+**Version file location**: `src/app/constants/version.ts`
+```typescript
+// Version de l'application - À mettre à jour à chaque déploiement
+export const APP_VERSION = 'X.Y.Z';
+```
+
+**Versioning strategy**:
+- **Patch version (Z)**: Bug fixes, small changes, style updates
+- **Minor version (Y)**: New features, significant improvements
+- **Major version (X)**: Breaking changes, major redesigns
+
+**Required workflow for commits:**
+```bash
+# 1. Increment version in src/app/constants/version.ts
+# 2. git add .
+# 3. git commit -m "v2.X.X: Descriptive message"
+# 4. git push
+```
+
+**Example commit messages with version:**
+- `v2.1.1: Fix modal close icon visibility`
+- `v2.2.0: Add version display to Dashboard`
+- `v3.0.0: Complete redesign of reservation system`
+
+**Version display locations:**
+- Dashboard page (entreprise): Displayed below "Bonjour, {nom}"
+- Profile page (conducteur): Displayed at the bottom of the page

@@ -221,11 +221,13 @@
   <ion-modal [isOpen]="isValidationModalOpen" (didDismiss)="closeValidationModal()">
     <ng-template>
       <ion-header>
-        <ion-toolbar>
+        <ion-toolbar style="--background: var(--lako-green); --color: var(--lako-dark);">
           <ion-title>Validation Course</ion-title>
-          <ion-button slot="end" fill="clear" (click)="closeValidationModal()">
-            Fermer
-          </ion-button>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeValidationModal()">
+              <ion-icon name="close-circle-outline" slot="icon-only" style="color: white;"></ion-icon>
+            </ion-button>
+          </ion-buttons>
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding">
@@ -261,11 +263,13 @@
   <ion-modal [isOpen]="isDetailsModalOpen" (didDismiss)="closeDetailsModal()" class="details-modal">
     <ng-template>
       <ion-header>
-        <ion-toolbar class="modal-toolbar">
+        <ion-toolbar style="--background: var(--lako-green); --color: var(--lako-dark);">
           <ion-title>Détails de la réservation</ion-title>
-          <ion-button slot="end" fill="clear" (click)="closeDetailsModal()">
-            <ion-icon name="close" style="font-size: 1.5rem;"></ion-icon>
-          </ion-button>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeDetailsModal()">
+              <ion-icon name="close-circle-outline" slot="icon-only" style="color: white;"></ion-icon>
+            </ion-button>
+          </ion-buttons>
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding" *ngIf="selectedReservationDetails">
@@ -426,14 +430,14 @@
   <ion-modal [isOpen]="isDatePickerOpen" (didDismiss)="closeDatePicker()" class="date-picker-modal">
     <ng-template>
       <ion-header>
-        <ion-toolbar color="primary">
+        <ion-toolbar style="--background: var(--lako-green); --color: var(--lako-dark);">
           <ion-title>
             <ion-icon name="calendar-outline" slot="start"></ion-icon>
             Sélectionner une période
           </ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="closeDatePicker()">
-              <ion-icon name="close"></ion-icon>
+              <ion-icon name="close-circle-outline" slot="icon-only" style="color: white;"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>

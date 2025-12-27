@@ -3,18 +3,21 @@
     <ion-title>
       <div class="header-title">
         <ion-icon name="stats-chart" class="header-icon"></ion-icon>
-        <span>Dashboard</span>
+        <div class="header-text">
+          <span>Dashboard</span>
+          <span class="header-version">Version {{ appVersion }}</span>
+        </div>
       </div>
     </ion-title>
-    <ion-button 
-      slot="end" 
-      fill="clear" 
+    <ion-button
+      slot="end"
+      fill="clear"
       (click)="openNotifications()"
       *ngIf="entreprise">
       <ion-icon name="notifications-outline" slot="icon-only"></ion-icon>
-      <ion-badge 
-        *ngIf="unreadCount > 0" 
-        color="danger" 
+      <ion-badge
+        *ngIf="unreadCount > 0"
+        color="danger"
         class="notification-badge">
         {{ unreadCount }}
       </ion-badge>
