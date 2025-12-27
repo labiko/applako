@@ -27,10 +27,10 @@ export interface LengoPayConfigData {
 })
 export class LengoPayConfigService {
 
-  // Constantes Green API (préremplies et non modifiables)
+  // Constantes Green API (préremplies et non modifiables) - depuis botResto
   private readonly GREEN_API_CONSTANTS = {
-    instance_id: '7105303512',
-    token: '022e5da3d2e641ab99a3f70539270b187fbfa80635c44b71ad',
+    instance_id: '7105313693',
+    token: '994e56511a43455693d2c4c1e4be86384a27eb921c394d5693',
     base_url: 'https://7105.api.greenapi.com'
   };
 
