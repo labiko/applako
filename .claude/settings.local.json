@@ -71,7 +71,11 @@
       "Bash(dir /s /b C:UsersdiallDocuments 2)",
       "Bash(dir \"c:\\Users\\diall\\Documents\\IonicProjects\\Claude\\AppLakoChauffeur\" /s /b)",
       "Bash(dir /s /b \"C:\\\\Users\\\\diall\\\\Documents\\\\LABICOTAXI\")",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(npx ng add:*)",
+      "Bash(dir:*)",
+      "Bash(echo:*)",
+      "Bash(dir distngsw* distmanifest*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
