@@ -22,7 +22,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
+<ion-content [fullscreen]="true" class="dashboard-content">
   
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
@@ -143,6 +143,25 @@
           </ion-card>
         </ion-col>
 
+        <!-- Mes Revenus - Carte cliquable -->
+        <ion-col size="6" size-md="3">
+          <ion-card class="metric-card revenus-card" (click)="navigateToFinancialOverview()" button>
+            <ion-card-content>
+              <div class="metric-header">
+                <div class="metric-icon revenus-icon">
+                  <ion-icon name="wallet"></ion-icon>
+                </div>
+                <div class="metric-info">
+                  <ion-icon name="chevron-forward" class="arrow-icon"></ion-icon>
+                </div>
+              </div>
+              <div class="metric-value revenus-value">💰</div>
+              <div class="metric-label">Mes Revenus</div>
+              <div class="metric-description">Voir le détail</div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
       </ion-row>
     </ion-grid>
 
@@ -174,66 +193,6 @@
                 <div class="financial-label">CA Net</div>
                 <div class="financial-value net">{{ formatCurrency(metrics.ca_net) }}</div>
               </div>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Performance Indicators -->
-    <ion-card class="performance-card">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="checkmark-circle"></ion-icon>
-          Indicateurs de Performance
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="performance-item">
-          <div class="performance-label">Taux de Complétion</div>
-          <div class="performance-bar">
-            <div class="progress-bar" [style.width.%]="metrics.taux_completion"></div>
-          </div>
-          <div class="performance-value">{{ metrics.taux_completion }}%</div>
-        </div>
-        
-        <div class="performance-item">
-          <div class="performance-label">Satisfaction Client</div>
-          <div class="performance-bar">
-            <div class="progress-bar satisfaction" [style.width.%]="(metrics.note_moyenne / 5) * 100"></div>
-          </div>
-          <div class="performance-value">{{ metrics.note_moyenne }}/5</div>
-        </div>
-      </ion-card-content>
-    </ion-card>
-
-    <!-- Actions rapides -->
-    <ion-card class="actions-card">
-      <ion-card-header>
-        <ion-card-title>Actions Rapides</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-grid>
-          <ion-row>
-            <ion-col size="6" size-md="4">
-              <ion-button 
-                expand="block" 
-                fill="outline" 
-                color="success"
-                (click)="navigateToFinancialOverview()">
-                <ion-icon name="wallet-outline" slot="start"></ion-icon>
-                💰 Mes Revenus
-              </ion-button>
-            </ion-col>
-            <ion-col size="6" size-md="6">
-              <ion-button 
-                expand="block" 
-                fill="outline" 
-                color="tertiary"
-                routerLink="/entreprise/conducteurs">
-                <ion-icon name="people" slot="start"></ion-icon>
-                Gérer Conducteurs
-              </ion-button>
             </ion-col>
           </ion-row>
         </ion-grid>

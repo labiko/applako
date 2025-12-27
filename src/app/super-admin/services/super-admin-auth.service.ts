@@ -7,13 +7,14 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { SupabaseService } from '../../services/supabase.service';
-import { 
-  SuperAdminUser, 
-  SuperAdminSession, 
+import {
+  SuperAdminUser,
+  SuperAdminSession,
   AuditLog,
   SecurityEvent,
-  ApiResponse 
+  ApiResponse
 } from '../models/super-admin.model';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable({
   providedIn: 'root'
@@ -138,21 +139,38 @@ export class SuperAdminAuthService {
       }, 'MEDIUM');
 
       // 3. Authentification directe avec table entreprises (pas Supabase Auth)
+      // D'abord récupérer l'utilisateur par email
       const { data: userData, error: userError } = await this.supabaseService.client
         .from('entreprises')
         .select('*')
         .eq('email', email.toLowerCase().trim())
         .eq('is_admin', true)
         .eq('actif', true)
-        .eq('password_hash', password)
         .single();
 
       if (userError || !userData) {
         this.recordFailedLogin(email);
-        
+
         await this.logSecurityEvent('FAILED_LOGIN', email, {
-          step: 'auth_failed',
-          error: userError?.message || 'Invalid credentials',
+          step: 'user_not_found',
+          error: userError?.message || 'User not found',
+          ip: await this.getClientIp()
+        }, 'HIGH');
+
+        return {
+          success: false,
+          error: 'Email ou mot de passe incorrect'
+        };
+      }
+
+      // 4. Vérifier le mot de passe avec bcrypt
+      const isPasswordValid = userData.password_hash && bcrypt.compareSync(password, userData.password_hash);
+
+      if (!isPasswordValid) {
+        this.recordFailedLogin(email);
+
+        await this.logSecurityEvent('FAILED_LOGIN', email, {
+          step: 'invalid_password',
           ip: await this.getClientIp()
         }, 'HIGH');
 

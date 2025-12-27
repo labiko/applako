@@ -1,8 +1,16 @@
+// Contenu compact du dashboard
+.dashboard-content {
+  --padding-start: 10px;
+  --padding-end: 10px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+}
+
 // Badge de notification dans le header
 ion-header ion-toolbar {
   ion-button {
     position: relative;
-    
+
     .notification-badge {
       position: absolute;
       top: -6px;
@@ -16,54 +24,56 @@ ion-header ion-toolbar {
 }
 
 .welcome-section {
-  margin-bottom: 24px;
+  margin-bottom: 12px;
   text-align: center;
-  
+
   h2 {
     color: var(--lako-dark);
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     font-weight: 600;
-    margin: 0 0 8px 0;
+    margin: 0 0 4px 0;
   }
-  
+
   .subtitle {
     color: var(--lako-gray);
-    font-size: 1rem;
-    margin: 0 0 12px 0;
+    font-size: 0.85rem;
+    margin: 0 0 8px 0;
     font-weight: 500;
   }
-  
+
   .info-badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     background: rgba(193, 241, 29, 0.1);
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 0.85rem;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.75rem;
     color: var(--lako-dark);
-    
+
     .info-icon {
       color: var(--lako-green);
-      font-size: 1rem;
+      font-size: 0.85rem;
     }
   }
 }
 
 
 .period-selector {
-  margin-bottom: 24px;
+  margin-bottom: 12px;
   --background: var(--lako-cream);
   --indicator-color: var(--lako-green);
-  border-radius: 12px;
-  
+  border-radius: 8px;
+
   ion-segment-button {
     --color: var(--lako-gray);
     --color-checked: var(--lako-dark);
     --indicator-color: var(--lako-green);
-    
+    min-height: 32px;
+
     ion-label {
       font-weight: 500;
+      font-size: 0.8rem;
     }
   }
 }
@@ -86,51 +96,51 @@ ion-header ion-toolbar {
 }
 
 .metrics-grid {
-  margin-bottom: 24px;
-  
+  margin-bottom: 12px;
+
   ion-col {
-    padding: 4px;
+    padding: 3px;
   }
 }
 
 .metric-card {
   margin: 0;
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
-  
+
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   }
-  
+
   ion-card-content {
-    padding: 20px 16px;
+    padding: 12px 10px;
     text-align: center;
     position: relative;
   }
-  
+
   .metric-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 12px;
-    
+    margin-bottom: 6px;
+
     .metric-icon {
       ion-icon {
-        font-size: 2rem;
+        font-size: 1.4rem;
         opacity: 0.9;
       }
     }
-    
+
     .metric-info {
       .info-tooltip {
-        font-size: 1rem;
+        font-size: 0.85rem;
         color: var(--lako-gray);
         opacity: 0.6;
         cursor: help;
-        
+
         &:hover {
           opacity: 1;
           color: var(--lako-green);
@@ -138,44 +148,44 @@ ion-header ion-toolbar {
       }
     }
   }
-  
+
   .metric-value {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--lako-dark);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
-  
+
   .metric-label {
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     color: var(--lako-dark);
     font-weight: 600;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
-  
+
   .metric-description {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     color: var(--lako-gray);
     font-weight: 500;
     opacity: 0.8;
   }
-  
+
   .metric-evolution {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 12px;
-    
+    padding: 2px 6px;
+    border-radius: 10px;
+
     &.positive {
       background: rgba(0, 150, 57, 0.1);
       color: #009639;
     }
-    
+
     &.negative {
       background: rgba(235, 68, 90, 0.1);
       color: #eb445a;
     }
-    
+
     &.neutral {
       background: rgba(121, 121, 121, 0.1);
       color: var(--lako-gray);
@@ -207,48 +217,98 @@ ion-header ion-toolbar {
   }
 }
 
+// Carte Mes Revenus - Style distinctif et cliquable
+.revenus-card {
+  background: #fff;
+  border: 2px solid var(--lako-green);
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(193, 241, 29, 0.3);
+    border-color: #009639;
+  }
+
+  &:active {
+    transform: translateY(-1px);
+  }
+
+  .metric-header {
+    .revenus-icon ion-icon {
+      color: #009639;
+      font-size: 1.4rem;
+    }
+
+    .arrow-icon {
+      color: var(--lako-gray);
+      font-size: 1rem;
+    }
+  }
+
+  .metric-value.revenus-value {
+    font-size: 1.5rem;
+    color: var(--lako-dark);
+  }
+
+  .metric-label {
+    color: #009639;
+    font-weight: 700;
+    font-size: 0.8rem;
+  }
+
+  .metric-description {
+    color: var(--lako-gray);
+    font-weight: 600;
+    font-size: 0.65rem;
+  }
+}
+
 .summary-card {
-  margin: 0 0 24px 0;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  
+  margin: 0 0 12px 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
   ion-card-header {
-    padding-bottom: 8px;
-    
+    padding: 10px 16px 4px;
+
     ion-card-title {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       color: var(--lako-dark);
-      font-size: 1.1rem;
+      font-size: 0.95rem;
       font-weight: 600;
-      
+
       ion-icon {
         color: var(--lako-green);
-        font-size: 1.3rem;
+        font-size: 1.1rem;
       }
     }
   }
-  
+
+  ion-card-content {
+    padding: 8px 16px 12px;
+  }
+
   .financial-item {
     text-align: center;
-    padding: 8px 0;
-    
+    padding: 4px 0;
+
     .financial-label {
-      font-size: 0.8rem;
+      font-size: 0.7rem;
       color: var(--lako-gray);
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
-    
+
     .financial-value {
-      font-size: 1.1rem;
+      font-size: 0.95rem;
       font-weight: 600;
       color: var(--lako-dark);
-      
+
       &.commission {
         color: #eb445a;
       }
-      
+
       &.net {
         color: #009639;
       }

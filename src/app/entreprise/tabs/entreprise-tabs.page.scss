@@ -2,43 +2,47 @@ ion-tab-bar {
   --background: var(--lako-green);
   --color: var(--lako-dark);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  
+
   ion-tab-button {
-    --color: var(--lako-dark);
-    --color-selected: var(--lako-white);
+    --color: #151515;
+    --color-selected: #151515;
     --background-focused: rgba(21, 21, 21, 0.1);
     transition: all 0.3s ease;
     position: relative;
-    
+
     ion-icon {
       font-size: 1.3rem;
       margin-bottom: 4px;
       transition: all 0.3s ease;
+      color: #151515;
     }
-    
+
     ion-label {
       font-size: 0.8rem;
-      font-weight: 500;
+      font-weight: 600;
       transition: all 0.3s ease;
+      color: #151515;
     }
-    
-    &.tab-selected {
-      --background: var(--lako-dark);
-      --color: var(--lako-green);
+
+    // Onglet actif/sélectionné - texte noir bold
+    &.tab-selected,
+    &[aria-selected="true"] {
+      --background: rgba(21, 21, 21, 0.15);
+      --color: #151515;
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(21, 21, 21, 0.3);
+      box-shadow: 0 4px 12px rgba(21, 21, 21, 0.2);
       border-radius: 12px 12px 0 0;
-      
+
       ion-icon,
       ion-label {
-        color: var(--lako-green);
-        font-weight: 600;
+        color: #151515 !important;
+        font-weight: 700;
       }
-      
+
       ion-icon {
         transform: scale(1.1);
       }
-      
+
       // Indicateur visuel en haut du tab sélectionné
       &::before {
         content: '';
@@ -48,17 +52,17 @@ ion-tab-bar {
         transform: translateX(-50%);
         width: 30px;
         height: 3px;
-        background: var(--lako-green);
+        background: #151515;
         border-radius: 0 0 3px 3px;
       }
     }
-    
+
     // Améliorer les états hover et focus
-    &:hover:not(.tab-selected) {
+    &:hover:not(.tab-selected):not([aria-selected="true"]) {
       --background: rgba(21, 21, 21, 0.05);
       transform: translateY(-1px);
     }
-    
+
     &:active {
       transform: translateY(0);
     }

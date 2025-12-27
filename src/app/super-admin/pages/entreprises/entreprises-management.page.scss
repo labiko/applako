@@ -2,6 +2,153 @@
  * STYLES PAGE GESTION ENTREPRISES SUPER-ADMIN
  */
 
+// ==================== STYLES MODAL RESET PASSWORD ====================
+
+// Card d'information
+.info-card-reset {
+  margin: 0 0 16px 0;
+  border-radius: 12px;
+  border-left: 4px solid var(--ion-color-warning);
+  background: linear-gradient(135deg, #fffbeb 0%, #fff3cd 100%);
+
+  ion-card-content {
+    padding: 12px 16px;
+  }
+
+  .info-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+
+    ion-icon {
+      font-size: 1.5rem;
+    }
+
+    strong {
+      font-size: 0.95rem;
+      color: #856404;
+    }
+  }
+
+  .info-list {
+    background: transparent;
+    padding: 0;
+
+    ion-item {
+      --background: transparent;
+      --padding-start: 0;
+      --inner-padding-end: 0;
+      --min-height: 36px;
+
+      ion-icon {
+        font-size: 1.1rem;
+        margin-right: 8px;
+      }
+
+      ion-label {
+        font-size: 0.85rem;
+        color: #664d03;
+      }
+    }
+  }
+}
+
+// Header de section
+.section-header-reset {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e9ecef;
+
+  ion-icon {
+    color: var(--ion-color-warning);
+    font-size: 1.2rem;
+  }
+}
+
+// Liste des entreprises
+.entreprise-list-reset {
+  margin-bottom: 16px;
+  background: transparent;
+
+  ion-item {
+    --background: #f8f9fa;
+    --border-radius: 12px;
+    margin-bottom: 10px;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      --background: #fffbeb;
+      border-color: #ffc107;
+    }
+
+    &.selected-item {
+      --background: rgba(193, 241, 29, 0.15);
+      border-color: var(--lako-green);
+      box-shadow: 0 0 0 2px rgba(193, 241, 29, 0.3);
+    }
+
+    .entreprise-avatar-reset {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #ffc107 0%, #ffca28 100%);
+
+      .avatar-initials {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #333;
+      }
+    }
+
+    ion-label {
+      h2 {
+        font-weight: 600;
+        font-size: 1rem;
+        color: #333;
+      }
+
+      p {
+        font-size: 0.85rem;
+        color: #666;
+
+        &.phone-text {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          margin-top: 4px;
+
+          ion-icon {
+            font-size: 0.9rem;
+          }
+        }
+      }
+    }
+
+    ion-badge {
+      font-size: 0.7rem;
+      padding: 4px 8px;
+      margin-right: 8px;
+    }
+
+    .selection-icon {
+      font-size: 1.4rem;
+    }
+  }
+}
+
 // ==================== STYLES MODAL LENGOPAY CONFIG ====================
 
 .lengopay-config-modal {

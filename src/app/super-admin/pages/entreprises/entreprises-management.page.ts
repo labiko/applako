@@ -201,6 +201,11 @@ export class EntreprisesManagementPage implements OnInit {
   isDetailsModalOpen = false;
   selectedReservationDetails: any = null;
 
+  // Modal Reset Password
+  isResetPasswordModalOpen = false;
+  selectedEntrepriseForReset: Entreprise | null = null;
+  isResettingPassword = false;
+
   // Modal Configuration LengoPay
   isLengoPayConfigModalOpen = false;
   selectedEntrepriseForLengoPay: Entreprise | null = null;
@@ -454,55 +459,37 @@ export class EntreprisesManagementPage implements OnInit {
     }
   }
 
-  // Reset de mot de passe simple
-  async onResetPassword() {
+  // Reset de mot de passe - Ouvre la modal moderne
+  onResetPassword() {
     // Vérifier qu'il y a des entreprises
     if (this.entreprises.length === 0) {
       this.showError('Aucune entreprise disponible pour réinitialisation');
       return;
     }
+    this.selectedEntrepriseForReset = null;
+    this.isResetPasswordModalOpen = true;
+  }
 
-    // Créer liste des entreprises pour sélection avec plus d'informations
-    const inputs = this.entreprises.map(e => ({
-      name: 'entreprise',
-      type: 'radio' as const,
-      label: `${e.nom}\n📧 ${e.email}\n📱 ${e.telephone}\n${e.password_hash ? '🔒 Mot de passe défini' : '⚠️ Aucun mot de passe'}`,
-      value: e.id,
-      checked: false
-    }));
+  // Sélectionner une entreprise dans la modal reset password
+  selectEntrepriseForReset(entreprise: Entreprise) {
+    this.selectedEntrepriseForReset = entreprise;
+  }
 
-    const alert = await this.alertController.create({
-      header: '🔐 Réinitialisation Mot de Passe',
-      subHeader: 'Sélectionnez l\'entreprise à réinitialiser',
-      message: `Cette action va:\n• Supprimer le mot de passe actuel\n• Forcer une nouvelle connexion\n• Permettre la définition d'un nouveau mot de passe`,
-      inputs: inputs,
-      cssClass: 'custom-alert-large',
-      buttons: [
-        {
-          text: 'Annuler',
-          role: 'cancel',
-          cssClass: 'secondary'
-        },
-        {
-          text: '🔄 Réinitialiser',
-          handler: async (entrepriseId) => {
-            if (entrepriseId) {
-              const entreprise = this.entreprises.find(e => e.id === entrepriseId);
-              if (entreprise) {
-                await this.confirmResetPassword(entreprise);
-                return true;
-              }
-              return false;
-            } else {
-              this.showError('Veuillez sélectionner une entreprise');
-              return false;
-            }
-          }
-        }
-      ]
-    });
+  // Fermer la modal reset password
+  closeResetPasswordModal() {
+    this.isResetPasswordModalOpen = false;
+    this.selectedEntrepriseForReset = null;
+    this.isResettingPassword = false;
+  }
 
-    await alert.present();
+  // Confirmer le reset depuis la modal
+  async confirmResetFromModal() {
+    if (!this.selectedEntrepriseForReset) {
+      this.showError('Veuillez sélectionner une entreprise');
+      return;
+    }
+    await this.resetPasswordForEntreprise(this.selectedEntrepriseForReset.id);
+    this.closeResetPasswordModal();
   }
 
   private async confirmResetPassword(entreprise: Entreprise) {

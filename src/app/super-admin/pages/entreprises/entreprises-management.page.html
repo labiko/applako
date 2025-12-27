@@ -862,6 +862,103 @@
     </ng-template>
   </ion-modal>
 
+  <!-- Modal Réinitialisation Mot de Passe -->
+  <ion-modal [isOpen]="isResetPasswordModalOpen" (didDismiss)="closeResetPasswordModal()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="warning">
+          <ion-title>Réinitialisation Mot de Passe</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeResetPasswordModal()">
+              <ion-icon name="close-circle-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+
+        <!-- Info Card -->
+        <ion-card class="info-card-reset">
+          <ion-card-content>
+            <div class="info-header">
+              <ion-icon name="information-circle" color="warning"></ion-icon>
+              <strong>Cette action va :</strong>
+            </div>
+            <ion-list lines="none" class="info-list">
+              <ion-item>
+                <ion-icon name="close-circle-outline" slot="start" color="danger"></ion-icon>
+                <ion-label>Supprimer le mot de passe actuel</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="log-out-outline" slot="start" color="warning"></ion-icon>
+                <ion-label>Forcer une nouvelle connexion</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="key-outline" slot="start" color="success"></ion-icon>
+                <ion-label>Permettre un nouveau mot de passe</ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Titre section -->
+        <div class="section-header-reset">
+          <ion-icon name="business-outline"></ion-icon>
+          <span>Sélectionnez l'entreprise</span>
+        </div>
+
+        <!-- Liste des entreprises -->
+        <ion-list class="entreprise-list-reset">
+          <ion-item
+            *ngFor="let entreprise of entreprises"
+            [class.selected-item]="selectedEntrepriseForReset?.id === entreprise.id"
+            (click)="selectEntrepriseForReset(entreprise)"
+            button
+            detail="false">
+            <ion-avatar slot="start" class="entreprise-avatar-reset">
+              <div class="avatar-initials">{{ getEnterpriseInitials(entreprise) }}</div>
+            </ion-avatar>
+            <ion-label>
+              <h2>{{ entreprise.nom }}</h2>
+              <p>{{ entreprise.email }}</p>
+              <p class="phone-text">
+                <ion-icon name="call-outline"></ion-icon>
+                {{ entreprise.telephone || 'Non renseigné' }}
+              </p>
+            </ion-label>
+            <ion-badge slot="end" [color]="entreprise.password_hash ? 'success' : 'warning'">
+              {{ entreprise.password_hash ? 'MDP défini' : 'Sans MDP' }}
+            </ion-badge>
+            <ion-icon
+              slot="end"
+              [name]="selectedEntrepriseForReset?.id === entreprise.id ? 'checkmark-circle' : 'radio-button-off'"
+              [color]="selectedEntrepriseForReset?.id === entreprise.id ? 'success' : 'medium'"
+              class="selection-icon">
+            </ion-icon>
+          </ion-item>
+        </ion-list>
+
+        <!-- Actions -->
+        <div class="modal-actions">
+          <ion-button
+            expand="block"
+            color="warning"
+            (click)="confirmResetFromModal()"
+            [disabled]="!selectedEntrepriseForReset || isResettingPassword">
+            <ion-icon name="refresh-outline" slot="start"></ion-icon>
+            {{ isResettingPassword ? 'Réinitialisation...' : 'Réinitialiser le mot de passe' }}
+          </ion-button>
+          <ion-button
+            expand="block"
+            fill="outline"
+            (click)="closeResetPasswordModal()">
+            Annuler
+          </ion-button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
   <!-- Modal Configuration LengoPay -->
   <ion-modal [isOpen]="isLengoPayConfigModalOpen" (didDismiss)="closeLengoPayConfigModal()" class="lengopay-config-modal">
     <ng-template>
