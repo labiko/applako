@@ -157,3 +157,71 @@
   font-weight: 700;
   color: var(--lako-dark) !important;
 }
+
+/* PWA Install Banner */
+.pwa-install-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #151515, #2d2d2d);
+  color: white;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 9999;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+
+  .banner-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .banner-icon {
+      font-size: 2rem;
+      color: var(--lako-green, #C1F11D);
+    }
+
+    .banner-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      strong {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--lako-green, #C1F11D);
+      }
+
+      span {
+        font-size: 0.8rem;
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .banner-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    ion-button[fill="solid"] {
+      --background: var(--lako-green, #C1F11D);
+      --color: #151515;
+      font-weight: 600;
+    }
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

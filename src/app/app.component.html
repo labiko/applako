@@ -1,8 +1,27 @@
 <ion-app>
-  <app-splash-screen 
-    *ngIf="showSplash" 
+  <app-splash-screen
+    *ngIf="showSplash"
     (splashComplete)="hideSplash()">
   </app-splash-screen>
-  
+
   <ion-router-outlet *ngIf="!showSplash"></ion-router-outlet>
+
+  <!-- PWA Install Banner -->
+  <div class="pwa-install-banner" *ngIf="showInstallBanner && !showSplash">
+    <div class="banner-content">
+      <ion-icon name="download-outline" class="banner-icon"></ion-icon>
+      <div class="banner-text">
+        <strong>Installer Lako</strong>
+        <span>Accedez rapidement a l'application</span>
+      </div>
+    </div>
+    <div class="banner-actions">
+      <ion-button fill="solid" color="light" size="small" (click)="installPwa()">
+        Installer
+      </ion-button>
+      <ion-button fill="clear" color="light" size="small" (click)="dismissInstallBanner()">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+  </div>
 </ion-app>

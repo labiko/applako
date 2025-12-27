@@ -1,31 +1,43 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
+import { IonApp, IonRouterOutlet, IonButton, IonIcon } from '@ionic/angular/standalone';
 import { SplashScreenComponent } from './shared/components/splash-screen/splash-screen.component';
 import { GeolocationService } from './services/geolocation.service';
 import { AuthService } from './services/auth.service';
 import { AppInitBlocageService } from './services/app-init-blocage.service';
+import { PwaService } from './services/pwa.service';
 import { Capacitor } from '@capacitor/core';
+import { addIcons } from 'ionicons';
+import { downloadOutline, closeOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   standalone: true,
-  imports: [IonApp, IonRouterOutlet, CommonModule, SplashScreenComponent],
+  imports: [IonApp, IonRouterOutlet, IonButton, IonIcon, CommonModule, SplashScreenComponent],
 })
 export class AppComponent implements OnInit, OnDestroy {
   showSplash = true;
+  showInstallBanner = false;
 
   constructor(
     private geolocationService: GeolocationService,
     private authService: AuthService,
-    private blocageInitService: AppInitBlocageService
-  ) {}
+    private blocageInitService: AppInitBlocageService,
+    public pwaService: PwaService
+  ) {
+    addIcons({ downloadOutline, closeOutline });
+  }
 
   ngOnInit() {
     // Initialiser le système de blocage
     console.log('🚀 Initialisation du système de blocage...');
     this.blocageInitService.initialize();
+
+    // PWA Install Banner
+    this.pwaService.installable$.subscribe(installable => {
+      this.showInstallBanner = installable && this.pwaService.shouldShowBanner();
+    });
     
     // Démarrer le tracking de position si un conducteur est connecté ET en ligne
     this.authService.currentConducteur$.subscribe(async conducteur => {
@@ -63,5 +75,17 @@ export class AppComponent implements OnInit, OnDestroy {
 
   hideSplash() {
     this.showSplash = false;
+  }
+
+  async installPwa() {
+    const installed = await this.pwaService.installApp();
+    if (installed) {
+      this.showInstallBanner = false;
+    }
+  }
+
+  dismissInstallBanner() {
+    this.pwaService.dismissInstallBanner();
+    this.showInstallBanner = false;
   }
 }

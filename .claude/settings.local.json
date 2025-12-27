@@ -75,7 +75,9 @@
       "Bash(npx ng add:*)",
       "Bash(dir:*)",
       "Bash(echo:*)",
-      "Bash(dir distngsw* distmanifest*)"
+      "Bash(dir distngsw* distmanifest*)",
+      "Bash(git merge:*)",
+      "WebFetch(domain:conakry-lako-taxi.vercel.app)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
