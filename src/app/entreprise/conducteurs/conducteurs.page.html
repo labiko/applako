@@ -271,23 +271,16 @@
         </div>
       </div>
 
-      <!-- Contact et actions -->
-      <div class="actions-section">
-        <div class="contact-info">
-          <ion-chip class="contact-chip" (click)="callConducteur(conducteur.telephone)">
-            <ion-icon name="call"></ion-icon>
-            <ion-label>{{ conducteur.telephone }}</ion-label>
-          </ion-chip>
-        </div>
-        
+      <!-- Actions -->
+      <div class="actions-section" *ngIf="(conducteur.total_reservations || 0) > 0">
         <div class="action-buttons">
-          <ion-button 
-            fill="outline" 
+          <ion-button
+            fill="outline"
             size="small"
             (click)="viewConducteurReservations(conducteur)"
             class="action-btn reservations-btn">
             <ion-icon name="document-text" slot="start"></ion-icon>
-            Réservations ({{ conducteur.total_reservations || 0 }})
+            Réservations
           </ion-button>
         </div>
       </div>
@@ -317,16 +310,15 @@
   <ion-modal [isOpen]="isEditModalOpen" (didDismiss)="closeEditModal()" class="edit-modal">
     <ng-template>
       <ion-header>
-        <ion-toolbar style="--background: var(--lako-green); --color: var(--lako-dark);">
-          <ion-title>
-            <ion-icon name="create" slot="start"></ion-icon>
-            Modifier le conducteur
-          </ion-title>
-          <ion-buttons slot="end">
-            <ion-button (click)="closeEditModal()">
-              <ion-icon name="close-circle-outline" slot="icon-only" style="color: white;"></ion-icon>
-            </ion-button>
-          </ion-buttons>
+        <ion-toolbar color="primary">
+          <ion-title>Modifier le conducteur</ion-title>
+          <ion-button
+            slot="end"
+            fill="clear"
+            color="light"
+            (click)="closeEditModal()">
+            <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+          </ion-button>
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding" *ngIf="selectedConducteur">
@@ -451,24 +443,16 @@
   <ion-modal [isOpen]="isReservationsModalOpen" (didDismiss)="closeReservationsModal()" class="reservations-modal-modern">
     <ng-template>
       <ion-header>
-        <ion-toolbar class="reservations-modal-toolbar">
-          <ion-button
-            slot="start"
-            fill="clear"
-            (click)="closeReservationsModal()"
-            color="light">
-            <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
-          </ion-button>
+        <ion-toolbar color="primary">
           <ion-title>
-            <ion-icon name="document-text-outline"></ion-icon>
             Réservations - {{ selectedConducteur?.prenom }} {{ selectedConducteur?.nom }}
           </ion-title>
           <ion-button
             slot="end"
             fill="clear"
-            (click)="viewConducteurReservations(selectedConducteur!)"
-            color="light">
-            <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+            color="light"
+            (click)="closeReservationsModal()">
+            <ion-icon name="close-outline" slot="icon-only"></ion-icon>
           </ion-button>
         </ion-toolbar>
       </ion-header>
