@@ -56,8 +56,9 @@ export class SupabaseService {
     }
   }
 
-  // Authenticate conducteur (méthode simplifiée sans bcrypt)
+  // Authenticate conducteur avec bcrypt
   async authenticateConducteur(telephone: string, password: string): Promise<Conducteur | null> {
+    // 1. Récupérer le conducteur par téléphone
     const { data, error } = await this.supabase
       .from('conducteurs')
       .select(`
@@ -65,16 +66,21 @@ export class SupabaseService {
         entreprises(nom)
       `)
       .eq('telephone', telephone)
-      .eq('password', password)
       .single();
 
-    if (error) {
-      console.error('Authentication error:', error);
+    if (error || !data) {
+      console.error('Authentication error - conducteur non trouvé:', error);
       return null;
     }
 
-    // Extraire le nom de l'entreprise de la jointure
+    // 2. Vérifier le mot de passe avec bcrypt
     const conducteur = data as any;
+    if (!conducteur.password || !bcrypt.compareSync(password, conducteur.password)) {
+      console.error('Authentication error - mot de passe incorrect');
+      return null;
+    }
+
+    // 3. Extraire le nom de l'entreprise de la jointure
     if (conducteur.entreprises && conducteur.entreprises.nom) {
       conducteur.entreprise_nom = conducteur.entreprises.nom;
       delete conducteur.entreprises; // Nettoyer l'objet

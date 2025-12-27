@@ -123,7 +123,15 @@
                 Créé le {{ formatDateCreation(conducteur.date_inscription) }}
               </p>
               <div class="status-with-location">
-                <ion-badge 
+                <ion-badge
+                  *ngIf="conducteur.actif === false"
+                  color="danger"
+                  class="status-badge blocked-badge">
+                  <ion-icon name="lock-closed" class="status-dot"></ion-icon>
+                  Bloqué
+                </ion-badge>
+                <ion-badge
+                  *ngIf="conducteur.actif !== false"
                   [color]="getStatusColor(conducteur.statut, conducteur.hors_ligne)"
                   class="status-badge">
                   <ion-icon name="ellipse" class="status-dot"></ion-icon>
@@ -152,20 +160,41 @@
         </div>
         
         <div class="header-actions">
-          <ion-button 
-            fill="clear" 
+          <ion-button
+            fill="clear"
             size="small"
             (click)="editConducteur(conducteur)"
             class="edit-button">
             <ion-icon name="create"></ion-icon>
           </ion-button>
-          
-          <ion-button 
-            fill="clear" 
+
+          <ion-button
+            fill="clear"
             size="small"
             (click)="callConducteur(conducteur.telephone)"
             class="call-button">
             <ion-icon name="call"></ion-icon>
+          </ion-button>
+
+          <!-- Bouton Bloquer/Débloquer -->
+          <ion-button
+            *ngIf="conducteur.actif !== false"
+            fill="clear"
+            size="small"
+            (click)="onToggleConducteurActif(conducteur)"
+            class="block-button"
+            title="Bloquer ce conducteur">
+            <ion-icon name="lock-closed"></ion-icon>
+          </ion-button>
+
+          <ion-button
+            *ngIf="conducteur.actif === false"
+            fill="clear"
+            size="small"
+            (click)="onToggleConducteurActif(conducteur)"
+            class="unblock-button"
+            title="Débloquer ce conducteur">
+            <ion-icon name="lock-open"></ion-icon>
           </ion-button>
         </div>
       </div>
@@ -409,96 +438,187 @@
     </ng-template>
   </ion-modal>
 
-  <!-- Modal des réservations du conducteur -->
-  <ion-modal [isOpen]="isReservationsModalOpen" (didDismiss)="closeReservationsModal()" class="reservations-modal">
+  <!-- Modal des réservations du conducteur - Style LengoPay -->
+  <ion-modal [isOpen]="isReservationsModalOpen" (didDismiss)="closeReservationsModal()" class="reservations-modal-modern">
     <ng-template>
       <ion-header>
-        <ion-toolbar color="primary">
+        <ion-toolbar class="reservations-modal-toolbar">
+          <ion-button
+            slot="start"
+            fill="clear"
+            (click)="closeReservationsModal()"
+            color="light">
+            <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+          </ion-button>
           <ion-title>
-            <ion-icon name="document-text" slot="start"></ion-icon>
-            Réservations de {{ selectedConducteur?.prenom }} {{ selectedConducteur?.nom }}
+            <ion-icon name="document-text-outline"></ion-icon>
+            Réservations - {{ selectedConducteur?.prenom }} {{ selectedConducteur?.nom }}
           </ion-title>
-          <ion-button slot="end" fill="clear" (click)="closeReservationsModal()" class="close-button">
-            <ion-icon name="close"></ion-icon>
+          <ion-button
+            slot="end"
+            fill="clear"
+            (click)="viewConducteurReservations(selectedConducteur!)"
+            color="light">
+            <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
           </ion-button>
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding" *ngIf="selectedConducteur">
-        
-        <!-- Statistiques rapides -->
-        <div class="reservations-stats">
-          <div class="stat-card">
-            <ion-icon name="checkmark-circle" class="stat-icon completed"></ion-icon>
-            <div class="stat-info">
-              <div class="stat-value">{{ getCompletedReservationsCount() }}</div>
-              <div class="stat-label">Terminées</div>
-            </div>
-          </div>
-          <div class="stat-card">
-            <ion-icon name="time" class="stat-icon pending"></ion-icon>
-            <div class="stat-info">
-              <div class="stat-value">{{ getPendingReservationsCount() }}</div>
-              <div class="stat-label">En attente</div>
-            </div>
-          </div>
-          <div class="stat-card">
-            <ion-icon name="cash" class="stat-icon revenue"></ion-icon>
-            <div class="stat-info">
-              <div class="stat-value">{{ formatCurrency(getTotalRevenue()) }}</div>
-              <div class="stat-label">Revenus</div>
-            </div>
-          </div>
-        </div>
 
         <!-- Loading -->
-        <div *ngIf="isLoadingReservations" class="loading-reservations">
-          <ion-spinner name="crescent"></ion-spinner>
+        <div *ngIf="isLoadingReservations" class="loading-container">
+          <ion-spinner></ion-spinner>
           <p>Chargement des réservations...</p>
         </div>
 
-        <!-- Liste des réservations -->
-        <div *ngIf="!isLoadingReservations && conducteurReservations.length > 0" class="reservations-list">
-          <div 
-            *ngFor="let reservation of conducteurReservations; trackBy: trackByReservation"
-            class="reservation-item">
-            
-            <div class="reservation-header">
-              <div class="reservation-info">
-                <h4 class="destination">{{ reservation.destination_nom || 'Destination non spécifiée' }}</h4>
-                <p class="date">{{ formatDate(reservation.created_at) }}</p>
+        <div *ngIf="!isLoadingReservations">
+
+          <!-- En-tête Conducteur Card -->
+          <ion-card class="conducteur-header-card">
+            <ion-card-content>
+              <div class="conducteur-header-info">
+                <div class="conducteur-avatar-circle">
+                  {{ selectedConducteur.prenom?.charAt(0) }}{{ selectedConducteur.nom?.charAt(0) }}
+                </div>
+                <div class="conducteur-info-details">
+                  <h2>{{ selectedConducteur.prenom }} {{ selectedConducteur.nom }}</h2>
+                  <p class="conducteur-role">Conducteur</p>
+                </div>
+                <div class="conducteur-status-badge">
+                  <ion-badge [color]="selectedConducteur.actif !== false ? 'success' : 'danger'" class="status-badge-large">
+                    {{ selectedConducteur.actif !== false ? 'ACTIF' : 'BLOQUÉ' }}
+                  </ion-badge>
+                </div>
               </div>
-              <ion-badge [color]="getReservationStatusColor(reservation.statut)">
-                {{ getReservationStatusText(reservation.statut) }}
-              </ion-badge>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Section Statistiques -->
+          <div class="stats-section">
+            <div class="stats-header">
+              <div class="stats-icon-wrapper">
+                <ion-icon name="stats-chart-outline"></ion-icon>
+              </div>
+              <div class="stats-title">Statistiques des Réservations</div>
             </div>
-            
-            <div class="reservation-details">
-              <div class="detail-row">
-                <ion-icon name="location" class="detail-icon"></ion-icon>
-                <span class="detail-text">{{ reservation.position_depart || 'Position de départ' }}</span>
+
+            <div class="stats-grid">
+              <div class="stat-field">
+                <div class="stat-field-header">
+                  <ion-icon name="checkmark-circle-outline"></ion-icon>
+                  <span class="stat-field-label">TERMINÉES</span>
+                </div>
+                <div class="stat-field-content">
+                  <div class="stat-field-value success">{{ getCompletedReservationsCount() }}</div>
+                </div>
               </div>
-              <div class="detail-row" *ngIf="reservation.client_phone">
-                <ion-icon name="call" class="detail-icon"></ion-icon>
-                <span class="detail-text">{{ reservation.client_phone }}</span>
+
+              <div class="stat-field">
+                <div class="stat-field-header">
+                  <ion-icon name="time-outline"></ion-icon>
+                  <span class="stat-field-label">EN ATTENTE</span>
+                </div>
+                <div class="stat-field-content">
+                  <div class="stat-field-value warning">{{ getPendingReservationsCount() }}</div>
+                </div>
               </div>
-              <div class="detail-row" *ngIf="reservation.prix_total">
-                <ion-icon name="cash" class="detail-icon"></ion-icon>
-                <span class="detail-text">{{ formatCurrency(reservation.prix_total) }}</span>
+
+              <div class="stat-field">
+                <div class="stat-field-header">
+                  <ion-icon name="cash-outline"></ion-icon>
+                  <span class="stat-field-label">REVENUS TOTAUX</span>
+                </div>
+                <div class="stat-field-content">
+                  <div class="stat-field-value primary">{{ formatCurrency(getTotalRevenue()) }}</div>
+                </div>
               </div>
-            </div>
-            
-            <div class="reservation-comment" *ngIf="reservation.commentaire">
-              <ion-icon name="chatbubble-ellipses"></ion-icon>
-              <span>{{ reservation.commentaire }}</span>
             </div>
           </div>
-        </div>
 
-        <!-- Message vide -->
-        <div *ngIf="!isLoadingReservations && conducteurReservations.length === 0" class="empty-reservations">
-          <ion-icon name="document-text" class="empty-icon"></ion-icon>
-          <h3>Aucune réservation</h3>
-          <p>Ce conducteur n'a pas encore de réservations enregistrées.</p>
+          <!-- Section Liste des Réservations -->
+          <div class="reservations-section">
+            <div class="reservations-header">
+              <div class="reservations-icon-wrapper">
+                <ion-icon name="list-outline"></ion-icon>
+              </div>
+              <div class="reservations-title">Historique des Réservations</div>
+              <div class="reservations-count">
+                <ion-badge color="primary">{{ conducteurReservations.length }}</ion-badge>
+              </div>
+            </div>
+
+            <!-- Liste des réservations -->
+            <div *ngIf="conducteurReservations.length > 0" class="reservations-list-modern">
+              <div
+                *ngFor="let reservation of conducteurReservations; trackBy: trackByReservation"
+                class="reservation-card">
+
+                <!-- Header de la réservation -->
+                <div class="reservation-card-header">
+                  <div class="reservation-destination">
+                    <ion-icon name="flag-outline"></ion-icon>
+                    <span>{{ reservation.destination_nom || 'Destination non spécifiée' }}</span>
+                  </div>
+                  <div class="reservation-status-price">
+                    <ion-badge [color]="getReservationStatusColor(reservation.statut)" class="reservation-status">
+                      {{ getReservationStatusText(reservation.statut) }}
+                    </ion-badge>
+                    <span class="reservation-price" *ngIf="reservation.prix_total">
+                      <ion-icon name="cash"></ion-icon>
+                      {{ formatCurrency(reservation.prix_total) }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Détails de la réservation -->
+                <div class="reservation-card-body">
+                  <!-- Départ -->
+                  <div class="reservation-location">
+                    <ion-icon name="location" class="location-icon departure"></ion-icon>
+                    <div class="location-details">
+                      <span class="location-label">Départ</span>
+                      <span class="location-address">{{ reservation.depart_nom || 'Position de départ' }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Destination -->
+                  <div class="reservation-location">
+                    <ion-icon name="flag" class="location-icon destination"></ion-icon>
+                    <div class="location-details">
+                      <span class="location-label">Destination</span>
+                      <span class="location-address">{{ reservation.destination_nom || 'Destination non spécifiée' }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Footer de la réservation -->
+                <div class="reservation-card-footer">
+                  <div class="footer-left">
+                    <ion-icon name="call-outline"></ion-icon>
+                    <span>{{ reservation.client_phone || 'N/A' }}</span>
+                  </div>
+                  <div class="footer-center" *ngIf="reservation.distance_km">
+                    <ion-icon name="speedometer-outline"></ion-icon>
+                    <span>{{ reservation.distance_km }} km</span>
+                  </div>
+                  <div class="footer-right">
+                    <ion-icon name="calendar-outline"></ion-icon>
+                    <span>{{ formatDate(reservation.created_at) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Message vide -->
+            <div *ngIf="conducteurReservations.length === 0" class="empty-reservations-modern">
+              <div class="empty-icon-wrapper">
+                <ion-icon name="document-text-outline"></ion-icon>
+              </div>
+              <h3>Aucune réservation</h3>
+              <p>Ce conducteur n'a pas encore de réservations enregistrées.</p>
+            </div>
+          </div>
+
         </div>
       </ion-content>
     </ng-template>

@@ -37,125 +37,112 @@
   }
 }
 
-// Header section with gradient and statistics
+// Header section compact
 .header-section {
   background: linear-gradient(135deg, var(--lako-green), rgba(193, 241, 29, 0.8));
-  padding: 2rem 1rem 1.5rem 1rem;
-  margin-bottom: 1rem;
-  border-radius: 0 0 24px 24px;
-  box-shadow: 0 4px 20px rgba(193, 241, 29, 0.3);
-  
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 2px 10px rgba(193, 241, 29, 0.2);
+
   .header-content {
-    text-align: center;
-    
     .title-with-button {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 1rem;
+      justify-content: space-between;
       margin-bottom: 0.5rem;
-      
+
       .main-title {
-        font-size: 1.8rem;
-        font-weight: 800;
+        font-size: 1.1rem;
+        font-weight: 700;
         color: var(--lako-dark);
         margin: 0;
-        letter-spacing: -0.01em;
       }
-      
+
       .create-button {
         --background: var(--lako-dark);
         --background-hover: rgba(21, 21, 21, 0.9);
         --color: var(--lako-green);
-        --border-radius: 25px;
+        --border-radius: 20px;
         font-weight: 600;
-        padding: 0 1.5rem;
-        height: 38px;
-        
+        font-size: 0.75rem;
+        height: 32px;
+
         ion-icon {
-          font-size: 1.2rem;
-          margin-right: 0.3rem;
-        }
-        
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          font-size: 1rem;
+          margin-right: 0.2rem;
         }
       }
     }
-    
+
     .subtitle {
-      font-size: 1rem;
-      color: rgba(21, 21, 21, 0.8);
-      margin: 0 0 1.5rem 0;
-      font-weight: 400;
+      display: none;
     }
-    
-    // Quick statistics cards
+
+    // Quick statistics cards - compact inline
     .quick-stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-      gap: 1rem;
-      margin-top: 1.5rem;
-      
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0;
+
       .stat-card {
         background: rgba(255, 255, 255, 0.9);
-        border-radius: 16px;
-        padding: 1rem;
+        border-radius: 10px;
+        padding: 0.5rem 0.75rem;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        
+        gap: 0.4rem;
+        flex: 1;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+
         &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+          transform: none;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
         }
-        
+
         .stat-icon {
-          width: 40px;
-          height: 40px;
-          border-radius: 12px;
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
           display: flex;
           align-items: center;
           justify-content: center;
           background: rgba(193, 241, 29, 0.2);
-          
+
           &.online {
             background: rgba(76, 175, 80, 0.2);
-            
+
             ion-icon {
               color: #4CAF50;
             }
           }
-          
+
           &.available {
             background: rgba(33, 150, 243, 0.2);
-            
+
             ion-icon {
               color: #2196F3;
             }
           }
-          
+
           ion-icon {
-            font-size: 1.2rem;
+            font-size: 0.9rem;
             color: var(--lako-dark);
           }
         }
-        
+
         .stat-content {
           .stat-value {
-            font-size: 1.4rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: var(--lako-dark);
             margin: 0;
+            line-height: 1;
           }
-          
+
           .stat-label {
-            font-size: 0.8rem;
+            font-size: 0.65rem;
             color: var(--lako-gray);
             margin: 0;
             font-weight: 500;
@@ -325,7 +312,7 @@
               flex-direction: column;
               gap: 0.75rem;
               align-items: flex-start;
-              
+
               .status-badge {
                 display: flex;
                 align-items: center;
@@ -335,9 +322,19 @@
                 padding: 0.25rem 0.75rem;
                 border-radius: 12px;
                 align-self: flex-start;
-                
+
                 .status-dot {
                   font-size: 0.6rem;
+                }
+
+                // Style spécial pour le badge "Bloqué"
+                &.blocked-badge {
+                  background: rgba(235, 68, 90, 0.15);
+                  animation: pulse-blocked 2s infinite;
+
+                  .status-dot {
+                    font-size: 0.7rem;
+                  }
                 }
               }
               
@@ -393,30 +390,64 @@
       .header-actions {
         display: flex;
         gap: 0.5rem;
-        
+
         .edit-button {
           --color: var(--lako-gray);
           --background-hover: rgba(193, 241, 29, 0.1);
           width: 36px;
           height: 36px;
           border-radius: 50%;
-          
+
           &:hover {
             --color: var(--lako-green);
           }
-          
+
           ion-icon {
             font-size: 1.1rem;
           }
         }
-        
+
         .call-button {
           --color: var(--lako-green);
           --background-hover: rgba(193, 241, 29, 0.1);
           width: 36px;
           height: 36px;
           border-radius: 50%;
-          
+
+          ion-icon {
+            font-size: 1.1rem;
+          }
+        }
+
+        // Bouton bloquer conducteur
+        .block-button {
+          --color: #eb445a;
+          --background-hover: rgba(235, 68, 90, 0.1);
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+
+          &:hover {
+            --color: #c23850;
+          }
+
+          ion-icon {
+            font-size: 1.1rem;
+          }
+        }
+
+        // Bouton débloquer conducteur
+        .unblock-button {
+          --color: #2dd36f;
+          --background-hover: rgba(45, 211, 111, 0.1);
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+
+          &:hover {
+            --color: #28ba62;
+          }
+
           ion-icon {
             font-size: 1.1rem;
           }
@@ -939,40 +970,42 @@
 // Responsive design
 @media (max-width: 768px) {
   .header-section {
-    padding: 1.5rem 1rem 1rem 1rem;
-    
+    padding: 0.5rem 0.75rem;
+
     .header-content {
-      .main-title {
-        font-size: 1.5rem;
+      .title-with-button {
+        .main-title {
+          font-size: 1rem;
+        }
+
+        .create-button {
+          font-size: 0.7rem;
+          height: 28px;
+        }
       }
-      
-      .subtitle {
-        font-size: 0.9rem;
-      }
-      
+
       .quick-stats {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.75rem;
-        
+        gap: 0.4rem;
+
         .stat-card {
-          padding: 0.75rem;
-          
+          padding: 0.4rem 0.5rem;
+
           .stat-icon {
-            width: 35px;
-            height: 35px;
-            
+            width: 24px;
+            height: 24px;
+
             ion-icon {
-              font-size: 1rem;
+              font-size: 0.8rem;
             }
           }
-          
+
           .stat-content {
             .stat-value {
-              font-size: 1.2rem;
+              font-size: 1rem;
             }
-            
+
             .stat-label {
-              font-size: 0.75rem;
+              font-size: 0.6rem;
             }
           }
         }
@@ -1115,9 +1148,9 @@
 @media (max-width: 480px) {
   .search-section,
   .filters-section {
-    padding: 0 0.5rem 1rem 0.5rem;
+    padding: 0 0.5rem 0.5rem 0.5rem;
   }
-  
+
   .filters-section {
     .modern-segment {
       ion-segment-button {
@@ -1125,19 +1158,56 @@
       }
     }
   }
-  
+
   .header-section {
+    padding: 0.4rem 0.5rem;
+
     .header-content {
+      .title-with-button {
+        margin-bottom: 0.4rem;
+
+        .main-title {
+          font-size: 0.9rem;
+        }
+
+        .create-button {
+          font-size: 0.65rem;
+          height: 26px;
+          padding: 0 0.5rem;
+        }
+      }
+
       .quick-stats {
-        grid-template-columns: 1fr 1fr;
-        
-        .stat-card:last-child {
-          grid-column: 1 / -1;
+        gap: 0.3rem;
+
+        .stat-card {
+          padding: 0.3rem 0.4rem;
+          border-radius: 8px;
+
+          .stat-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+
+            ion-icon {
+              font-size: 0.7rem;
+            }
+          }
+
+          .stat-content {
+            .stat-value {
+              font-size: 0.9rem;
+            }
+
+            .stat-label {
+              font-size: 0.55rem;
+            }
+          }
         }
       }
     }
   }
-  
+
   .conducteurs-container {
     .conducteur-card {
       .performance-section {
@@ -1145,10 +1215,482 @@
           grid-template-columns: 1fr;
         }
       }
-      
+
       .actions-section {
         .action-buttons {
           flex-direction: column;
+        }
+      }
+    }
+  }
+}
+
+// Animation pour le badge "Bloqué"
+@keyframes pulse-blocked {
+  0% {
+    box-shadow: 0 0 0 0 rgba(235, 68, 90, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(235, 68, 90, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(235, 68, 90, 0);
+  }
+}
+
+// ==================== MODAL RÉSERVATIONS STYLE LENGOPAY ====================
+
+.reservations-modal-modern {
+  --width: 90vw;
+  --max-width: 900px;
+  --height: 90vh;
+  --max-height: 900px;
+  --border-radius: 16px;
+
+  .reservations-modal-toolbar {
+    background: linear-gradient(135deg, var(--lako-green) 0%, #96E072 100%);
+
+    ion-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--lako-dark);
+
+      ion-icon {
+        margin-right: 8px;
+        font-size: 1.2rem;
+      }
+    }
+
+    ion-button {
+      --color: var(--lako-dark);
+    }
+  }
+
+  // Card conducteur en-tête
+  .conducteur-header-card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    .conducteur-header-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      .conducteur-avatar-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--lako-green) 0%, #96E072 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        color: var(--lako-dark);
+      }
+
+      .conducteur-info-details {
+        flex: 1;
+
+        h2 {
+          margin: 0 0 4px 0;
+          font-size: 1.3rem;
+          font-weight: 600;
+          color: var(--lako-dark);
+        }
+
+        .conducteur-role {
+          margin: 0;
+          font-size: 0.9rem;
+          color: var(--lako-gray);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+      }
+
+      .conducteur-status-badge {
+        .status-badge-large {
+          font-size: 0.8rem;
+          font-weight: 600;
+          padding: 6px 12px;
+          border-radius: 20px;
+        }
+      }
+    }
+  }
+
+  // Section Statistiques
+  .stats-section {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    .stats-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e9ecef;
+
+      .stats-icon-wrapper {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--lako-green) 0%, rgba(193, 241, 29, 0.6) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        ion-icon {
+          font-size: 1.3rem;
+          color: var(--lako-dark);
+        }
+      }
+
+      .stats-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--lako-dark);
+      }
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+
+      .stat-field {
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        background: #f8f9fa;
+        overflow: hidden;
+
+        .stat-field-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 16px;
+          background: linear-gradient(135deg, #f1f3f4 0%, #e9ecef 100%);
+          border-bottom: 1px solid #e9ecef;
+
+          ion-icon {
+            color: var(--lako-dark);
+            font-size: 1.1rem;
+          }
+
+          .stat-field-label {
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: #495057;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+        }
+
+        .stat-field-content {
+          padding: 16px;
+          text-align: center;
+
+          .stat-field-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--lako-dark);
+
+            &.success {
+              color: #4CAF50;
+            }
+
+            &.warning {
+              color: #FF9800;
+            }
+
+            &.primary {
+              color: var(--lako-green);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Section Liste des réservations
+  .reservations-section {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    .reservations-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e9ecef;
+
+      .reservations-icon-wrapper {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #2196F3 0%, #64B5F6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        ion-icon {
+          font-size: 1.3rem;
+          color: white;
+        }
+      }
+
+      .reservations-title {
+        flex: 1;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--lako-dark);
+      }
+
+      .reservations-count {
+        ion-badge {
+          font-size: 0.9rem;
+          padding: 6px 12px;
+          border-radius: 20px;
+        }
+      }
+    }
+
+    // Liste des réservations moderne
+    .reservations-list-modern {
+      max-height: 400px;
+      overflow-y: auto;
+
+      .reservation-card {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+
+        &:hover {
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+          border-color: var(--lako-green);
+        }
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        // Header de la carte
+        .reservation-card-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px;
+          background: linear-gradient(135deg, rgba(193, 241, 29, 0.15) 0%, rgba(193, 241, 29, 0.05) 100%);
+          border-bottom: 1px solid #e9ecef;
+
+          .reservation-destination {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--lako-dark);
+
+            ion-icon {
+              color: var(--lako-green);
+            }
+          }
+
+          .reservation-status-price {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            .reservation-status {
+              font-size: 0.75rem;
+              font-weight: 600;
+              padding: 4px 10px;
+              border-radius: 12px;
+            }
+
+            .reservation-price {
+              display: flex;
+              align-items: center;
+              gap: 4px;
+              font-size: 1.1rem;
+              font-weight: 700;
+              color: #4CAF50;
+
+              ion-icon {
+                font-size: 1rem;
+              }
+            }
+          }
+        }
+
+        // Corps de la carte
+        .reservation-card-body {
+          padding: 16px;
+
+          .reservation-location {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 8px;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+
+            .location-icon {
+              font-size: 1.4rem;
+              margin-top: 2px;
+
+              &.departure {
+                color: #2196F3;
+              }
+
+              &.destination {
+                color: #4CAF50;
+              }
+            }
+
+            .location-details {
+              flex: 1;
+
+              .location-label {
+                display: block;
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: var(--lako-gray);
+                text-transform: uppercase;
+                margin-bottom: 4px;
+              }
+
+              .location-address {
+                display: block;
+                font-size: 0.95rem;
+                font-weight: 500;
+                color: var(--lako-dark);
+              }
+            }
+          }
+        }
+
+        // Footer de la carte
+        .reservation-card-footer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 16px;
+          background: rgba(248, 249, 250, 0.8);
+          border-top: 1px solid #e9ecef;
+
+          .footer-left,
+          .footer-center,
+          .footer-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: var(--lako-gray);
+
+            ion-icon {
+              font-size: 1rem;
+              color: var(--lako-green);
+            }
+          }
+
+          .footer-center {
+            ion-icon {
+              color: #FF9800;
+            }
+          }
+
+          .footer-right {
+            ion-icon {
+              color: #2196F3;
+            }
+          }
+        }
+      }
+    }
+
+    // État vide moderne
+    .empty-reservations-modern {
+      text-align: center;
+      padding: 48px 24px;
+
+      .empty-icon-wrapper {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f1f3f4 0%, #e9ecef 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+
+        ion-icon {
+          font-size: 2.5rem;
+          color: var(--lako-gray);
+          opacity: 0.6;
+        }
+      }
+
+      h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--lako-dark);
+        margin: 0 0 8px 0;
+      }
+
+      p {
+        font-size: 0.95rem;
+        color: var(--lako-gray);
+        margin: 0;
+      }
+    }
+  }
+
+  // Responsive
+  @media (max-width: 768px) {
+    --width: 100%;
+    --height: 100%;
+    --border-radius: 0;
+
+    .stats-section {
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+    }
+
+    .reservations-section {
+      .reservations-list-modern {
+        .reservation-card {
+          .reservation-card-header {
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-start;
+          }
+
+          .reservation-card-footer {
+            flex-wrap: wrap;
+            gap: 8px;
+          }
         }
       }
     }

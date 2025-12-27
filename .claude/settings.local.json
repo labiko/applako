@@ -70,7 +70,8 @@
       "Bash(findstr:*)",
       "Bash(dir /s /b C:UsersdiallDocuments 2)",
       "Bash(dir \"c:\\Users\\diall\\Documents\\IonicProjects\\Claude\\AppLakoChauffeur\" /s /b)",
-      "Bash(dir /s /b \"C:\\\\Users\\\\diall\\\\Documents\\\\LABICOTAXI\")"
+      "Bash(dir /s /b \"C:\\\\Users\\\\diall\\\\Documents\\\\LABICOTAXI\")",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

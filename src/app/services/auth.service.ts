@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { SupabaseService } from './supabase.service';
+import * as bcrypt from 'bcryptjs';
 
 export interface Conducteur {
   id: string;
@@ -183,6 +184,50 @@ export class AuthService {
   getCurrentConducteurPosition(): string | null {
     const conducteur = this.getCurrentConducteur();
     return conducteur ? conducteur.position_actuelle || null : null;
+  }
+
+  // Mettre à jour le mot de passe (changement depuis profil) avec bcrypt
+  async updatePassword(conducteurId: string, currentPassword: string, newPassword: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      // Récupérer le conducteur pour vérifier l'ancien mot de passe
+      const { data: conducteur, error: fetchError } = await this.supabaseService.client
+        .from('conducteurs')
+        .select('id, password, telephone')
+        .eq('id', conducteurId)
+        .single();
+
+      if (fetchError || !conducteur) {
+        return { success: false, error: 'Conducteur non trouvé' };
+      }
+
+      // Vérifier que l'ancien mot de passe est correct avec bcrypt
+      if (!conducteur.password || !bcrypt.compareSync(currentPassword, conducteur.password)) {
+        return { success: false, error: 'Mot de passe actuel incorrect' };
+      }
+
+      // Hasher le nouveau mot de passe avec bcrypt
+      const hashedPassword = bcrypt.hashSync(newPassword, 10);
+
+      // Mettre à jour avec le nouveau mot de passe hashé
+      const { error: updateError } = await this.supabaseService.client
+        .from('conducteurs')
+        .update({
+          password: hashedPassword,
+          derniere_activite: new Date().toISOString()
+        })
+        .eq('id', conducteurId);
+
+      if (updateError) {
+        return { success: false, error: 'Erreur lors de la mise à jour' };
+      }
+
+      console.log('✅ Mot de passe mis à jour avec succès pour conducteur:', conducteurId);
+      return { success: true };
+
+    } catch (error) {
+      console.error('❌ Erreur mise à jour mot de passe:', error);
+      return { success: false, error: 'Erreur technique' };
+    }
   }
 
   // Créer un nouveau mot de passe après réinitialisation

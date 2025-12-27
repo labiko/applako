@@ -35,12 +35,12 @@ import {
   IonCheckbox
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { 
-  people, 
-  car, 
-  call, 
-  star, 
-  checkmarkCircle, 
+import {
+  people,
+  car,
+  call,
+  star,
+  checkmarkCircle,
   ellipse,
   refresh,
   person,
@@ -61,8 +61,11 @@ import {
   save,
   addCircle,
   personAdd,
-  calendar
+  calendar,
+  lockClosed,
+  lockOpen
 } from 'ionicons/icons';
+import { AlertController, ToastController } from '@ionic/angular/standalone';
 import { EntrepriseService, ConducteurStats } from '../../services/entreprise.service';
 
 @Component({
@@ -127,13 +130,17 @@ export class ConducteursPage implements OnInit {
   conducteurReservations: any[] = [];
   isLoadingReservations = false;
 
-  constructor(private entrepriseService: EntrepriseService) {
-    addIcons({ 
-      people, 
-      car, 
-      call, 
-      star, 
-      checkmarkCircle, 
+  constructor(
+    private entrepriseService: EntrepriseService,
+    private alertController: AlertController,
+    private toastController: ToastController
+  ) {
+    addIcons({
+      people,
+      car,
+      call,
+      star,
+      checkmarkCircle,
       ellipse,
       refresh,
       person,
@@ -154,7 +161,9 @@ export class ConducteursPage implements OnInit {
       save,
       addCircle,
       personAdd,
-      calendar
+      calendar,
+      lockClosed,
+      lockOpen
     });
   }
 
@@ -589,16 +598,90 @@ export class ConducteursPage implements OnInit {
     try {
       const buffer = new ArrayBuffer(8);
       const view = new DataView(buffer);
-      
+
       for (let i = 0; i < 8; i++) {
         const byte = parseInt(hexStr.substr(i * 2, 2), 16);
         view.setUint8(i, byte);
       }
-      
+
       return view.getFloat64(0, true);
     } catch (error) {
       console.error('Error converting hex to float64:', error);
       return 0;
     }
+  }
+
+  // ============================================================================
+  // BLOCAGE / DÉBLOCAGE CONDUCTEUR
+  // ============================================================================
+
+  async onToggleConducteurActif(conducteur: ConducteurStats) {
+    const action = conducteur.actif !== false ? 'bloquer' : 'débloquer';
+    const newStatus = conducteur.actif === false; // Inverser le statut
+
+    const alert = await this.alertController.create({
+      header: `Confirmer ${action}`,
+      message: `Voulez-vous vraiment ${action} le conducteur ${conducteur.prenom} ${conducteur.nom} ?${
+        !newStatus ? '\n\nLe conducteur ne pourra plus se connecter ni recevoir de courses.' : ''
+      }`,
+      buttons: [
+        {
+          text: 'Annuler',
+          role: 'cancel'
+        },
+        {
+          text: 'Confirmer',
+          handler: async () => {
+            await this.executeToggleConducteur(conducteur, newStatus);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  private async executeToggleConducteur(conducteur: ConducteurStats, newStatus: boolean) {
+    try {
+      const { success, error } = await this.entrepriseService.toggleConducteurActif(
+        conducteur.id,
+        newStatus
+      );
+
+      if (success) {
+        await this.showSuccess(`Conducteur ${newStatus ? 'débloqué' : 'bloqué'} avec succès`);
+        await this.loadConducteurs(false);
+      } else {
+        console.error('Erreur toggle conducteur:', error);
+        await this.showError(`Erreur lors du ${newStatus ? 'déblocage' : 'blocage'} du conducteur`);
+      }
+    } catch (error) {
+      console.error('Erreur toggle conducteur:', error);
+      await this.showError('Une erreur est survenue');
+    }
+  }
+
+  // ============================================================================
+  // HELPERS - TOASTS
+  // ============================================================================
+
+  private async showSuccess(message: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      color: 'success',
+      position: 'top'
+    });
+    await toast.present();
+  }
+
+  private async showError(message: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      color: 'danger',
+      position: 'top'
+    });
+    await toast.present();
   }
 }

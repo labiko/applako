@@ -269,4 +269,68 @@ ${entrepriseNom} 🚕
       maximumFractionDigits: 0
     }).format(montant);
   }
+
+  /**
+   * Envoie le mot de passe d'un nouveau conducteur par WhatsApp
+   * @param phoneNumber Numéro de téléphone du conducteur
+   * @param motDePasse Mot de passe généré (6 chiffres)
+   * @param conducteurNom Nom complet du conducteur
+   * @param entrepriseNom Nom de l'entreprise (optionnel)
+   * @returns Promise avec résultat d'envoi
+   */
+  async envoyerMotDePasseConducteur(
+    phoneNumber: string,
+    motDePasse: string,
+    conducteurNom: string,
+    entrepriseNom: string = 'LokoTaxi'
+  ): Promise<WhatsAppResponse> {
+    const message = `🚕 *Bienvenue chez ${entrepriseNom}!*
+
+Bonjour *${conducteurNom}*,
+
+Votre compte conducteur a été créé avec succès.
+
+📱 *Vos identifiants de connexion:*
+• Téléphone: ${phoneNumber}
+• Mot de passe: *${motDePasse}*
+
+📲 Téléchargez l'application LokoTaxi Conducteur et connectez-vous pour commencer à recevoir des courses.
+
+⚠️ Conservez ce mot de passe en lieu sûr.
+
+Bonne route ! 🚗`;
+
+    return this.envoyerMessage(phoneNumber, message, `NEW-COND-${phoneNumber}`);
+  }
+
+  /**
+   * Envoie une notification de réinitialisation de mot de passe
+   * @param phoneNumber Numéro de téléphone du conducteur
+   * @param motDePasse Nouveau mot de passe
+   * @param conducteurNom Nom du conducteur
+   * @param entrepriseNom Nom de l'entreprise
+   * @returns Promise avec résultat d'envoi
+   */
+  async envoyerReinitialisationMotDePasse(
+    phoneNumber: string,
+    motDePasse: string,
+    conducteurNom: string,
+    entrepriseNom: string = 'LokoTaxi'
+  ): Promise<WhatsAppResponse> {
+    const message = `🔐 *${entrepriseNom} - Réinitialisation mot de passe*
+
+Bonjour *${conducteurNom}*,
+
+Votre mot de passe a été réinitialisé.
+
+📱 *Nouveau mot de passe: ${motDePasse}*
+
+Connectez-vous avec ce nouveau mot de passe dans l'application.
+
+⚠️ Conservez ce mot de passe en lieu sûr.
+
+${entrepriseNom} 🚕`;
+
+    return this.envoyerMessage(phoneNumber, message, `RESET-PWD-${phoneNumber}`);
+  }
 }

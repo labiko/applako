@@ -253,13 +253,13 @@
     <ion-card class="actions-card">
       <ion-card-content>
         <ion-list>
-          <ion-item button (click)="onSettings()">
-            <ion-icon name="settings" slot="start" color="medium"></ion-icon>
+          <ion-item button (click)="openPasswordModal()">
+            <ion-icon name="lock-closed-outline" slot="start" color="primary"></ion-icon>
             <ion-label>
-              <h3>Paramètres</h3>
+              <h3>Changer le mot de passe</h3>
             </ion-label>
           </ion-item>
-          
+
           <ion-item button (click)="onLogout()">
             <ion-icon name="log-out" slot="start" color="danger"></ion-icon>
             <ion-label color="danger">
@@ -270,11 +270,84 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- ✅ NOUVEAU : Affichage version -->
+    <!-- Affichage version -->
     <div class="version-info">
       <ion-text color="medium">
         <p>Version {{ appVersion }}</p>
       </ion-text>
     </div>
   </div>
+
+  <!-- Modal Changement Mot de Passe -->
+  <ion-modal [isOpen]="isPasswordModalOpen" (didDismiss)="closePasswordModal()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>Changer mot de passe</ion-title>
+          <ion-button slot="end" fill="clear" (click)="closePasswordModal()">
+            <ion-icon name="close-circle-outline"></ion-icon>
+          </ion-button>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+
+        <ion-item>
+          <ion-label position="stacked">Mot de passe actuel *</ion-label>
+          <ion-input
+            [type]="showCurrentPassword ? 'text' : 'password'"
+            [(ngModel)]="passwordForm.currentPassword"
+            placeholder="Entrez votre mot de passe actuel">
+          </ion-input>
+          <ion-button fill="clear" slot="end" (click)="toggleCurrentPasswordVisibility()">
+            <ion-icon [name]="showCurrentPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+          </ion-button>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Nouveau mot de passe * (min. 6 caractères)</ion-label>
+          <ion-input
+            [type]="showNewPassword ? 'text' : 'password'"
+            [(ngModel)]="passwordForm.newPassword"
+            placeholder="Entrez le nouveau mot de passe">
+          </ion-input>
+          <ion-button fill="clear" slot="end" (click)="toggleNewPasswordVisibility()">
+            <ion-icon [name]="showNewPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+          </ion-button>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Confirmer le nouveau mot de passe *</ion-label>
+          <ion-input
+            [type]="showNewPassword ? 'text' : 'password'"
+            [(ngModel)]="passwordForm.confirmPassword"
+            placeholder="Confirmez le nouveau mot de passe">
+          </ion-input>
+        </ion-item>
+
+        <div *ngIf="passwordForm.newPassword && passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword" style="padding: 8px 16px; text-align: center;">
+          <ion-text color="danger">
+            <small>Les mots de passe ne correspondent pas</small>
+          </ion-text>
+        </div>
+
+        <div style="margin-top: 24px;">
+          <ion-button
+            expand="block"
+            color="primary"
+            (click)="onSavePassword()"
+            [disabled]="isSavingPassword || !isPasswordFormValid()">
+            {{ isSavingPassword ? 'Enregistrement...' : 'Enregistrer' }}
+          </ion-button>
+          <ion-button
+            expand="block"
+            fill="outline"
+            (click)="closePasswordModal()"
+            style="margin-top: 12px;">
+            Annuler
+          </ion-button>
+        </div>
+
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

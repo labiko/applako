@@ -1,7 +1,8 @@
 import { Injectable, Optional } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { EntrepriseAuthService } from './entreprise-auth.service';
-import { SMSService } from './sms.service';
+import { WhatsAppService } from './whatsapp.service';
+import * as bcrypt from 'bcryptjs';
 // Import conditionnel du service super-admin (isolation garantie)
 import { CommissionManagementService } from '../super-admin/services/commission-management.service';
 
@@ -58,7 +59,7 @@ export class EntrepriseService {
   constructor(
     private supabaseService: SupabaseService,
     private entrepriseAuthService: EntrepriseAuthService,
-    private smsService: SMSService,
+    private whatsAppService: WhatsAppService,
     // ✅ INJECTION CONDITIONNELLE - Service super-admin avec @Optional()
     // Si module super-admin non chargé, commissionService sera null
     @Optional() private commissionService?: CommissionManagementService
@@ -296,6 +297,8 @@ export class EntrepriseService {
 
       // Générer un mot de passe à 6 chiffres
       const motDePasse = this.genererMotDePasse6Chiffres();
+      // Hasher le mot de passe avec bcrypt
+      const hashedPassword = bcrypt.hashSync(motDePasse, 10);
 
       // Préparons les données pour le conducteur
       const newConducteur = {
@@ -309,7 +312,8 @@ export class EntrepriseService {
         entreprise_id: entrepriseId,
         statut: 'disponible', // Valeur conforme à la contrainte DB
         hors_ligne: false,
-        password: motDePasse
+        password: hashedPassword, // ✅ Mot de passe hashé avec bcrypt
+        first_login: false // ✅ IMPORTANT: false car mot de passe déjà généré
       };
 
       console.log('Création conducteur avec données:', newConducteur);
@@ -332,8 +336,8 @@ export class EntrepriseService {
 
       console.log('Conducteur créé avec succès:', data);
 
-      // Envoyer le mot de passe par SMS
-      await this.smsService.envoyerMotDePasseConducteur(
+      // Envoyer le mot de passe par WhatsApp
+      await this.whatsAppService.envoyerMotDePasseConducteur(
         conducteurData.telephone,
         motDePasse,
         `${conducteurData.prenom} ${conducteurData.nom}`
@@ -571,6 +575,52 @@ export class EntrepriseService {
         description: 'Taux par défaut (15%) - Erreur système',
         system_active: false
       };
+    }
+  }
+
+  /**
+   * Bloquer/Débloquer un conducteur (champ actif)
+   * Utilise la même logique que le super-admin
+   */
+  async toggleConducteurActif(conducteurId: string, actif: boolean): Promise<{ success: boolean; error?: any }> {
+    try {
+      const entrepriseId = this.entrepriseAuthService.getCurrentEntrepriseId();
+      if (!entrepriseId) {
+        return { success: false, error: 'Entreprise non connectée' };
+      }
+
+      // Vérifier que le conducteur appartient bien à cette entreprise
+      const { data: conducteur, error: checkError } = await this.supabaseService.client
+        .from('conducteurs')
+        .select('id, entreprise_id')
+        .eq('id', conducteurId)
+        .eq('entreprise_id', entrepriseId)
+        .single();
+
+      if (checkError || !conducteur) {
+        console.error('Conducteur non trouvé ou non autorisé:', checkError);
+        return { success: false, error: 'Conducteur non trouvé ou non autorisé' };
+      }
+
+      // Mettre à jour le statut actif
+      const { error } = await this.supabaseService.client
+        .from('conducteurs')
+        .update({
+          actif,
+          derniere_activite: new Date().toISOString()
+        })
+        .eq('id', conducteurId);
+
+      if (error) {
+        console.error('Erreur toggle conducteur actif:', error);
+        return { success: false, error };
+      }
+
+      console.log(`✅ Conducteur ${actif ? 'débloqué' : 'bloqué'} avec succès`);
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Erreur toggle conducteur actif:', error);
+      return { success: false, error };
     }
   }
 

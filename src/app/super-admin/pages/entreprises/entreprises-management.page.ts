@@ -91,16 +91,18 @@ import {
   chatbubbleEllipsesOutline
 } from 'ionicons/icons';
 
-import { 
-  EntrepriseManagementService, 
-  Entreprise, 
-  CreateEntrepriseData, 
-  EntrepriseStats 
+import {
+  EntrepriseManagementService,
+  Entreprise,
+  CreateEntrepriseData,
+  EntrepriseStats
 } from '../../services/entreprise-management.service';
 import { BlocageUtils } from '../../../utils/blocage.utils';
 import { BlockageService } from '../../../services/blocage.service';
 import { LengoPayConfigService } from '../../services/lengopay-config.service';
+import { WhatsAppService } from '../../../services/whatsapp.service';
 import { Injector } from '@angular/core';
+import * as bcrypt from 'bcryptjs';
 
 @Component({
   selector: 'app-entreprises-management',
@@ -237,7 +239,8 @@ export class EntreprisesManagementPage implements OnInit {
     private alertController: AlertController,
     private blocageService: BlockageService,
     private changeDetectorRef: ChangeDetectorRef,
-    private lengoPayConfigService: LengoPayConfigService
+    private lengoPayConfigService: LengoPayConfigService,
+    private whatsAppService: WhatsAppService
   ) {
     // Ajouter les icônes
     addIcons({
@@ -660,6 +663,11 @@ Cette action va:
     this.isAddingConducteur = true;
 
     try {
+      // Générer un mot de passe à 6 chiffres
+      const motDePasse = this.genererMotDePasse6Chiffres();
+      // Hasher le mot de passe avec bcrypt
+      const hashedPassword = bcrypt.hashSync(motDePasse, 10);
+
       // Préparer les données du conducteur
       const conducteurData = {
         nom: this.addConducteurForm.nom.trim(),
@@ -671,7 +679,8 @@ Cette action va:
         vehicle_plaque: this.addConducteurForm.vehicle_plaque?.trim() || null,
         entreprise_id: this.selectedEntrepriseForAdd.id,
         actif: true,
-        first_login: true
+        password: hashedPassword, // ✅ Mot de passe hashé avec bcrypt
+        first_login: false // ✅ false car mot de passe déjà généré
       };
 
       console.log(`➕ Ajout conducteur pour l'entreprise ${this.selectedEntrepriseForAdd.nom}:`, conducteurData);
@@ -682,9 +691,20 @@ Cette action va:
         throw error || new Error('Erreur lors de l\'ajout du conducteur');
       }
 
-      this.showSuccess(`Conducteur ${this.addConducteurForm.nom} ${this.addConducteurForm.prenom} ajouté avec succès`);
+      // Envoyer le mot de passe par WhatsApp
+      const nomComplet = `${this.addConducteurForm.prenom} ${this.addConducteurForm.nom}`;
+      const entrepriseNom = this.selectedEntrepriseForAdd.nom;
+      const whatsappResult = await this.whatsAppService.envoyerMotDePasseConducteur(
+        this.addConducteurForm.telephone.trim(),
+        motDePasse,
+        nomComplet,
+        entrepriseNom
+      );
+
+      const whatsappStatus = whatsappResult.success ? 'Mot de passe envoyé par WhatsApp.' : 'WhatsApp non envoyé.';
+      this.showSuccess(`Conducteur ${this.addConducteurForm.nom} ${this.addConducteurForm.prenom} ajouté avec succès. ${whatsappStatus}`);
       this.closeAddConducteurModal();
-      
+
       // Recharger les données
       await this.loadData();
 
@@ -694,6 +714,13 @@ Cette action va:
     } finally {
       this.isAddingConducteur = false;
     }
+  }
+
+  /**
+   * Génère un mot de passe aléatoire à 6 chiffres
+   */
+  private genererMotDePasse6Chiffres(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
   // Toggle collapse conducteur

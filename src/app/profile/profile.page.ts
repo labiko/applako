@@ -2,14 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { 
-  IonContent, 
-  IonHeader, 
-  IonTitle, 
-  IonToolbar, 
-  IonCard, 
-  IonCardHeader, 
-  IonCardTitle, 
+import {
+  IonContent,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
   IonCardContent,
   IonItem,
   IonLabel,
@@ -21,10 +21,19 @@ import {
   IonRange,
   IonChip,
   IonButton,
-  ToastController
+  IonModal,
+  IonInput,
+  IonButtons,
+  ToastController,
+  LoadingController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { person, call, mail, car, star, settings, logOut, personCircleOutline, business, colorPalette, idCard, speedometer, location, navigateCircle, informationCircle, bug } from 'ionicons/icons';
+import {
+  person, call, mail, car, star, settings, logOut, personCircleOutline,
+  business, colorPalette, idCard, speedometer, location, navigateCircle,
+  informationCircle, bug, lockClosedOutline, keyOutline, closeCircleOutline,
+  eyeOutline, eyeOffOutline, checkmarkCircleOutline
+} from 'ionicons/icons';
 import { AuthService } from '../services/auth.service';
 import { APP_VERSION } from '../constants/version';
 import { SupabaseService } from '../services/supabase.service';
@@ -54,13 +63,27 @@ import { OneSignalService } from '../services/onesignal.service';
     IonRange,
     IonChip,
     IonButton,
+    IonModal,
+    IonInput,
+    IonButtons,
     CommonModule,
     FormsModule,
   ],
 })
 export class ProfilePage implements OnInit {
-  testMode = false; // ✅ NOUVEAU : Mode test pour voir toutes les réservations
-  appVersion = APP_VERSION; // ✅ NOUVEAU : Version de l'application
+  testMode = false;
+  appVersion = APP_VERSION;
+
+  // Modal changement mot de passe
+  isPasswordModalOpen = false;
+  passwordForm = {
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  };
+  showCurrentPassword = false;
+  showNewPassword = false;
+  isSavingPassword = false;
 
   driver: any = {
     id: '',
@@ -84,9 +107,15 @@ export class ProfilePage implements OnInit {
     private supabaseService: SupabaseService,
     private oneSignalService: OneSignalService,
     private router: Router,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private loadingController: LoadingController
   ) {
-    addIcons({ person, call, mail, car, star, settings, logOut, personCircleOutline, business, colorPalette, idCard, speedometer, location, navigateCircle, informationCircle, bug });
+    addIcons({
+      person, call, mail, car, star, settings, logOut, personCircleOutline,
+      business, colorPalette, idCard, speedometer, location, navigateCircle,
+      informationCircle, bug, lockClosedOutline, keyOutline, closeCircleOutline,
+      eyeOutline, eyeOffOutline, checkmarkCircleOutline
+    });
   }
 
   ngOnInit() {
@@ -139,11 +168,6 @@ export class ProfilePage implements OnInit {
         entreprise_nom: conducteur.entreprise_nom || ''
       };
     }
-  }
-
-  onSettings() {
-    // TODO: Implement settings navigation
-    console.log('Navigate to settings');
   }
 
   getVehicleTypeLabel(vehicleType: string): string {
@@ -233,7 +257,76 @@ export class ProfilePage implements OnInit {
     await toast.present();
   }
 
-  // ✅ NOUVEAU : Toggle du mode test
+  // ========== GESTION MOT DE PASSE ==========
+  openPasswordModal() {
+    this.passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+    this.showCurrentPassword = false;
+    this.showNewPassword = false;
+    this.isPasswordModalOpen = true;
+  }
+
+  closePasswordModal() {
+    this.isPasswordModalOpen = false;
+    this.passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+  }
+
+  toggleCurrentPasswordVisibility() {
+    this.showCurrentPassword = !this.showCurrentPassword;
+  }
+
+  toggleNewPasswordVisibility() {
+    this.showNewPassword = !this.showNewPassword;
+  }
+
+  isPasswordFormValid(): boolean {
+    return !!(
+      this.passwordForm.currentPassword &&
+      this.passwordForm.newPassword &&
+      this.passwordForm.newPassword.length >= 6 &&
+      this.passwordForm.newPassword === this.passwordForm.confirmPassword
+    );
+  }
+
+  async onSavePassword() {
+    if (!this.isPasswordFormValid()) {
+      await this.showToast('Veuillez vérifier les champs', 'warning');
+      return;
+    }
+
+    if (!this.driver.id) {
+      await this.showToast('Erreur: conducteur non identifié', 'danger');
+      return;
+    }
+
+    this.isSavingPassword = true;
+    const loading = await this.loadingController.create({
+      message: 'Mise à jour...'
+    });
+    await loading.present();
+
+    try {
+      const result = await this.authService.updatePassword(
+        this.driver.id,
+        this.passwordForm.currentPassword,
+        this.passwordForm.newPassword
+      );
+
+      if (result.success) {
+        await this.showToast('Mot de passe mis à jour avec succès', 'success');
+        this.closePasswordModal();
+      } else {
+        await this.showToast(result.error || 'Erreur lors de la mise à jour', 'danger');
+      }
+    } catch (error) {
+      console.error('Erreur mise à jour mot de passe:', error);
+      await this.showToast('Erreur technique', 'danger');
+    } finally {
+      this.isSavingPassword = false;
+      await loading.dismiss();
+    }
+  }
+
+  // Toggle du mode test
   async toggleTestMode() {
     this.testMode = !this.testMode;
     
