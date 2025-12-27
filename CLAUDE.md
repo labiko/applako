@@ -8,11 +8,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is an Ionic + Angular + Capacitor application for a chauffeur service (AppLakoChauffeur).
 
-**IMPORTANT - Timezone Configuration**: 
+**IMPORTANT - Timezone Configuration**:
 - The application operates in **GMT+0 (Conakry, Guinea timezone)**
 - All timestamps in database are stored in UTC
 - All date/time displays must be converted to GMT+0 for correct local time
 - When calculating time differences (e.g., "Il y a 2h"), always use GMT+0 timezone
+- **CRITICAL**: When parsing dates from database in JavaScript, ALWAYS append 'Z' suffix to force UTC interpretation:
+  ```typescript
+  // CORRECT - Force UTC interpretation
+  const date = new Date(dateString.endsWith('Z') ? dateString : dateString + 'Z');
+
+  // WRONG - Will be interpreted as local timezone
+  const date = new Date(dateString);
+  ```
+  Without the 'Z' suffix, JavaScript interprets the date as local time, causing incorrect time difference calculations for users outside UTC timezone.
 
 ## Development Commands
 

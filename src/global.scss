@@ -150,3 +150,10 @@
   --border-radius: 8px;
   flex: 1;
 }
+
+/* Global refresh icon style for toolbar headers */
+.refresh-icon {
+  font-size: 1.5rem !important;
+  font-weight: 700;
+  color: var(--lako-dark) !important;
+}

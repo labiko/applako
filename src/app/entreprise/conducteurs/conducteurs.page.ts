@@ -480,7 +480,7 @@ export class ConducteursPage implements OnInit {
 
   formatDateUpdatePosition(dateString: string): string {
     if (!dateString) return 'Position inconnue';
-    
+
     try {
       const date = new Date(dateString);
       const now = new Date();
@@ -488,7 +488,7 @@ export class ConducteursPage implements OnInit {
       const diffMinutes = Math.floor(diffMs / (1000 * 60));
       const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
       const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-      
+
       if (diffMinutes < 1) {
         return 'À l\'instant';
       } else if (diffMinutes < 60) {
@@ -507,6 +507,39 @@ export class ConducteursPage implements OnInit {
     } catch (error) {
       console.error('Erreur formatage date position:', error);
       return 'Date invalide';
+    }
+  }
+
+  formatDerniereActivite(dateString: string): string {
+    if (!dateString) return '';
+
+    try {
+      const date = new Date(dateString.endsWith('Z') ? dateString : dateString + 'Z');
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMinutes = Math.floor(diffMs / (1000 * 60));
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+      if (diffMinutes < 1) {
+        return 'Actif maintenant';
+      } else if (diffMinutes < 60) {
+        return `Actif il y a ${diffMinutes}min`;
+      } else if (diffHours < 24) {
+        return `Actif il y a ${diffHours}h`;
+      } else if (diffDays === 1) {
+        return 'Actif hier';
+      } else if (diffDays < 7) {
+        return `Actif il y a ${diffDays}j`;
+      } else {
+        return `Dernier: ${date.toLocaleDateString('fr-FR', {
+          day: '2-digit',
+          month: '2-digit'
+        })}`;
+      }
+    } catch (error) {
+      console.error('Erreur formatage derniere activite:', error);
+      return '';
     }
   }
 

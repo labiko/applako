@@ -4,6 +4,9 @@
       <ion-icon name="people" class="title-icon"></ion-icon>
       Conducteurs
     </ion-title>
+    <ion-button slot="end" fill="clear" color="dark" (click)="loadConducteurs()">
+      <ion-icon name="refresh" slot="icon-only" class="refresh-icon"></ion-icon>
+    </ion-button>
   </ion-toolbar>
 </ion-header>
 
@@ -137,6 +140,10 @@
                   <ion-icon name="ellipse" class="status-dot"></ion-icon>
                   {{ getStatusText(conducteur.statut, conducteur.hors_ligne) }}
                 </ion-badge>
+                <span class="derniere-activite" *ngIf="conducteur.derniere_activite">
+                  <ion-icon name="time"></ion-icon>
+                  {{ formatDerniereActivite(conducteur.derniere_activite) }}
+                </span>
                 
                 <!-- Position et date update pour les conducteurs disponibles -->
                 <div class="location-info" *ngIf="conducteur.statut === 'disponible' && !conducteur.hors_ligne">

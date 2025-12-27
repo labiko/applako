@@ -7,30 +7,37 @@
 .modern-toolbar {
   --background: var(--lako-green);
   --color: var(--lako-dark);
-  
+
   .modern-title {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     font-weight: 600;
-    
+
     .title-icon {
       font-size: 1.2rem;
     }
   }
-  
+
+  // Refresh button style
+  .refresh-icon {
+    font-size: 1.5rem !important;
+    font-weight: 700;
+    color: var(--lako-dark) !important;
+  }
+
   .add-button {
     --background: transparent;
     --background-hover: rgba(21, 21, 21, 0.1);
     --background-activated: rgba(21, 21, 21, 0.2);
     --color: var(--lako-dark);
     --color-hover: var(--lako-dark);
-    
+
     ion-icon {
       font-size: 2rem !important;
       color: var(--lako-dark) !important;
     }
-    
+
     &:hover {
       transform: scale(1.1);
     }
@@ -271,11 +278,10 @@
           flex: 1;
           
           .conducteur-name {
-            font-size: 1.3rem;
-            font-weight: 700;
+            font-size: 0.75rem;
+            font-weight: 600;
             color: var(--lako-dark);
             margin: 0 0 0.5rem 0;
-            letter-spacing: -0.01em;
           }
           
           .conducteur-meta {
@@ -309,9 +315,9 @@
             
             .status-with-location {
               display: flex;
-              flex-direction: column;
-              gap: 0.75rem;
-              align-items: flex-start;
+              flex-wrap: wrap;
+              gap: 0.5rem;
+              align-items: center;
 
               .status-badge {
                 display: flex;
@@ -337,12 +343,30 @@
                   }
                 }
               }
-              
+
+              .derniere-activite {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.25rem;
+                font-size: 0.7rem;
+                color: #666;
+                padding: 0.15rem 0.5rem;
+                background: rgba(0, 0, 0, 0.05);
+                border-radius: 8px;
+
+                ion-icon {
+                  font-size: 0.75rem;
+                  color: #888;
+                }
+              }
+
               .location-info {
                 display: flex;
                 flex-direction: column;
                 gap: 0.5rem;
                 margin-top: 0.25rem;
+                width: 100%;
+                flex-basis: 100%;
                 
                 .position-update {
                   display: flex;
