@@ -39,10 +39,11 @@ export class AppComponent implements OnInit, OnDestroy {
     console.log('🚀 Initialisation du système de blocage...');
     this.blocageInitService.initialize();
 
-    // PWA Install Banner - avec forçage de détection des changements
+    // PWA Install Banner - désactivé sur localhost pour le développement
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     this.pwaService.installable$.subscribe(installable => {
-      this.showInstallBanner = installable && this.pwaService.shouldShowBanner();
-      console.log('📲 PWA Banner state:', this.showInstallBanner, 'installable:', installable);
+      this.showInstallBanner = !isLocalhost && installable && this.pwaService.shouldShowBanner();
+      console.log('📲 PWA Banner state:', this.showInstallBanner, 'installable:', installable, 'localhost:', isLocalhost);
       this.cdr.detectChanges();
     });
 

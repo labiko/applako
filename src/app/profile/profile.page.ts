@@ -32,7 +32,6 @@ import {
 import { AuthService } from '../services/auth.service';
 import { APP_VERSION } from '../constants/version';
 import { SupabaseService } from '../services/supabase.service';
-import { OneSignalService } from '../services/onesignal.service';
 import { PasswordModalComponent } from '../components/password-modal/password-modal.component';
 
 @Component({
@@ -86,7 +85,6 @@ export class ProfilePage implements OnInit {
   constructor(
     private authService: AuthService,
     private supabaseService: SupabaseService,
-    private oneSignalService: OneSignalService,
     private router: Router,
     private toastController: ToastController,
     private modalController: ModalController
@@ -159,9 +157,6 @@ export class ProfilePage implements OnInit {
   }
 
   async onLogout() {
-    // ✅ NOUVEAU : Désactiver OneSignal avant déconnexion
-    await this.oneSignalService.disableConducteurOneSignal();
-    
     this.authService.logout();
     this.router.navigate(['/login']);
   }

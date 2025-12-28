@@ -77,7 +77,10 @@
       "Bash(echo:*)",
       "Bash(dir distngsw* distmanifest*)",
       "Bash(git merge:*)",
-      "WebFetch(domain:conakry-lako-taxi.vercel.app)"
+      "WebFetch(domain:conakry-lako-taxi.vercel.app)",
+      "Bash(python -m json.tool:*)",
+      "Bash(del \"C:\\\\Users\\\\diall\\\\Documents\\\\LOKO TAXI\\\\LengoPayCallbackService.cs\")",
+      "Bash(del \"C:\\\\Users\\\\diall\\\\Documents\\\\LOKO TAXI\\\\LengoPayCallbackController.cs\")"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

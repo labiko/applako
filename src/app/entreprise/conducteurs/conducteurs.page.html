@@ -548,6 +548,10 @@
 
                 <!-- Header de la réservation -->
                 <div class="reservation-card-header">
+                  <div class="reservation-id-badge">
+                    <ion-icon name="finger-print-outline"></ion-icon>
+                    <span class="reservation-id">{{ reservation.id }}</span>
+                  </div>
                   <div class="reservation-destination">
                     <ion-icon name="flag-outline"></ion-icon>
                     <span>{{ reservation.destination_nom || 'Destination non spécifiée' }}</span>
@@ -598,6 +602,14 @@
                     <ion-icon name="calendar-outline"></ion-icon>
                     <span>{{ formatDate(reservation.created_at) }}</span>
                   </div>
+                </div>
+
+                <!-- Statut de paiement -->
+                <div class="reservation-payment-status" *ngIf="reservation.statut === 'accepted' || reservation.statut === 'completed'">
+                  <ion-icon name="card-outline"></ion-icon>
+                  <ion-badge [color]="getPaymentStatusColor(reservation)">
+                    {{ getPaymentStatusText(reservation) }}
+                  </ion-badge>
                 </div>
               </div>
             </div>

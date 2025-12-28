@@ -33,7 +33,6 @@ import { location, time, person, call, checkmark, close, car, resize, card, carS
 import { SupabaseService } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
 import { GeolocationService } from '../services/geolocation.service';
-import { OneSignalService } from '../services/onesignal.service';
 import { AutoRefreshService, RefreshState } from '../services/auto-refresh.service';
 import { RadiusChangeDetectionService } from '../services/radius-change-detection.service';
 import { CallService } from '../services/call.service';
@@ -107,7 +106,6 @@ export class ReservationsPage implements OnInit, OnDestroy {
     private supabaseService: SupabaseService,
     private authService: AuthService,
     private geolocationService: GeolocationService,
-    private oneSignalService: OneSignalService,
     private autoRefreshService: AutoRefreshService,
     private radiusChangeService: RadiusChangeDetectionService,
     private callService: CallService,
@@ -145,8 +143,6 @@ export class ReservationsPage implements OnInit, OnDestroy {
 
     // ✅ Actions d'initialisation
     this.setupResumeListener();
-    this.oneSignalService.enableReservationsNotifications();
-    this.oneSignalService.setReservationsCallback(this.refreshReservationsFromNotification.bind(this));
 
     // ℹ️ Chargement initial des données (en arrière-plan)
     console.log('🔄 Chargement initial en arrière-plan...');
@@ -178,9 +174,6 @@ export class ReservationsPage implements OnInit, OnDestroy {
 
     // Supprimer le listener resume
     this.removeResumeListener();
-
-    // ✅ NOUVEAU : Désactiver la réception des notifications OneSignal
-    this.oneSignalService.disableReservationsNotifications();
   }
 
   // Synchroniser l'état du conducteur avec la base de données
@@ -1127,9 +1120,6 @@ Accepter cette réservation planifiée ?`,
           (this.authService as any).currentConducteurSubject.next(conducteur);
         }
 
-        // ✅ NOUVEAU : Mettre à jour le statut OneSignal (appel simple)
-        this.oneSignalService.updateConducteurOnlineStatus(isOnline);
-
         // Gérer le tracking GPS et le rafraîchissement automatique selon le statut
         if (isOnline) {
           // Passer en ligne : démarrer le tracking GPS et l'auto-refresh
@@ -1488,25 +1478,6 @@ Accepter cette réservation planifiée ?`,
       await this.loadReservations();
 
       this.isLoading = originalIsLoading;
-    } catch (error) {
-    }
-  }
-
-  // ✅ NOUVEAU : Callback simple pour actualisation déclenché par OneSignal
-  async refreshReservationsFromNotification(): Promise<void> {
-
-    try {
-      // Actualisation silencieuse (pas de loader)
-      const originalIsLoading = this.isLoading;
-      this.isLoading = false;
-
-      await this.loadReservations();
-
-      this.isLoading = originalIsLoading;
-
-      // Afficher toast informatif
-      this.presentToast('🔔 Nouvelles réservations disponibles', 'success');
-
     } catch (error) {
     }
   }

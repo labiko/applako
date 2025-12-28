@@ -1,6 +1,6 @@
 {
   "name": "app-lako-chauffeur",
-  "version": "2.4.8",
+  "version": "2.4.9",
   "author": "Ionic Framework",
   "homepage": "https://ionicframework.com/",
   "scripts": {
@@ -37,7 +37,6 @@
     "bcryptjs": "^3.0.2",
     "capacitor-native-settings": "^5.0.1",
     "ionicons": "^7.0.0",
-    "onesignal-cordova-plugin": "^5.2.15",
     "rxjs": "~7.8.0",
     "sharp": "^0.34.3",
     "tslib": "^2.3.0",

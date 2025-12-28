@@ -64,10 +64,12 @@ import {
   personAdd,
   calendar,
   lockClosed,
-  lockOpen
+  lockOpen,
+  cardOutline
 } from 'ionicons/icons';
 import { AlertController, ToastController } from '@ionic/angular/standalone';
 import { EntrepriseService, ConducteurStats } from '../../services/entreprise.service';
+import { PaymentService, PaymentStatus } from '../../services/payment.service';
 
 @Component({
   selector: 'app-conducteurs',
@@ -134,7 +136,8 @@ export class ConducteursPage implements OnInit {
   constructor(
     private entrepriseService: EntrepriseService,
     private alertController: AlertController,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private paymentService: PaymentService
   ) {
     addIcons({
       people,
@@ -165,7 +168,8 @@ export class ConducteursPage implements OnInit {
       personAdd,
       calendar,
       lockClosed,
-      lockOpen
+      lockOpen,
+      cardOutline
     });
   }
 
@@ -377,10 +381,12 @@ export class ConducteursPage implements OnInit {
     this.selectedConducteur = conducteur;
     this.isReservationsModalOpen = true;
     this.isLoadingReservations = true;
-    
+
     try {
       // Récupérer les réservations du conducteur
-      this.conducteurReservations = await this.entrepriseService.getReservationsByConducteur(conducteur.id);
+      const reservations = await this.entrepriseService.getReservationsByConducteur(conducteur.id);
+      // Charger le statut de paiement pour chaque réservation
+      this.conducteurReservations = await this.paymentService.loadPaymentStatusForReservations(reservations);
     } catch (error) {
       console.error('Erreur lors du chargement des réservations:', error);
       this.conducteurReservations = [];
@@ -478,6 +484,40 @@ export class ConducteursPage implements OnInit {
 
   trackByReservation(index: number, reservation: any): string {
     return reservation.id || index.toString();
+  }
+
+  // Helpers pour affichage statut paiement
+  // Règle: Si réservation validée (completed) et pas de paiement SUCCESS → Espèces
+  getPaymentStatusText(reservation: any): string {
+    const status = reservation.paymentStatus?.status;
+
+    // Paiement réussi
+    if (status === 'SUCCESS' || status === 'Success') return 'Payé';
+
+    // Réservation terminée sans paiement SUCCESS = Espèces
+    if (reservation.statut === 'completed') return 'Espèces';
+
+    // Réservation acceptée (en cours) avec paiement en attente/échoué
+    if (status === 'PENDING' || status === 'Pending') return 'En attente';
+    if (status === 'FAILED' || status === 'Failed') return 'Échoué';
+
+    return 'Espèces';
+  }
+
+  getPaymentStatusColor(reservation: any): string {
+    const status = reservation.paymentStatus?.status;
+
+    // Paiement réussi
+    if (status === 'SUCCESS' || status === 'Success') return 'success';
+
+    // Réservation terminée sans paiement SUCCESS = Espèces (gris)
+    if (reservation.statut === 'completed') return 'medium';
+
+    // Réservation acceptée (en cours) avec paiement en attente/échoué
+    if (status === 'PENDING' || status === 'Pending') return 'warning';
+    if (status === 'FAILED' || status === 'Failed') return 'danger';
+
+    return 'medium';
   }
 
   formatDateUpdatePosition(dateString: string): string {

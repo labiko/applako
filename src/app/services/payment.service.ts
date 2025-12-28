@@ -171,6 +171,32 @@ export class PaymentService {
   }
 
   /**
+   * Charge le statut de paiement pour un tableau de réservations (fonction générique réutilisable)
+   * @param reservations Tableau de réservations à enrichir
+   * @returns Réservations enrichies avec paymentStatus
+   */
+  async loadPaymentStatusForReservations<T extends { id: string; statut: string }>(
+    reservations: T[]
+  ): Promise<(T & { paymentStatus?: PaymentStatus })[]> {
+    const result = [...reservations] as (T & { paymentStatus?: PaymentStatus })[];
+
+    for (const reservation of result) {
+      if (reservation.statut === 'accepted' || reservation.statut === 'completed') {
+        try {
+          const paymentStatus = await this.getLatestPaymentStatus(reservation.id);
+          if (paymentStatus) {
+            reservation.paymentStatus = paymentStatus;
+          }
+        } catch (error) {
+          console.error(`Erreur chargement paiement pour ${reservation.id}:`, error);
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
    * Vérifie si l'entreprise du conducteur a LengoPay activé
    * @param entrepriseId ID de l'entreprise
    * @returns true si config active

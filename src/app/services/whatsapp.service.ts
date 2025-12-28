@@ -284,6 +284,8 @@ ${entrepriseNom} 🚕
     conducteurNom: string,
     entrepriseNom: string = 'LokoTaxi'
   ): Promise<WhatsAppResponse> {
+    const appUrl = 'https://conakry-lako-taxi.vercel.app';
+
     const message = `🚕 *Bienvenue chez ${entrepriseNom}!*
 
 Bonjour *${conducteurNom}*,
@@ -294,7 +296,10 @@ Votre compte conducteur a été créé avec succès.
 • Téléphone: ${phoneNumber}
 • Mot de passe: *${motDePasse}*
 
-📲 Téléchargez l'application LokoTaxi Conducteur et connectez-vous pour commencer à recevoir des courses.
+📲 *Téléchargez l'application:*
+${appUrl}
+
+Ouvrez ce lien sur votre téléphone et installez l'application pour commencer à recevoir des courses.
 
 ⚠️ Conservez ce mot de passe en lieu sûr.
 
