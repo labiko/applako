@@ -224,19 +224,27 @@ export class OneSignalService {
 
       const OneSignalWeb = windowAny.OneSignal;
 
-      // Initialiser OneSignal Web
-      await OneSignalWeb.init({
-        appId: this.ONESIGNAL_APP_ID,
-        allowLocalhostAsSecureOrigin: true, // Pour dev local
-        notifyButton: {
-          enable: false // Désactiver le bouton flottant
-        },
-        welcomeNotification: {
-          disable: true // Désactiver notification de bienvenue
+      // Initialiser OneSignal Web (peut déjà être initialisé par le SDK auto-init)
+      try {
+        await OneSignalWeb.init({
+          appId: this.ONESIGNAL_APP_ID,
+          allowLocalhostAsSecureOrigin: true, // Pour dev local
+          notifyButton: {
+            enable: false // Désactiver le bouton flottant
+          },
+          welcomeNotification: {
+            disable: true // Désactiver notification de bienvenue
+          }
+        });
+        console.log('✅ OneSignal Web SDK initialisé');
+      } catch (initError: any) {
+        // Le SDK v16 s'auto-initialise parfois - on continue si déjà initialisé
+        if (initError.message?.includes('already initialized')) {
+          console.log('✅ OneSignal Web SDK déjà initialisé - continuation...');
+        } else {
+          throw initError;
         }
-      });
-
-      console.log('✅ OneSignal Web SDK initialisé');
+      }
 
       // Définir l'External User ID
       if (this.currentExternalUserId) {
