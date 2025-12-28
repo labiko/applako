@@ -210,10 +210,12 @@ export class OneSignalService {
 
   /**
    * Initialise OneSignal pour Web/PWA
+   * Note: L'initialisation de base est faite dans index.html via OneSignalDeferred
+   * Cette méthode configure le login et les listeners
    */
   private async initializeOneSignalWeb(): Promise<void> {
     try {
-      console.log('🌐 ========== INITIALISATION ONESIGNAL WEB ==========');
+      console.log('🌐 ========== CONFIGURATION ONESIGNAL WEB ==========');
 
       // Vérifier que le SDK Web est chargé
       const windowAny = window as any;
@@ -224,27 +226,17 @@ export class OneSignalService {
 
       const OneSignalWeb = windowAny.OneSignal;
 
-      // Initialiser OneSignal Web (peut déjà être initialisé par le SDK auto-init)
-      try {
-        await OneSignalWeb.init({
-          appId: this.ONESIGNAL_APP_ID,
-          allowLocalhostAsSecureOrigin: true, // Pour dev local
-          notifyButton: {
-            enable: false // Désactiver le bouton flottant
-          },
-          welcomeNotification: {
-            disable: true // Désactiver notification de bienvenue
-          }
+      // Attendre que OneSignal soit prêt (initialisé par index.html)
+      console.log('⏳ Attente initialisation OneSignal...');
+
+      // Utiliser OneSignalDeferred pour s'assurer que l'init est terminée
+      await new Promise<void>((resolve) => {
+        windowAny.OneSignalDeferred = windowAny.OneSignalDeferred || [];
+        windowAny.OneSignalDeferred.push(async function() {
+          console.log('✅ OneSignal Web SDK prêt');
+          resolve();
         });
-        console.log('✅ OneSignal Web SDK initialisé');
-      } catch (initError: any) {
-        // Le SDK v16 s'auto-initialise parfois - on continue si déjà initialisé
-        if (initError.message?.includes('already initialized')) {
-          console.log('✅ OneSignal Web SDK déjà initialisé - continuation...');
-        } else {
-          throw initError;
-        }
-      }
+      });
 
       // Définir l'External User ID
       if (this.currentExternalUserId) {
