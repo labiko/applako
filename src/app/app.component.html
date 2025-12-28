@@ -73,4 +73,45 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal notification permission (conducteurs uniquement) -->
+  <div class="notification-modal-overlay" *ngIf="showNotificationModal && !showSplash && !showForceInstallModal">
+    <div class="notification-modal">
+      <div class="modal-header">
+        <div class="notification-icon-container">
+          <ion-icon name="notifications-outline" class="notification-icon"></ion-icon>
+        </div>
+        <h2>Activer les notifications</h2>
+      </div>
+
+      <div class="modal-body">
+        <p>Recevez une alerte instantanee des que vous avez une nouvelle reservation.</p>
+
+        <div class="notification-benefits">
+          <div class="benefit">
+            <span class="benefit-icon">🚗</span>
+            <span>Nouvelles courses en temps reel</span>
+          </div>
+          <div class="benefit">
+            <span class="benefit-icon">💰</span>
+            <span>Ne manquez plus aucune opportunite</span>
+          </div>
+          <div class="benefit">
+            <span class="benefit-icon">⚡</span>
+            <span>Soyez le premier a accepter</span>
+          </div>
+        </div>
+
+        <div class="notification-actions">
+          <ion-button expand="block" (click)="requestNotificationPermission()" class="enable-btn">
+            <ion-icon name="notifications-outline" slot="start"></ion-icon>
+            Activer les notifications
+          </ion-button>
+          <ion-button expand="block" fill="clear" (click)="dismissNotificationModal()" class="later-btn">
+            Plus tard
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
 </ion-app>
