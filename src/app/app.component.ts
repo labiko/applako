@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonApp, IonRouterOutlet, IonButton, IonIcon } from '@ionic/angular/standalone';
 import { SplashScreenComponent } from './shared/components/splash-screen/splash-screen.component';
@@ -24,7 +24,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private geolocationService: GeolocationService,
     private authService: AuthService,
     private blocageInitService: AppInitBlocageService,
-    public pwaService: PwaService
+    public pwaService: PwaService,
+    private cdr: ChangeDetectorRef
   ) {
     addIcons({ downloadOutline, closeOutline });
   }
@@ -34,9 +35,11 @@ export class AppComponent implements OnInit, OnDestroy {
     console.log('🚀 Initialisation du système de blocage...');
     this.blocageInitService.initialize();
 
-    // PWA Install Banner
+    // PWA Install Banner - avec forçage de détection des changements
     this.pwaService.installable$.subscribe(installable => {
       this.showInstallBanner = installable && this.pwaService.shouldShowBanner();
+      console.log('📲 PWA Banner state:', this.showInstallBanner, 'installable:', installable);
+      this.cdr.detectChanges();
     });
     
     // Démarrer le tracking de position si un conducteur est connecté ET en ligne

@@ -15,6 +15,8 @@ export class PwaService {
   constructor() {
     this.initPwaPrompt();
     this.checkIfInstalled();
+    // Restaurer l'état depuis localStorage si l'événement a déjà été capturé
+    this.restoreInstallableState();
   }
 
   private initPwaPrompt() {
@@ -22,6 +24,8 @@ export class PwaService {
       event.preventDefault();
       this.deferredPrompt = event;
       this.installableSubject.next(true);
+      // Sauvegarder l'état pour les futures navigations
+      localStorage.setItem('pwa_installable', 'true');
       console.log('PWA: beforeinstallprompt event fired');
     });
 
@@ -29,8 +33,17 @@ export class PwaService {
       this.deferredPrompt = null;
       this.installableSubject.next(false);
       this.installedSubject.next(true);
+      localStorage.removeItem('pwa_installable');
       console.log('PWA: App installed successfully');
     });
+  }
+
+  private restoreInstallableState() {
+    // Si l'événement a déjà été capturé et qu'on a le prompt
+    const wasInstallable = localStorage.getItem('pwa_installable') === 'true';
+    if (wasInstallable && this.deferredPrompt) {
+      this.installableSubject.next(true);
+    }
   }
 
   private checkIfInstalled(): boolean {
