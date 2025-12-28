@@ -599,6 +599,26 @@ git push
 - Creates confusion about what's actually deployed
 - User expects ALL work to be saved and deployed
 
+### ⚠️ CRITICAL: Version Update Rule
+**MANDATORY**: Before EVERY commit, you MUST update the version in BOTH files:
+
+1. **`package.json`** → Version npm
+   ```json
+   "version": "X.Y.Z"
+   ```
+
+2. **`src/app/constants/version.ts`** → Version affichée dans l'UI
+   ```typescript
+   export const APP_VERSION = 'X.Y.Z';
+   ```
+
+**Version format:** `MAJOR.MINOR.PATCH`
+- **MAJOR**: Changements majeurs incompatibles
+- **MINOR**: Nouvelles fonctionnalités (ex: 2.3.0 pour PWA obligatoire)
+- **PATCH**: Corrections de bugs (ex: 2.3.1)
+
+**NEVER forget to update both files!**
+
 ### Exception
 The only exception is when the user provides a specific instruction in their initial request that clearly indicates they want commits (e.g., "implement feature X and commit it").
 
