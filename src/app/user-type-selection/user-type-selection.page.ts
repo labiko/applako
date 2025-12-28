@@ -16,6 +16,7 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { carSport, business, person, arrowForward, location } from 'ionicons/icons';
+import { APP_VERSION } from '../constants/version';
 
 @Component({
   selector: 'app-user-type-selection',
@@ -38,6 +39,7 @@ import { carSport, business, person, arrowForward, location } from 'ionicons/ico
   ]
 })
 export class UserTypeSelectionPage {
+  appVersion = APP_VERSION;
 
   constructor(private router: Router) {
     addIcons({ carSport, business, person, arrowForward, location });
