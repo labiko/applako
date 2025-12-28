@@ -238,26 +238,26 @@ export class OneSignalService {
         });
       });
 
-      // Définir l'External User ID
-      if (this.currentExternalUserId) {
-        console.log('🆔 Définition External User ID (Web):', this.currentExternalUserId);
-        await OneSignalWeb.login(this.currentExternalUserId);
-        console.log('✅ External User ID défini avec succès (Web)');
-      }
-
-      // Demander permission pour les notifications
+      // Demander permission pour les notifications D'ABORD
       const permission = await OneSignalWeb.Notifications.requestPermission();
       console.log('🔔 Permission notifications Web:', permission);
 
-      // Récupérer le Subscription ID
+      // Attendre que la subscription soit créée puis définir l'External User ID
       setTimeout(async () => {
         try {
+          // Récupérer le Subscription ID
           const subscriptionId = await OneSignalWeb.User.PushSubscription.id;
           if (subscriptionId) {
             this.currentPlayerId = subscriptionId;
             console.log('🎯 ========== SUBSCRIPTION ID WEB RÉCUPÉRÉ ==========');
             console.log('🌐 OneSignal Subscription ID:', this.currentPlayerId);
-            console.log('🆔 External User ID actif:', this.currentExternalUserId);
+          }
+
+          // MAINTENANT définir l'External User ID (après que subscription existe)
+          if (this.currentExternalUserId) {
+            console.log('🆔 Définition External User ID (Web):', this.currentExternalUserId);
+            await OneSignalWeb.login(this.currentExternalUserId);
+            console.log('✅ External User ID défini avec succès (Web)');
           }
 
           this.isInitialized = true;
@@ -270,9 +270,9 @@ export class OneSignalService {
             appId: this.ONESIGNAL_APP_ID
           });
         } catch (error) {
-          console.error('❌ Erreur récupération Subscription ID Web:', error);
+          console.error('❌ Erreur récupération/login Subscription Web:', error);
         }
-      }, 2000);
+      }, 3000);
 
       // Écouter les notifications (Web)
       OneSignalWeb.Notifications.addEventListener('foregroundWillDisplay', (event: any) => {
