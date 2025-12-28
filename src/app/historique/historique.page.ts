@@ -22,7 +22,7 @@ import {
   LoadingController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline, calendar, ban, copy, reload } from 'ionicons/icons';
+import { location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline, calendar, ban, copy, reload, openOutline, flag, send, alertCircle } from 'ionicons/icons';
 import { SupabaseService } from '../services/supabase.service';
 import { AuthService } from '../services/auth.service';
 import { CallService } from '../services/call.service';
@@ -76,7 +76,7 @@ export class HistoriquePage implements OnInit {
     private toastController: ToastController,
     private loadingController: LoadingController
   ) {
-    addIcons({ location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline, calendar, ban, copy, reload });
+    addIcons({ location, time, person, call, checkmarkCircle, closeCircle, checkmarkDoneCircle, car, resize, card, shieldCheckmark, timeOutline, calendar, ban, copy, reload, openOutline, flag, send, alertCircle });
   }
 
   ngOnInit() {
@@ -405,12 +405,137 @@ export class HistoriquePage implements OnInit {
     }
 
     const minutesLeft = this.paymentService.getMinutesUntilExpiration(reservation.paymentStatus.created_at);
-    
+
     if (minutesLeft <= 0) {
       return 'Expiré';
     }
-    
+
     return `Expire dans ${minutesLeft} min`;
+  }
+
+  // Ouvrir Google Maps avec navigation vers le point de départ
+  openGoogleMaps(reservation: Reservation) {
+    let destination = '';
+
+    // Extraire la position de départ
+    if (reservation.position_depart) {
+      const departCoords = this.extractCoordinates(reservation.position_depart);
+      if (departCoords) {
+        destination = `${departCoords.lat},${departCoords.lng}`;
+      } else {
+        destination = encodeURIComponent(reservation.position_depart);
+      }
+    }
+
+    // Fallback sur le nom du départ
+    if (!destination && reservation.depart_nom) {
+      destination = encodeURIComponent(reservation.depart_nom);
+    }
+
+    if (!destination) {
+      this.presentToast('Position de départ non disponible', 'warning');
+      return;
+    }
+
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+    window.open(url, '_system');
+  }
+
+  // Ouvrir Google Maps avec navigation vers la destination finale
+  openGoogleMapsDestination(reservation: Reservation) {
+    let destination = '';
+
+    // Extraire la position d'arrivée
+    if (reservation.position_arrivee) {
+      const arriveeCoords = this.extractCoordinates(reservation.position_arrivee);
+      if (arriveeCoords) {
+        destination = `${arriveeCoords.lat},${arriveeCoords.lng}`;
+      } else {
+        destination = encodeURIComponent(reservation.position_arrivee);
+      }
+    }
+
+    // Fallback sur le nom de destination
+    if (!destination) {
+      destination = encodeURIComponent(reservation.destination_nom || 'Destination');
+    }
+
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+    window.open(url, '_system');
+  }
+
+  // Extraire coordonnées depuis format POINT(lng lat) ou WKB
+  private extractCoordinates(pointString: string): { lat: number, lng: number } | null {
+    try {
+      if (!pointString) {
+        return null;
+      }
+
+      // Format texte: POINT(2.5847236 48.6273519)
+      if (pointString.startsWith('POINT(')) {
+        const coords = pointString.replace('POINT(', '').replace(')', '').split(' ');
+        return {
+          lng: parseFloat(coords[0]),
+          lat: parseFloat(coords[1])
+        };
+      }
+
+      // Format WKB (format binaire PostGIS)
+      if (pointString.length >= 50 &&
+        pointString.match(/^[0-9A-F]+$/i) &&
+        pointString.toUpperCase().startsWith('0101000020E6100000')) {
+        return this.decodeWKB(pointString);
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error extracting coordinates:', error);
+      return null;
+    }
+  }
+
+  // Décoder le format WKB (Well-Known Binary) de PostGIS
+  private decodeWKB(wkbHex: string): { lat: number, lng: number } | null {
+    try {
+      if (wkbHex.length >= 50) {
+        const geometryType = wkbHex.substring(2, 10);
+        const srid = wkbHex.substring(10, 18);
+
+        if (geometryType.toUpperCase() === '01000020' && srid.toUpperCase() === 'E6100000') {
+          const xHex = wkbHex.substring(18, 34);
+          const yHex = wkbHex.substring(34, 50);
+
+          const lng = this.hexToFloat64LittleEndian(xHex);
+          const lat = this.hexToFloat64LittleEndian(yHex);
+
+          if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+            return { lat, lng };
+          }
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error('Error decoding WKB:', error);
+      return null;
+    }
+  }
+
+  // Convertir hex little-endian vers float64
+  private hexToFloat64LittleEndian(hexStr: string): number {
+    try {
+      const buffer = new ArrayBuffer(8);
+      const view = new DataView(buffer);
+
+      for (let i = 0; i < 8; i++) {
+        const byte = parseInt(hexStr.substr(i * 2, 2), 16);
+        view.setUint8(i, byte);
+      }
+
+      return view.getFloat64(0, true);
+    } catch (error) {
+      console.error('Error converting hex to float64:', error);
+      return 0;
+    }
   }
 
   /**

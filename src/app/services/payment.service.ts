@@ -136,38 +136,32 @@ export class PaymentService {
 
   /**
    * Détermine si on peut relancer un paiement pour une réservation
+   * RÈGLE SIMPLE: Tant que le paiement n'est pas SUCCESS, on peut toujours régénérer un lien
+   * Cela créera une nouvelle ligne dans la table lengopay_payments
    * @param reservation Réservation avec son statut de paiement
    * @returns true si on peut relancer
    */
   canRetriggerPayment(reservation: any): boolean {
-    // Seulement pour les réservations acceptées
-    if (reservation.statut !== 'accepted') {
+    // Seulement pour les réservations acceptées ou completed
+    if (reservation.statut !== 'accepted' && reservation.statut !== 'completed') {
       return false;
     }
 
     const payment = reservation.paymentStatus;
-    
-    // Pas de paiement = PEUT déclencher pour la première fois (si config active)
+
+    // Pas de paiement = PEUT déclencher pour la première fois
     if (!payment) {
-      return true; // Le contrôle is_active sera fait dans l'historique
+      return true;
     }
 
-    // Paiement réussi = ne peut pas relancer
+    // Paiement réussi (SUCCESS) = ne peut pas relancer
     if (payment.status === 'SUCCESS' || payment.status === 'Success') {
       return false;
     }
 
-    // Paiement en attente mais expiré = peut relancer
-    if ((payment.status === 'PENDING' || payment.status === 'Pending') && this.isPaymentExpired(payment.created_at)) {
-      return true;
-    }
-
-    // Paiement échoué = peut relancer
-    if (payment.status === 'FAILED' || payment.status === 'Failed') {
-      return true;
-    }
-
-    return false;
+    // Tous les autres cas (PENDING, FAILED, expiré, etc.) = PEUT relancer
+    // Cela créera une nouvelle entrée dans la table de paiement
+    return true;
   }
 
   /**

@@ -127,27 +127,54 @@
     align-items: flex-start;
     gap: 8px;
     margin-bottom: 12px;
-    
+
     ion-icon {
       margin-top: 2px;
       font-size: 1.1em;
       flex-shrink: 0;
     }
-    
+
     ion-text {
       flex-grow: 1;
       line-height: 1.4;
     }
-    
+
     &.timestamp {
       margin-top: 16px;
       padding-top: 12px;
       border-top: 1px solid var(--ion-color-light-shade);
       justify-content: center;
-      
+
       ion-text {
         text-align: center;
         font-style: italic;
+      }
+    }
+
+    // Style pour les éléments cliquables (Maps)
+    &.clickable {
+      cursor: pointer;
+      padding: 8px;
+      margin: -8px;
+      margin-bottom: 4px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+
+      &:hover {
+        background-color: rgba(var(--ion-color-primary-rgb), 0.08);
+        border-color: rgba(var(--ion-color-primary-rgb), 0.3);
+      }
+
+      &:active {
+        transform: scale(0.98);
+        background-color: rgba(var(--ion-color-primary-rgb), 0.15);
+      }
+
+      .external-link-icon {
+        font-size: 0.85em;
+        margin-left: 4px;
+        opacity: 0.7;
       }
     }
   }
@@ -301,8 +328,34 @@ ion-title {
   padding: 12px;
   border-radius: 8px;
   border-left: 3px solid var(--ion-color-success);
-  
+
   ion-icon {
     margin-right: 8px;
+  }
+}
+
+// Section de paiement
+.payment-section {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(var(--ion-color-primary-rgb), 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.15);
+}
+
+.payment-trigger-section {
+  margin-top: 12px;
+  text-align: center;
+
+  .payment-btn {
+    --border-radius: 10px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .payment-hint {
+    display: block;
+    text-align: center;
+    opacity: 0.8;
   }
 }

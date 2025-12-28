@@ -80,10 +80,19 @@
               </ion-text>
             </div>
 
-            <div class="detail-item">
-              <ion-icon name="location" color="medium"></ion-icon>
-              <ion-text>
+            <div class="detail-item clickable" (click)="openGoogleMaps(reservation)">
+              <ion-icon name="location" color="primary"></ion-icon>
+              <ion-text color="primary">
+                <strong>Départ:</strong> {{ reservation.depart_nom || 'Non spécifié' }}
+                <ion-icon name="open-outline" class="external-link-icon"></ion-icon>
+              </ion-text>
+            </div>
+
+            <div class="detail-item clickable" (click)="openGoogleMapsDestination(reservation)">
+              <ion-icon name="flag" color="success"></ion-icon>
+              <ion-text color="success">
                 <strong>Destination:</strong> {{ reservation.destination_nom }}
+                <ion-icon name="open-outline" class="external-link-icon"></ion-icon>
               </ion-text>
             </div>
 
@@ -159,97 +168,8 @@
             </div>
             
             <div class="payment-container">
-              <!-- Aucun paiement initié -->
-              <div *ngIf="!reservation.paymentStatus" class="payment-status no-payment">
-                <ion-icon name="alert-circle" color="warning"></ion-icon>
-                <ion-text color="warning">
-                  <strong>Aucun paiement initié</strong>
-                </ion-text>
-              </div>
-
-              <!-- Bouton de déclenchement/relance - seulement si expiré ou Failed -->
-              <div *ngIf="reservation.canRetriggerPayment" class="payment-trigger-section">
-                <ion-button 
-                  class="payment-btn"
-                  (click)="retriggerPayment(reservation)"
-                  fill="solid"
-                  color="primary"
-                  size="small">
-                  <ion-icon name="refresh" slot="start"></ion-icon>
-                  {{ !reservation.paymentStatus ? 'Déclencher le paiement' : 'Relancer le paiement' }}
-                </ion-button>
-              </div>
-
-              <!-- Paiement en cours -->
-              <div *ngIf="(reservation.paymentStatus?.status === 'PENDING' || reservation.paymentStatus?.status === 'Pending') && !reservation.isPaymentExpired" 
-                   class="payment-status pending">
-                <div class="payment-info">
-                  <ion-icon name="time" color="warning"></ion-icon>
-                  <ion-text color="warning">
-                    <strong>Paiement en attente</strong>
-                  </ion-text>
-                </div>
-                <div class="payment-details">
-                  <small>{{ reservation.paymentStatus?.amount }} {{ reservation.paymentStatus?.currency }}</small>
-                  <div class="expiration-info">
-                    <ion-text color="medium">
-                      <small>{{ getExpirationTime(reservation) }}</small>
-                    </ion-text>
-                  </div>
-                </div>
-                <div class="payment-actions">
-                  <ion-button 
-                    class="copy-url-btn"
-                    (click)="copyPaymentUrl(reservation)"
-                    fill="clear"
-                    size="small">
-                    <ion-icon name="copy" slot="icon-only"></ion-icon>
-                  </ion-button>
-                </div>
-              </div>
-
-              <!-- Paiement expiré -->
-              <div *ngIf="(reservation.paymentStatus?.status === 'PENDING' || reservation.paymentStatus?.status === 'Pending') && reservation.isPaymentExpired" 
-                   class="payment-status expired">
-                <ion-icon name="close-circle" color="danger"></ion-icon>
-                <ion-text color="danger">
-                  <strong>Paiement expiré</strong>
-                </ion-text>
-                <div class="payment-details">
-                  <small>Lien expiré après 15 minutes</small>
-                </div>
-              </div>
-
-              <!-- Paiement échoué -->
-              <div *ngIf="reservation.paymentStatus?.status === 'FAILED' || reservation.paymentStatus?.status === 'Failed'" 
-                   class="payment-status failed">
-                <div class="payment-info">
-                  <ion-icon name="close-circle" color="danger"></ion-icon>
-                  <ion-text color="danger">
-                    <strong>Paiement échoué</strong>
-                  </ion-text>
-                </div>
-                <div class="payment-details">
-                  <small>{{ reservation.paymentStatus?.message || 'Erreur de paiement' }}</small>
-                  <div class="expiration-info">
-                    <ion-text color="medium">
-                      <small>{{ getExpirationTime(reservation) }}</small>
-                    </ion-text>
-                  </div>
-                </div>
-                <div class="payment-actions">
-                  <ion-button 
-                    class="copy-url-btn"
-                    (click)="copyPaymentUrl(reservation)"
-                    fill="clear"
-                    size="small">
-                    <ion-icon name="copy" slot="icon-only"></ion-icon>
-                  </ion-button>
-                </div>
-              </div>
-
-              <!-- Paiement réussi -->
-              <div *ngIf="reservation.paymentStatus?.status === 'SUCCESS' || reservation.paymentStatus?.status === 'Success'" 
+              <!-- Paiement réussi - Afficher en premier si payé -->
+              <div *ngIf="reservation.paymentStatus?.status === 'SUCCESS' || reservation.paymentStatus?.status === 'Success'"
                    class="payment-status success">
                 <ion-icon name="checkmark-circle" color="success"></ion-icon>
                 <ion-text color="success">
@@ -259,6 +179,89 @@
                   <small>{{ reservation.paymentStatus?.amount }} {{ reservation.paymentStatus?.currency }} - {{ formatDateTime(reservation.paymentStatus?.processed_at) }}</small>
                 </div>
               </div>
+
+              <!-- SI PAS PAYÉ (SUCCESS) - Afficher statut + bouton régénération -->
+              <ng-container *ngIf="!(reservation.paymentStatus?.status === 'SUCCESS' || reservation.paymentStatus?.status === 'Success')">
+
+                <!-- Aucun paiement initié -->
+                <div *ngIf="!reservation.paymentStatus" class="payment-status no-payment">
+                  <ion-icon name="alert-circle" color="warning"></ion-icon>
+                  <ion-text color="warning">
+                    <strong>Aucun paiement initié</strong>
+                  </ion-text>
+                </div>
+
+                <!-- Paiement en cours (non expiré) -->
+                <div *ngIf="(reservation.paymentStatus?.status === 'PENDING' || reservation.paymentStatus?.status === 'Pending') && !reservation.isPaymentExpired"
+                     class="payment-status pending">
+                  <div class="payment-info">
+                    <ion-icon name="time" color="warning"></ion-icon>
+                    <ion-text color="warning">
+                      <strong>Paiement en attente</strong>
+                    </ion-text>
+                  </div>
+                  <div class="payment-details">
+                    <small>{{ reservation.paymentStatus?.amount }} {{ reservation.paymentStatus?.currency }}</small>
+                    <div class="expiration-info">
+                      <ion-text color="medium">
+                        <small>{{ getExpirationTime(reservation) }}</small>
+                      </ion-text>
+                    </div>
+                  </div>
+                  <div class="payment-actions">
+                    <ion-button
+                      class="copy-url-btn"
+                      (click)="copyPaymentUrl(reservation)"
+                      fill="clear"
+                      size="small">
+                      <ion-icon name="copy" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </div>
+                </div>
+
+                <!-- Paiement expiré -->
+                <div *ngIf="(reservation.paymentStatus?.status === 'PENDING' || reservation.paymentStatus?.status === 'Pending') && reservation.isPaymentExpired"
+                     class="payment-status expired">
+                  <ion-icon name="close-circle" color="danger"></ion-icon>
+                  <ion-text color="danger">
+                    <strong>Paiement expiré</strong>
+                  </ion-text>
+                  <div class="payment-details">
+                    <small>Lien expiré après 15 minutes</small>
+                  </div>
+                </div>
+
+                <!-- Paiement échoué -->
+                <div *ngIf="reservation.paymentStatus?.status === 'FAILED' || reservation.paymentStatus?.status === 'Failed'"
+                     class="payment-status failed">
+                  <div class="payment-info">
+                    <ion-icon name="close-circle" color="danger"></ion-icon>
+                    <ion-text color="danger">
+                      <strong>Paiement échoué</strong>
+                    </ion-text>
+                  </div>
+                  <div class="payment-details">
+                    <small>{{ reservation.paymentStatus?.message || 'Erreur de paiement' }}</small>
+                  </div>
+                </div>
+
+                <!-- BOUTON RÉGÉNÉRATION - Toujours visible si pas payé et config active -->
+                <div *ngIf="reservation.canRetriggerPayment" class="payment-trigger-section">
+                  <ion-button
+                    class="payment-btn"
+                    (click)="retriggerPayment(reservation)"
+                    fill="solid"
+                    color="primary"
+                    expand="block">
+                    <ion-icon name="send" slot="start"></ion-icon>
+                    {{ !reservation.paymentStatus ? 'Envoyer lien de paiement' : 'Renvoyer nouveau lien' }}
+                  </ion-button>
+                  <ion-text color="medium" class="payment-hint">
+                    <small>Un nouveau lien sera envoyé au client par SMS</small>
+                  </ion-text>
+                </div>
+
+              </ng-container>
             </div>
           </div>
 
