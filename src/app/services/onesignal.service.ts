@@ -90,6 +90,10 @@ export class OneSignalService {
         console.log('🆔 Définition External User ID:', this.currentExternalUserId);
         await OneSignal.login(this.currentExternalUserId);
         console.log('✅ External User ID défini avec succès');
+
+        // Supprimer le tag logged_out qui pourrait persister d'une session précédente
+        OneSignal.User.removeTags(['logged_out']);
+        console.log('🏷️ Tag logged_out supprimé à la connexion (Mobile)');
       }
 
       // Activer logs pour debug (à retirer en production)
@@ -258,6 +262,10 @@ export class OneSignalService {
             console.log('🆔 Définition External User ID (Web):', this.currentExternalUserId);
             await OneSignalWeb.login(this.currentExternalUserId);
             console.log('✅ External User ID défini avec succès (Web)');
+
+            // Supprimer le tag logged_out qui pourrait persister d'une session précédente
+            OneSignalWeb.User.removeTags(['logged_out']);
+            console.log('🏷️ Tag logged_out supprimé à la connexion (Web)');
           }
 
           this.isInitialized = true;
@@ -435,7 +443,7 @@ export class OneSignalService {
       status: isOnline ? 'online' : 'offline',
       last_seen: new Date().toISOString()
     };
-    
+
     if (isOnline) {
       // Informations additionnelles quand en ligne
       const conducteur = this.authService.getCurrentConducteur();
@@ -444,10 +452,36 @@ export class OneSignalService {
         tags['vehicle_type'] = conducteur.vehicle_type || 'voiture';
         tags['zone'] = 'conakry'; // Peut être dynamique selon la position
       }
+
+      // IMPORTANT: Supprimer le tag logged_out quand le conducteur passe en ligne
+      // Ce tag est défini lors de la déconnexion et empêche la réception des notifications
+      await this.removeLoggedOutTag();
     }
-    
+
     await this.setTags(tags);
     console.log(`📊 Statut OneSignal mis à jour: ${isOnline ? 'EN LIGNE' : 'HORS LIGNE'}`);
+  }
+
+  /**
+   * Supprime le tag logged_out (appelé quand conducteur passe en ligne)
+   */
+  private async removeLoggedOutTag(): Promise<void> {
+    try {
+      if (Capacitor.getPlatform() === 'web') {
+        const windowAny = window as any;
+        if (windowAny.OneSignal) {
+          windowAny.OneSignal.User.removeTags(['logged_out']);
+          console.log('🏷️ Tag logged_out supprimé (Web)');
+        }
+        return;
+      }
+
+      // Mobile: supprimer le tag logged_out
+      OneSignal.User.removeTags(['logged_out']);
+      console.log('🏷️ Tag logged_out supprimé (Mobile)');
+    } catch (error) {
+      console.error('❌ Erreur suppression tag logged_out:', error);
+    }
   }
 
   /**
