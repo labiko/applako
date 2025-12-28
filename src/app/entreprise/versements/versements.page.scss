@@ -24,7 +24,8 @@
       --border-radius: 8px;
       margin: 2px;
       font-weight: 500;
-      font-size: 0.85rem;
+      font-size: 0.7rem;
+      text-transform: none;
       
       ion-icon {
         margin-bottom: 4px;
@@ -39,18 +40,18 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 3rem 1rem;
-  
+  padding: 2rem 1rem;
+
   ion-spinner {
     --color: var(--lako-green);
-    width: 40px;
-    height: 40px;
-    margin-bottom: 1rem;
+    width: 32px;
+    height: 32px;
+    margin-bottom: 0.75rem;
   }
-  
+
   p {
     color: var(--lako-gray);
-    font-size: 1rem;
+    font-size: 0.85rem;
   }
 }
 
@@ -59,21 +60,22 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   background: var(--lako-cream);
   border-bottom: 1px solid rgba(193, 241, 29, 0.1);
-  
+
   h2 {
     margin: 0;
     color: var(--lako-dark);
-    font-size: 1.2rem;
+    font-size: 0.85rem;
     font-weight: 600;
   }
-  
+
   ion-badge {
     --background: var(--lako-green);
     --color: var(--lako-dark);
     font-weight: 600;
+    font-size: 0.7rem;
   }
 }
 
@@ -136,30 +138,30 @@
           h3 {
             margin: 0 0 0.25rem 0;
             color: var(--lako-dark);
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-size: 0.75rem;
+            font-weight: 400;
           }
-          
+
           p {
             margin: 0.25rem 0;
             color: var(--lako-gray);
-            font-size: 0.85rem;
+            font-size: 0.7rem;
           }
         }
       }
       
       .montant-info {
         text-align: right;
-        
+
         .montant-principal {
-          font-size: 1.4rem;
+          font-size: 1rem;
           font-weight: 700;
           color: var(--lako-green);
           text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
-        
+
         .courses-count {
-          font-size: 0.8rem;
+          font-size: 0.7rem;
           color: var(--lako-gray);
           margin-top: 0.25rem;
         }
@@ -258,14 +260,14 @@
     .metric-info {
       h3 {
         margin: 0 0 0.5rem 0;
-        font-size: 1.6rem;
+        font-size: 1.1rem;
         font-weight: 700;
         color: var(--lako-dark);
       }
-      
+
       p {
         margin: 0;
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         color: var(--lako-gray);
         font-weight: 500;
       }
@@ -287,8 +289,8 @@
     border: 1px solid rgba(193, 241, 29, 0.1);
     
     .position-badge {
-      width: 40px;
-      height: 40px;
+      width: 32px;
+      height: 32px;
       background: var(--lako-green);
       color: var(--lako-dark);
       border-radius: 50%;
@@ -296,23 +298,23 @@
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 1.1rem;
-      margin-right: 1rem;
+      font-size: 0.85rem;
+      margin-right: 0.75rem;
     }
-    
+
     .conducteur-info {
       flex: 1;
-      
+
       h4 {
         margin: 0 0 0.25rem 0;
         color: var(--lako-dark);
-        font-size: 1rem;
+        font-size: 0.85rem;
       }
-      
+
       p {
         margin: 0.125rem 0;
         color: var(--lako-gray);
-        font-size: 0.8rem;
+        font-size: 0.7rem;
       }
     }
     
@@ -345,22 +347,81 @@
 // Empty states
 .empty-state {
   text-align: center;
-  padding: 3rem 1rem;
-  
+  padding: 2rem 1rem;
+
   ion-icon {
-    font-size: 4rem;
-    margin-bottom: 1rem;
+    font-size: 3rem;
+    margin-bottom: 0.75rem;
     opacity: 0.5;
   }
-  
+
   h3 {
     color: var(--lako-dark);
     margin-bottom: 0.5rem;
+    font-size: 1rem;
   }
-  
+
   p {
     color: var(--lako-gray);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
+  }
+}
+
+// Styles pour les listes (Historique, En attente)
+ion-list {
+  background: transparent;
+  padding: 0.5rem 1rem;
+
+  ion-item {
+    --background: rgba(255, 255, 255, 0.95);
+    --border-radius: 12px;
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --inner-padding-end: 8px;
+    margin-bottom: 0.75rem;
+    border: 1px solid rgba(193, 241, 29, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    ion-avatar {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+
+      .avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, var(--lako-green), rgba(193, 241, 29, 0.7));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        ion-icon {
+          font-size: 1.2rem;
+          color: var(--lako-dark);
+        }
+      }
+    }
+
+    ion-label {
+      h3 {
+        font-size: 0.8rem !important;
+        font-weight: 500 !important;
+        color: var(--lako-dark) !important;
+        margin: 0 0 0.25rem 0 !important;
+      }
+
+      p {
+        font-size: 0.7rem !important;
+        color: var(--lako-gray) !important;
+        margin: 0.15rem 0 !important;
+      }
+    }
+
+    ion-badge {
+      font-size: 0.65rem;
+      padding: 0.25rem 0.5rem;
+    }
   }
 }
 
@@ -437,27 +498,27 @@
       }
       
       .stat-number {
-        font-size: 1.4rem;
+        font-size: 1.1rem;
         font-weight: 700;
         margin-bottom: 0.5rem;
         color: var(--lako-dark);
-        
+
         &.large {
-          font-size: 1.1rem;
+          font-size: 0.95rem;
         }
       }
-      
+
       .stat-label {
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         color: var(--lako-gray);
         font-weight: 500;
-        
+
         ion-icon {
-          font-size: 1rem;
+          font-size: 0.9rem;
         }
       }
       
@@ -530,38 +591,38 @@
         
         .course-destination {
           flex: 1;
-          
+
           h3 {
             margin: 0 0 0.25rem 0;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: var(--lako-dark);
           }
-          
+
           .course-time {
             margin: 0;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: rgba(21, 21, 21, 0.7);
             font-weight: 500;
           }
-          
+
           .course-id {
             margin: 0;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: rgba(21, 21, 21, 0.6);
             font-weight: 400;
             font-family: monospace;
           }
         }
-        
+
         .course-price {
           display: flex;
           flex-direction: column;
           align-items: flex-end;
           gap: 0.5rem;
-          
+
           .price-amount {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 700;
             color: var(--lako-dark);
             text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
@@ -614,18 +675,18 @@
             .detail-content {
               display: flex;
               flex-direction: column;
-              
+
               .detail-label {
-                font-size: 0.7rem;
+                font-size: 0.65rem;
                 color: var(--lako-gray);
                 font-weight: 500;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
                 margin-bottom: 0.25rem;
               }
-              
+
               .detail-value {
-                font-size: 0.9rem;
+                font-size: 0.8rem;
                 color: var(--lako-dark);
                 font-weight: 500;
               }
@@ -772,14 +833,14 @@
       h3 {
         margin: 0 0 0.25rem 0;
         color: var(--lako-dark);
-        font-size: 1.2rem;
+        font-size: 0.95rem;
         font-weight: 600;
       }
-      
+
       p {
         margin: 0.25rem 0;
         color: var(--lako-gray);
-        font-size: 0.9rem;
+        font-size: 0.8rem;
       }
     }
   }
@@ -973,10 +1034,10 @@
       padding: 1rem;
       
       .stat-card {
-        padding: 1rem;
-        
+        padding: 0.75rem;
+
         .stat-number {
-          font-size: 1.2rem;
+          font-size: 1rem;
         }
       }
     }
