@@ -110,12 +110,12 @@ export class PwaService {
   }
 
   /**
-   * Vérifie si l'installation doit être forcée (uniquement pour conducteurs)
+   * Vérifie si l'installation doit être forcée (uniquement pour conducteurs connectés)
    * @param currentPath - Le chemin actuel de la route
    */
   shouldForceInstall(currentPath: string): boolean {
-    // Ne pas forcer sur les routes entreprise/super-admin
-    if (currentPath.includes('/entreprise') || currentPath.includes('/super-admin')) {
+    // Forcer UNIQUEMENT sur les routes /tabs (conducteur connecté)
+    if (!currentPath.includes('/tabs')) {
       return false;
     }
 
@@ -134,7 +134,7 @@ export class PwaService {
       return false;
     }
 
-    // Conducteur sur navigateur web → forcer l'installation
+    // Conducteur connecté sur navigateur web → forcer l'installation
     return true;
   }
 
