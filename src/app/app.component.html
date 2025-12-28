@@ -6,8 +6,8 @@
 
   <ion-router-outlet *ngIf="!showSplash"></ion-router-outlet>
 
-  <!-- PWA Install Banner -->
-  <div class="pwa-install-banner" *ngIf="showInstallBanner && !showSplash">
+  <!-- PWA Install Banner (optionnel - entreprise) -->
+  <div class="pwa-install-banner" *ngIf="showInstallBanner && !showSplash && !showForceInstallModal">
     <div class="banner-content">
       <ion-icon name="download-outline" class="banner-icon"></ion-icon>
       <div class="banner-text">
@@ -22,6 +22,55 @@
       <ion-button fill="clear" color="light" size="small" (click)="dismissInstallBanner()">
         <ion-icon name="close-outline" slot="icon-only"></ion-icon>
       </ion-button>
+    </div>
+  </div>
+
+  <!-- Modal bloquant installation PWA (conducteurs uniquement) -->
+  <div class="pwa-force-install-overlay" *ngIf="showForceInstallModal && !showSplash">
+    <div class="pwa-force-install-modal">
+      <div class="modal-header">
+        <img src="assets/icons/icon-128.webp" alt="Lako" class="app-icon">
+        <h2>Installation requise</h2>
+      </div>
+
+      <div class="modal-body">
+        <p>Pour utiliser Lako Chauffeur, vous devez installer l'application sur votre appareil.</p>
+
+        <!-- Instructions Android/Chrome -->
+        <div class="install-instructions" *ngIf="!pwaService.isIOS()">
+          <ion-button expand="block" (click)="forceInstallPwa()" class="install-btn">
+            <ion-icon name="download-outline" slot="start"></ion-icon>
+            Installer l'application
+          </ion-button>
+        </div>
+
+        <!-- Instructions iOS -->
+        <div class="install-instructions ios" *ngIf="pwaService.isIOS()">
+          <p class="ios-title">Sur iOS, suivez ces etapes :</p>
+          <div class="ios-steps">
+            <div class="step">
+              <span class="step-number">1</span>
+              <span>Appuyez sur</span>
+              <ion-icon name="share-outline" class="share-icon"></ion-icon>
+              <span>(Partager)</span>
+            </div>
+            <div class="step">
+              <span class="step-number">2</span>
+              <span>Selectionnez</span>
+              <ion-icon name="add-outline" class="add-icon"></ion-icon>
+              <span>"Sur l'ecran d'accueil"</span>
+            </div>
+            <div class="step">
+              <span class="step-number">3</span>
+              <span>Appuyez sur "Ajouter"</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <p class="footer-note">L'installation est gratuite et ne prend que quelques secondes.</p>
+      </div>
     </div>
   </div>
 </ion-app>

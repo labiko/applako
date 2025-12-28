@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { Capacitor } from '@capacitor/core';
 
 @Injectable({
   providedIn: 'root'
@@ -106,5 +107,41 @@ export class PwaService {
     const sevenDays = 7 * 24 * 60 * 60 * 1000;
 
     return Date.now() - dismissedTime > sevenDays;
+  }
+
+  /**
+   * Vérifie si l'installation doit être forcée (uniquement pour conducteurs)
+   * @param currentPath - Le chemin actuel de la route
+   */
+  shouldForceInstall(currentPath: string): boolean {
+    // Ne pas forcer sur les routes entreprise/super-admin
+    if (currentPath.includes('/entreprise') || currentPath.includes('/super-admin')) {
+      return false;
+    }
+
+    // Ne pas forcer si déjà installée (mode standalone)
+    if (this.checkIfInstalled()) {
+      return false;
+    }
+
+    // Ne pas forcer si app native Capacitor
+    if (Capacitor.isNativePlatform()) {
+      return false;
+    }
+
+    // Ne pas forcer en développement (localhost)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return false;
+    }
+
+    // Conducteur sur navigateur web → forcer l'installation
+    return true;
+  }
+
+  /**
+   * Détecte si l'appareil est iOS (pour afficher instructions spécifiques)
+   */
+  isIOS(): boolean {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
   }
 }

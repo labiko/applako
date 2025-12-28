@@ -225,3 +225,140 @@
     opacity: 1;
   }
 }
+
+/* Modal bloquant installation PWA (conducteurs) */
+.pwa-force-install-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.pwa-force-install-modal {
+  background: #ffffff;
+  border-radius: 20px;
+  max-width: 380px;
+  width: 100%;
+  overflow: hidden;
+  animation: modalFadeIn 0.3s ease-out;
+
+  .modal-header {
+    background: linear-gradient(135deg, #151515, #2d2d2d);
+    padding: 30px 20px;
+    text-align: center;
+
+    .app-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    h2 {
+      color: var(--lako-green, #C1F11D);
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0;
+    }
+  }
+
+  .modal-body {
+    padding: 24px 20px;
+    text-align: center;
+
+    > p {
+      color: #333;
+      font-size: 1rem;
+      line-height: 1.5;
+      margin: 0 0 20px 0;
+    }
+
+    .install-instructions {
+      .install-btn {
+        --background: var(--lako-green, #C1F11D);
+        --color: #151515;
+        font-weight: 700;
+        font-size: 1.1rem;
+        height: 54px;
+        --border-radius: 12px;
+      }
+
+      &.ios {
+        .ios-title {
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 16px;
+        }
+
+        .ios-steps {
+          background: #f8f9fa;
+          border-radius: 12px;
+          padding: 16px;
+
+          .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 0.95rem;
+            color: #333;
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            .step-number {
+              background: var(--lako-green, #C1F11D);
+              color: #151515;
+              width: 24px;
+              height: 24px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-weight: 700;
+              font-size: 0.85rem;
+              flex-shrink: 0;
+            }
+
+            .share-icon, .add-icon {
+              font-size: 1.3rem;
+              color: #007aff;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .modal-footer {
+    padding: 16px 20px 24px;
+    text-align: center;
+
+    .footer-note {
+      color: #6c757d;
+      font-size: 0.85rem;
+      margin: 0;
+    }
+  }
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
